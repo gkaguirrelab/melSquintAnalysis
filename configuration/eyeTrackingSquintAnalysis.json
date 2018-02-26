@@ -1,0 +1,68 @@
+[
+	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "configuration/eyeTrackTOMEAnalysisLocalHook",
+		"name": "eyeTrackTOMEAnalysis",
+		"pathPlacement": "append",
+		"subfolder": "code",
+		"toolboxRoot": "",
+		"type": "git",
+		"update": "",
+		"url": ""
+	},
+ 	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "shadedErrorBar",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "git",
+		"update": "",
+		"url": "https:\/\/github.com\/raacampbell\/shadedErrorBar.git"
+	},
+ 	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "nanFastSmooth",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "webget",
+		"update": "",
+		"url": "https:\/\/www.mathworks.com\/matlabcentral\/mlc-downloads\/downloads\/submissions\/52688\/versions\/2\/download\/zip"
+	},
+ 	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "figTitle",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "webget",
+		"update": "",
+		"url": "https:\/\/www.mathworks.com\/matlabcentral\/mlc-downloads\/downloads\/submissions\/42667\/versions\/5\/download\/zip"
+	},
+ 	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "transparentTrack",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "include",
+		"update": "",
+		"url": ""
+	}
+
+]
