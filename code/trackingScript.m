@@ -5,7 +5,7 @@
 
 % get data and analysis directory prefs
 projectName = 'melSquintAnalysis';
-MELA_dataBasePath =  getpref(projectName,'melaDataPath', MELA_dataBasePath);
+MELA_dataBasePath =  getpref(projectName,'melaDataPath');
 MELA_analysisBasePath = getpref(projectName,'melaAnalysisPath');
 
 basePathParams.dataSourceDirFull = fullfile(MELA_dataBasePath,'Experiments','OLApproach_Squint','SquintToPulse','DataFiles');
@@ -28,6 +28,7 @@ useParallel = true;
 subject = 'HERO_HMM';
 session = '2018-03-29_session_1';
 runName = 'calibration_001_ HERO_HMM';
+eyeLaterality = 'left';
 observedIrisDiamPixels = 550;
 
 % Estimate camera depth from iris diameter
@@ -43,20 +44,30 @@ sceneParamsUBp = [-8; 2; -3; cameraDepthMean+1*cameraDepthSD; 1.15; 1.05 ];
 sceneParamsUB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
 % Set up path params for this video
-pathParams.dataSourceDirFull = fullfile(basePathParams.dataSourceDirFull, subject, 'pupilCalibration');
-pathParams.dataOutputDirFull = fullfile(basePathParams.dataOutputDirFull, subject, 'pupilCalibration');
+pathParams.dataSourceDirFull = fullfile(basePathParams.dataSourceDirFull, subject, session, 'pupilCalibration');
+pathParams.dataOutputDirFull = fullfile(basePathParams.dataOutputDirFull, subject, session, 'pupilCalibration');
 pathParams.runName = runName;
+
+% Explicitly define the "gray video" name, as this has a different than
+% typically expected suffix
+pathParams.grayVideoName = fullfile(basePathParams.dataSourceDirFull, subject, session, 'pupilCalibration',[pathParams.runName '.mp4']);
+
 
 % Run the video pipeline for the calibration video
 runVideoPipeline(pathParams,...
+    'skipStageByNumber',[1],...
     'useParallel', useParallel,...
     'verbosity', verbosity, ...
+    'glintFrameMask',[180 340 350 500],'glintGammaCorrection', 15, 'numberOfGlints', 2, ...
+    'pupilRange', [60 200],'pupilFrameMask', [100 400 240 300],'pupilCircleThresh', 0.02,'pupilGammaCorrection', 0.7,'maskBox', [1 1],...
+    'cutErrorThreshold', 10, 'badFrameErrorThreshold', 6,'glintPatchRadius', 35, 'ellipseTransparentUB',[1280,720,20000,0.6,pi], ...
     'sceneParamsLB',sceneParamsLB, 'sceneParamsUB',sceneParamsUB, ...
     'sceneParamsLBp',sceneParamsLBp,'sceneParamsUBp',sceneParamsUBp,...
     'intrinsicCameraMatrix', intrinsicCameraMatrix, ...
     'sensorResolution', sensorResolution, ...
     'radialDistortionVector',radialDistortionVector, ...
     'constraintTolerance',0.03, ...
-    'eyeLaterality','left');
+    'eyeLaterality',eyeLaterality, ...
+    'makeFitVideoByNumber',[3 6 8]);
 
 
