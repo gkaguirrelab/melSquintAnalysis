@@ -40,15 +40,19 @@ switch userID
     case {'melanopsin' 'pupillab'}
         materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        MELA_analysisBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
     case {'dhb'}
         materialsBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         MELA_dataBasePath = ['/Users1' '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];     
+        MELA_analysisBasePath = ['/Users1/' '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
     case {'mbarnett'}
         materialsBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         MELA_dataBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        MELA_dataBasePath = ['/home/mbarnett/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
     otherwise
         materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+        MELA_analysisBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
 end
 
 %% Specify where output goes
@@ -56,9 +60,11 @@ end
 if ismac
     % Code to run on Mac plaform
     setpref(projectName,'melaDataPath', MELA_dataBasePath);
+    setpref(projectName,'melaAnalysisPath', MELA_analysisBasePath);
 elseif isunix
     % Code to run on Linux plaform
     setpref(projectName,'melaDataPath', MELA_dataBasePath);
+    setpref(projectName,'melaAnalysisPath', MELA_analysisBasePath);
 elseif ispc
     % Code to run on Windows platform
     warning('No supported for PC')
