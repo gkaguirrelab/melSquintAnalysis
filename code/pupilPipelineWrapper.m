@@ -39,8 +39,9 @@ pathParams.runNames = [calibrationRunName, runNames];
 
 for rr = 1:length(pathParams.runNames)
     pathParams.grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, pathParams.runNames{rr});
-    pathParams.dataOutputDirFull = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, 'pupilCalibration');
-
+    pathParams.dataOutputDirFull = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session);
+    runName = strsplit(pathParams.runNames{1}, '.');
+    pathParams.runName = runName{1};
     
     runVideoPipeline(pathParams,...
     'skipStageByNumber', [1,7:11],...
