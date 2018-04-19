@@ -22,25 +22,27 @@ end
 % now figure out the paths of the pulse trial videos
 if strcmp(pathParams.protocol, 'Screening')
     for ii = 1:12
-        runNames{ii} = sprintf('videoFiles_acqusition_01/trial_%03d.mp4',ii);
+        runNames{ii} = sprintf('videoFiles_acquisition_01/trial_%03d.mp4',ii);
     end
 end
 
+counter = 1;
 if strcmp(pathParams.protocol, 'SquintToPulse')
     for aa = 1:6
         for ii = 1:10
-            runNames{ii} = sprintf('videoFiles_acqusition_%02d/trial_%03d.mp4',aa, ii);
+            runNames{counter} = sprintf('videoFiles_acquisition_%02d/trial_%03d.mp4',aa, ii);
+            counter = counter + 1;
         end
     end
 end
 
 %package all of the runNames up so now we have a list of all of the video
-pathParams.runNames = [calibrationRunName, runNames];
+pathParams.runNames = [runNames, calibrationRunName];
 
 for rr = 1:length(pathParams.runNames)
     pathParams.grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, pathParams.runNames{rr});
     pathParams.dataOutputDirFull = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session);
-    runName = strsplit(pathParams.runNames{1}, '.');
+    runName = strsplit(pathParams.runNames{rr}, '.');
     pathParams.runName = runName{1};
     
     runVideoPipeline(pathParams,...
