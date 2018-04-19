@@ -41,7 +41,10 @@ pathParams.runNames = [runNames, calibrationRunName];
 
 for rr = 1:length(pathParams.runNames)
     pathParams.grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, pathParams.runNames{rr});
-    pathParams.dataOutputDirFull = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session);
+    videoSubfolder = strsplit(pathParams.runNames{rr}, '/');
+    videoSubfolder = videoSubfolder{1};
+    
+    pathParams.dataOutputDirFull = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, videoSubfolder);
     runName = strsplit(pathParams.runNames{rr}, '.');
     pathParams.runName = runName{1};
     
