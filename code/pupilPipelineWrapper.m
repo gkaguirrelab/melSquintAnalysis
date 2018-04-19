@@ -13,16 +13,19 @@ pathParams.dataOutputDirBase = fullfile(pathParams.analysisBasePath,'Experiments
 % want
 potentialCalibrationVideos = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, 'pupilCalibration', '*post.mp4'));
 if ~isempty(potentialCalibrationVideos)
-    calibrationRunName = ['pupilCalibration/', potentialCalibrationVideos(end).name];
+    calibrationRunName = [potentialCalibrationVideos(end).name];
+    calibrationSubfolder = 'pupilCalibration';
 else
     potentialCalibrationVideos = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, 'pupilCalibration', '*.mp4'));
-    calibrationRunName = ['pupilCalibration/', potentialCalibrationVideos(end).name];
+    calibrationRunName = [potentialCalibrationVideos(end).name];
+    calibrationSubfolder = 'pupilCalibration';
 end
 
 % now figure out the paths of the pulse trial videos
 if strcmp(pathParams.protocol, 'Screening')
     for ii = 1:12
-        runNames{ii} = sprintf('videoFiles_acquisition_01/trial_%03d.mp4',ii);
+        runNames{ii} = sprintf('trial_%03d.mp4',ii);
+        trialsSubfolders{ii} = 'videoFiles_acquisition_01';
     end
 end
 
@@ -30,7 +33,8 @@ counter = 1;
 if strcmp(pathParams.protocol, 'SquintToPulse')
     for aa = 1:6
         for ii = 1:10
-            runNames{counter} = sprintf('videoFiles_acquisition_%02d/trial_%03d.mp4',aa, ii);
+            runNames{counter} = sprintf('trial_%03d.mp4', ii);
+            trialsSubfolders{counter} = sprintf('videoFiles_acquisition_%02d', aa);
             counter = counter + 1;
         end
     end
@@ -38,13 +42,13 @@ end
 
 %package all of the runNames up so now we have a list of all of the video
 pathParams.runNames = [runNames, calibrationRunName];
+subfolders = [trialsSubfolders, calibrationSubfolder];
 
 for rr = 1:length(pathParams.runNames)
-    pathParams.grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, pathParams.runNames{rr});
-    videoSubfolder = strsplit(pathParams.runNames{rr}, '/');
-    videoSubfolder = videoSubfolder{1};
+    pathParams.grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfolders{rr}, pathParams.runNames{rr});
+
     
-    pathParams.dataOutputDirFull = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, videoSubfolder);
+    pathParams.dataOutputDirFull = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfolders{rr});
     runName = strsplit(pathParams.runNames{rr}, '.');
     pathParams.runName = runName{1};
     
