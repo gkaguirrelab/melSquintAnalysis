@@ -34,7 +34,7 @@ defaultFitParams.cutErrorThreshold = 10;
 defaultFitParams.badFrameErrorThreshold = 6;
 defaultFitParams.glintPatchRadius = 35;
 defaultFitParams.ellipseTransparentUB = [1280, 720, 40000, 0.6, pi];
-defaultFitParams.ellipseTRansprentLB = [0, 0, 1000, 0, 0];
+defaultFitParams.ellipseTransparentLB = [0, 0, 1000, 0, 0];
 defaultFitParams.constraintTolerance = 0.03;
 defaultFitParams.makeFitVideoByNumber = [3 6 8];
 
@@ -248,6 +248,8 @@ sceneParams.UBp = [-8; 2; -3; cameraDepthMean+1*cameraDepthSD; 1.15; 1.05 ];
 sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
 fitParams = defaultFitParams;
+fitParams.ellipseTransparentUB = [1280, 720, 70000, 0.6, pi];
+
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 %% MELA_0130
