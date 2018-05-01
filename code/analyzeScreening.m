@@ -21,12 +21,31 @@ dataDir = fullfile(dataDirBase, subjectID, sessionID, 'videoFiles_acquisition_01
 
 %% loop over the trials, determine how many good and bad frames within each trial
 nTrials = 12;
+figure;
 for tt = 1:nTrials
-    trialData = load(fullfile(dataDir, sprintf('trial_%03d_pupil.mat',tt)));
-    trialData = trialData.pupilData.initial.ellipses.values(:, 3);
+    trialDataStruct = load(fullfile(dataDir, sprintf('trial_%03d_pupil.mat',tt)));
+    trialData = trialDataStruct.pupilData.initial.ellipses.values(:, 3);
     numberBadFrames = sum(isnan(trialData));
     goodFramesPercentage = (length(trialData) - numberBadFrames)/length(trialData);
     percentGoodFramesPerTrial(tt) = goodFramesPercentage;
+    
+    subplot(2,6,tt)
+    title(sprintf('Trial %0d', tt))
+    plot(trialDataStruct.pupilData.initial.ellipses.RMSE)
+    
+    differential = diff(trialDataStruct.pupilData.initial.ellipses.RMSE);
+    duplicateFrameIndices = find(differential == 0);
+    
+    if length(duplicateFrameIndices) ~= 0
+        fprintf([fprintf('Trial %0d: %0d duplicate frames at ', tt, length(duplicateFrameIndices)), mat2str(duplicateFrameIndices) '\n']);
+    end
+        
+    
+
+    
+
+
+    
     
 end
 
