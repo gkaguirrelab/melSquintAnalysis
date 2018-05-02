@@ -22,14 +22,14 @@ pathParams.useParallel = true;
 %% default fitParams
 
 defaultFitParams.skipStageByNumber = [1, 7:11];
-defaultFitParams.glintFrameMask = [180 340 350 500];
+defaultFitParams.glintFrameMask = [180 400 350 600];
 defaultFitParams.glintGammaCorrection = 15;
 defaultFitParams.numberOfGlints = 2;
 defaultFitParams.pupilRange = [60 200];
 defaultFitParams.pupilFrameMask = [100 400 240 300];
 defaultFitParams.pupilCircleThresh = 0.02;
 defaultFitParams.pupilGammaCorrection = 0.7;
-defaultFitParams.maskBox = [1 1];
+defaultFitParams.maskBox = [3 3];
 defaultFitParams.cutErrorThreshold = 10;
 defaultFitParams.badFrameErrorThreshold = 6;
 defaultFitParams.glintPatchRadius = 35;
@@ -60,6 +60,8 @@ sceneParams.UBp = [-8; 2; -3; cameraDepthMean+1*cameraDepthSD; 1.15; 1.05 ];
 sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
 fitParams = defaultFitParams;
+fitParams.glintFrameMask = [300 600 250 400];
+fitParams.pupilFrameMask = [200 450 150 300];
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 
