@@ -37,6 +37,7 @@ defaultFitParams.ellipseTransparentUB = [1280, 720, 40000, 0.6, pi];
 defaultFitParams.ellipseTransparentLB = [0, 0, 1000, 0, 0];
 defaultFitParams.constraintTolerance = 0.03;
 defaultFitParams.makeFitVideoByNumber = [3 6 8];
+defaultFitParams.overwriteControlFile = true;
 
 
 %% analyze each subject
