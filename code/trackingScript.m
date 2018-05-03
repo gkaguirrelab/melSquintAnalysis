@@ -22,18 +22,18 @@ pathParams.useParallel = true;
 %% default fitParams
 
 defaultFitParams.skipStageByNumber = [1, 7:11];
-defaultFitParams.glintFrameMask = [180 400 350 600];
+defaultFitParams.glintFrameMask = [300 600 250 400];
 defaultFitParams.glintGammaCorrection = 15;
 defaultFitParams.numberOfGlints = 2;
-defaultFitParams.pupilRange = [60 200];
-defaultFitParams.pupilFrameMask = [100 400 240 300];
-defaultFitParams.pupilCircleThresh = 0.02;
+defaultFitParams.pupilRange = [100 200];
+defaultFitParams.pupilFrameMask = [100 400 150 300];
+defaultFitParams.pupilCircleThresh = 0.05;
 defaultFitParams.pupilGammaCorrection = 0.7;
-defaultFitParams.maskBox = [3 3];
+defaultFitParams.maskBox = [2 2];
 defaultFitParams.cutErrorThreshold = 10;
 defaultFitParams.badFrameErrorThreshold = 6;
 defaultFitParams.glintPatchRadius = 35;
-defaultFitParams.ellipseTransparentUB = [1280, 720, 70000, 0.6, pi];
+defaultFitParams.ellipseTransparentUB = [1280, 720, 90000, 0.6, pi];
 defaultFitParams.ellipseTransparentLB = [0, 0, 1000, 0, 0];
 defaultFitParams.constraintTolerance = 0.03;
 defaultFitParams.makeFitVideoByNumber = [3 6 8];
