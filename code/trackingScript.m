@@ -127,6 +127,10 @@ sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
 fitParams = defaultFitParams;
 
+% for the calibration at least:
+fitParams.glintFrameMask = [150 600 250 400];
+fitParams.pupilFrameMask = [50 400 150 300];
+
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 %% MELA_0121
 pathParams.subject = 'MELA_0121';
