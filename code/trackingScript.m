@@ -12,9 +12,9 @@ pathParams.analysisBasePath = getpref(projectName,'melaAnalysisPath');
 
 %% Parameters common to all subjects
 cameraParams.intrinsicCameraMatrix =  [1347.76, 0, 658.90;...
-                          0, 1345.48, 365.68;...
-                          0, 0, 1];
-cameraParams.sensorResolution = [1280 720];      
+    0, 1345.48, 365.68;...
+    0, 0, 1];
+cameraParams.sensorResolution = [1280 720];
 cameraParams.radialDistortionVector = [0.21524, -1.5616];
 pathParams.verbose = true;
 pathParams.useParallel = true;
@@ -25,7 +25,7 @@ defaultFitParams.skipStageByNumber = [1, 7:11];
 defaultFitParams.glintFrameMask = [300 600 250 400];
 defaultFitParams.glintGammaCorrection = 15;
 defaultFitParams.numberOfGlints = 2;
-defaultFitParams.pupilRange = [100 200];
+defaultFitParams.pupilRange = [30 200];
 defaultFitParams.pupilFrameMask = [100 400 150 300];
 defaultFitParams.pupilCircleThresh = 0.05;
 defaultFitParams.pupilGammaCorrection = 0.7;
@@ -281,3 +281,34 @@ fitParams.glintFrameMask = [300 500 200 300];
 fitParams.pupilFrameMask = [200 450 150 300];
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
+%% SQUINT TO PULSE DATA
+% MELA_0130
+
+pathParams.subject = 'MELA_0130';
+pathParams.protocol = 'SquintToPulse';
+pathParams.eyeLaterality = 'left';
+
+
+cameraDepthSD = 1.4; % just a value on the order of what depthFromIrisDiameter would provide
+
+
+% Set up scene parameter bounds
+
+
+fitParams = defaultFitParams;
+fitParams.glintFrameMask = [300 500 200 500];
+fitParams.pupilFrameMask = [200 450 150 450];
+fitParams.pupilCircleThresh = 0.02;
+
+for ss = 1:4
+    pathParams.session = ['2018-05-04_session_', num2str(ss)];
+    
+    cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', pathParams.protocol, 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
+    cameraDepthMean = cameraDepthMean.distanceFromCornealApexToIRLens;
+    
+    sceneParams.LB = [-15; 1; -5; cameraDepthMean-2*cameraDepthSD; .75; 0.9];
+    sceneParams.LBp = [-12; 1.5; -4; cameraDepthMean-1*cameraDepthSD; .85; 0.95];
+    sceneParams.UBp = [-8; 2; -3; cameraDepthMean+1*cameraDepthSD; 1.15; 1.05 ];
+    sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
+    pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
+end
