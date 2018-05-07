@@ -296,12 +296,19 @@ cameraDepthSD = 1.4; % just a value on the order of what depthFromIrisDiameter w
 
 
 fitParams = defaultFitParams;
-fitParams.glintFrameMask = [300 500 200 500];
+
+
+for ss = 2:4
+    pathParams.session = ['2018-05-04_session_', num2str(ss)];
+    if ss == 1
+        fitParams.glintFrameMask = [300 500 200 500];
 fitParams.pupilFrameMask = [200 450 150 450];
 fitParams.pupilCircleThresh = 0.02;
-
-for ss = 1:4
-    pathParams.session = ['2018-05-04_session_', num2str(ss)];
+    end
+    if ss == 2
+        fitParams.glintFrameMask = [300 800 200 150];
+        fitParams.pupilFrameMask = [250 750 100 150];
+    end
     
     cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', pathParams.protocol, 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
     cameraDepthMean = cameraDepthMean.distanceFromCornealApexToIRLens;
