@@ -173,7 +173,8 @@ for ss = 1:length(stimuli)
     end
 end
 
-figure;
+
+plotFig = figure;
 title('Melanopsin')
 hold on
 plot(resampledTimebase, averageResponseStruct.Melanopsin.Contrast100)
@@ -183,8 +184,10 @@ ylim([0.4 1.3])
 legend('100%', '200%', '400%')
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
+saveas(plotFig, fullfile(analysisBasePath, 'melanopsin.pdf'), 'pdf');
+close(plotFig)
 
-figure;
+plotFig = figure;
 title('LMS')
 hold on
 plot(resampledTimebase, averageResponseStruct.LMS.Contrast100)
@@ -194,8 +197,10 @@ ylim([0.4 1.3])
 legend('100%', '200%', '400%')
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
+saveas(plotFig, fullfile(analysisBasePath, 'LMS.pdf'), 'pdf');
+close(plotFig)
 
-figure;
+plotFig = figure;
 title('LightFlux')
 hold on
 plot(resampledTimebase, averageResponseStruct.LightFlux.Contrast100)
@@ -205,6 +210,8 @@ legend('100%', '200%', '400%')
 ylim([0.4 1.3])
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
+saveas(plotFig, fullfile(analysisBasePath, 'lightFlux.pdf'), 'pdf');
+close(plotFig)
 
 
 
