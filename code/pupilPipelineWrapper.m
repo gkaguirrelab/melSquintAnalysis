@@ -48,6 +48,8 @@ pathParams.runNames = [runNames, calibrationRunName];
 subfolders = [trialsSubfolders, calibrationSubfolder];
 
 for rr = 1:length(pathParams.runNames)
+    fprintf('Analyzing subject %s, session %s, trial %s\n', pathParams.subject, pathParams.session, pathParams.runNames{rr});
+
     pathParams.grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfolders{rr}, pathParams.runNames{rr});
 
     
