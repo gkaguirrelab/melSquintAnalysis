@@ -137,6 +137,11 @@ for ss = completedSessions
                     end
                 end
                 
+                % normalize by baseline pupil size
+                baselineWindow = 1001:1501;
+                baselineSize = nanmean(trialData.responseResampled.values(baselineWindow));
+                trialData.responseResampled.values = trialData.responseResampled.values./baselineSize;
+                
                 
                 
                 % stash the trial
@@ -167,6 +172,42 @@ for ss = 1:length(stimuli)
         end
     end
 end
+
+figure;
+title('Melanopsin')
+hold on
+plot(resampledTimebase, averageResponseStruct.Melanopsin.Contrast100)
+plot(resampledTimebase, averageResponseStruct.Melanopsin.Contrast200)
+plot(resampledTimebase, averageResponseStruct.Melanopsin.Contrast400)
+ylim([0.4 1.3])
+legend('100%', '200%', '400%')
+xlabel('Time (s)')
+ylabel('Pupil Area (% Change)')
+
+figure;
+title('LMS')
+hold on
+plot(resampledTimebase, averageResponseStruct.LMS.Contrast100)
+plot(resampledTimebase, averageResponseStruct.LMS.Contrast200)
+plot(resampledTimebase, averageResponseStruct.LMS.Contrast400)
+ylim([0.4 1.3])
+legend('100%', '200%', '400%')
+xlabel('Time (s)')
+ylabel('Pupil Area (% Change)')
+
+figure;
+title('LightFlux')
+hold on
+plot(resampledTimebase, averageResponseStruct.LightFlux.Contrast100)
+plot(resampledTimebase, averageResponseStruct.LightFlux.Contrast200)
+plot(resampledTimebase, averageResponseStruct.LightFlux.Contrast400)
+legend('100%', '200%', '400%')
+ylim([0.4 1.3])
+xlabel('Time (s)')
+ylabel('Pupil Area (% Change)')
+
+
+
 end
 
 
