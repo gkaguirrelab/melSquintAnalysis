@@ -190,6 +190,9 @@ sceneParams.UBp = [-8; 2; -3; cameraDepthMean+1*cameraDepthSD; 1.15; 1.05 ];
 sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
 fitParams = defaultFitParams;
+fitParams.glintFrameMask = [200 600 250 400];
+
+
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 
