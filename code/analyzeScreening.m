@@ -27,6 +27,7 @@ figure;
 for tt = 1:nTrials
     
     % load the trial data
+    if exist(fullfile(dataDir, sprintf('trial_%03d_pupil.mat',tt)), 'file')
     trialDataStruct = load(fullfile(dataDir, sprintf('trial_%03d_pupil.mat',tt)));
     trialData = trialDataStruct.pupilData.initial.ellipses.values(:, 3);
     
@@ -61,6 +62,9 @@ for tt = 1:nTrials
     numberBadFrames = sum(isnan(trialData)) + length(poorFitFramesIndices) + length(duplicateFrameIndices);
     goodFramesPercentage = (length(trialData) - numberBadFrames)/length(trialData);
     percentGoodFramesPerTrial(tt) = goodFramesPercentage;
+    else
+        percentGoodFramesPerTrial(tt) = NaN;
+    end
     
     
     
