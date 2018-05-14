@@ -235,7 +235,7 @@ sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
 fitParams = defaultFitParams;
 fitParams.glintFrameMask = [250 340 300 500];
-fitParams.ellipseTransparentUB = [1280,720,50000,0.6,pi];
+fitParams.ellipseTransparentUB = [1280,720,90000,0.2,pi];
 fitParams.pupilFrameMask = [100 400 150 300];
 fitParams.maskBox = [3 3];
 
