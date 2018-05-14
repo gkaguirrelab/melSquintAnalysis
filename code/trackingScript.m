@@ -285,7 +285,7 @@ fitParams.pupilFrameMask = [200 450 150 300];
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 
-%% MELA_0130
+%% MELA_0132
 pathParams.subject = 'MELA_0132';
 pathParams.protocol = 'Screening';
 pathParams.session = '2018-04-26_session_1';
@@ -351,6 +351,8 @@ sceneParams.UBp = [-8; 2; -3; cameraDepthMean+1*cameraDepthSD; 1.15; 1.05 ];
 sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
 fitParams = defaultFitParams;
+
+fitParams.ellipseTransparentUB = [1280, 720, 90000, 0.2, pi];
 fitParams.glintFrameMask = [300 400 250 400];
 fitParams.pupilFrameMask = [180 350 200 450];
 fitParams.pupilRange = [60 200];
