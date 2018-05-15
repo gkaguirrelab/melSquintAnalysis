@@ -167,7 +167,7 @@ for ss = 1:length(stimuli)
         xticklabels({'100%', '200%', '400%', '100%', '200%', '400%', '100%', '200%', '400%'})
         legend(stimuli)
         
-        ylabel('Median RMS (+/- 90% CI)')
+        ylabel(['Median RMS (+/- ', num2str(p.Results.confidenceInterval(2) - p.Results.confidenceInterval(1)), '% CI)'])
         xlabel('Contrast')
     end
 end
