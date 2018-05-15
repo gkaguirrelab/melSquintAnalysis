@@ -408,6 +408,8 @@ fitParams.glintFrameMask = [250 400 250 400];
 fitParams.pupilFrameMask = [80 350 300 450];
 fitParams.pupilRange = [60 200];
 fitParams.maskBox = [1.1, 1.1];
+fitParams.glintPatchRadius = 55;
+
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 %% SQUINT TO PULSE DATA
