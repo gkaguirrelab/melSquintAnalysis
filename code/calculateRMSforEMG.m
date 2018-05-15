@@ -172,7 +172,7 @@ for ss = 1:length(stimuli)
     end
 end
 
-saveas(plotFig, fullfile(analysisBasePath, 'EMG_RMS.pdf'), 'pdf');
+print(plotFig, fullfile(analysisBasePath, 'EMG_RMS.pdf'), '-dpdf', '-bestfit');
 close(plotFig)
 
 
