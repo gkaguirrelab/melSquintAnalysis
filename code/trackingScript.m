@@ -238,6 +238,7 @@ fitParams.glintFrameMask = [250 340 300 500];
 fitParams.ellipseTransparentUB = [1280,720,90000,0.2,pi];
 fitParams.pupilFrameMask = [100 400 150 300];
 fitParams.maskBox = [3 3];
+fitParams.badFrameErrorThreshold = 10;
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 %% MELA_0127
@@ -468,7 +469,7 @@ cameraDepthSD = 1.4; % just a value on the order of what depthFromIrisDiameter w
 fitParams = defaultFitParams;
 
 
-for ss = 1:3
+for ss = 3:3
     if ss == 1
         pathParams.session = '2018-05-02_session_1';
         
