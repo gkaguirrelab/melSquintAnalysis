@@ -3,6 +3,8 @@ function [medianResponses, trialStruct] = analyzeAudioResponses(subjectID, varar
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('resume',false,@islogical);
+p.addParameter('confidenceInterval', [10 90], @isnumeric);
+
 
 % Parse and check the parameters
 p.parse(varargin{:});
@@ -130,3 +132,21 @@ for ss = startingSession:completedSessions(end)
         end
     end
 end
+
+%% make median responses
+for ss = 1:length(stimuli)
+    for cc = 1:length(contrasts)
+        
+        
+        medianRMS.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}) '_median']) = nanmedian(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})]));
+        
+        sortedVector = sort(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})]));
+        
+        medianRMS.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_', num2str(p.Results.confidenceInterval(1))]) = sortedVector(round(p.Results.confidenceInterval(1)/100*length((trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])))));
+        medianRMS.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_', num2str(p.Results.confidenceInterval(2))]) = sortedVector(round(p.Results.confidenceInterval(2)/100*length((trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])))));
+        
+        
+    end
+end
+
+end % end function
