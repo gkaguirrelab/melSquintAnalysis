@@ -16,7 +16,7 @@ analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Ex
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 
 % figure out the number of completed sessions
-potentialSessions = dir(fullfile(analysisBasePath, '*session*'));
+potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, '*session*'));
 potentialNumberOfSessions = length(potentialSessions);
 
 % initialize outputStruct
@@ -52,12 +52,16 @@ completedSessions = sessions;
 % get session IDs
 sessionIDs = [];
 for ss = completedSessions
-    potentialSessions = dir(fullfile(analysisBasePath, sprintf('*session_%d*', ss)));
+    potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sprintf('*session_%d*', ss)));
     % in the event of more than one entry for a given session (which would
     % happen if something weird happened with a session and it was
     % restarted on a different day), it'll grab the later dated session,
     % which should always be the one we want
-    sessionIDs{ss} = potentialSessions(end).name;
+    for ii = 1:length(potentialSessions)
+        if ~strcmp(potentialSessions(ii).name(1), 'x')
+            sessionIDs{ss} = potentialSessions(ii).name;
+        end
+    end
 end
 
 %% Load in the data for each session
@@ -94,6 +98,7 @@ for ss = completedSessions
                 
                 RMS.left = (sum(((voltages.left).^2)))^(1/2);
                 RMS.right = (sum(((voltages.right).^2)))^(1/2);
+                
                 
                 % stash the trial
                 % first figure out what type of trial we're working with
@@ -151,7 +156,7 @@ for ss = 1:length(stimuli)
         end
         subplot(1,2,ll)
         hold on
-
+        
         title(laterality)
         
         x = [1:3] + 3*(ss-1);
