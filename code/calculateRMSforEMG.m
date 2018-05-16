@@ -35,7 +35,7 @@ for ss = 1:potentialNumberOfSessions
     for aa = 1:6
         trials = [];
         for tt = 1:10
-            if exist(fullfile(analysisBasePath, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)), 'file');
+            if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d.mp4', tt)), 'file');
                 trials = [trials, tt];
             end
         end
@@ -131,8 +131,8 @@ for ss = 1:length(stimuli)
             
             sortedVector = sort(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})]).(laterality));
             
-            medianRMS.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_', num2str(p.Results.confidenceInterval(1))]).(laterality) = sortedVector(round(p.Results.confidenceInterval(1)/100*length((trialStruct.(directionName).(['Contrast', contrast]).(laterality)))));
-            medianRMS.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_', num2str(p.Results.confidenceInterval(2))]).(laterality) = sortedVector(round(p.Results.confidenceInterval(2)/100*length((trialStruct.(directionName).(['Contrast', contrast]).(laterality)))));
+            medianRMS.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_', num2str(p.Results.confidenceInterval(1))]).(laterality) = sortedVector(round(p.Results.confidenceInterval(1)/100*length((trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).(laterality)))));
+            medianRMS.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_', num2str(p.Results.confidenceInterval(2))]).(laterality) = sortedVector(round(p.Results.confidenceInterval(2)/100*length((trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).(laterality)))));
             
         end
     end
