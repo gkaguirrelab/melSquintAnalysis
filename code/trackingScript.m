@@ -472,7 +472,7 @@ cameraDepthSD = 1.4; % just a value on the order of what depthFromIrisDiameter w
 fitParams = defaultFitParams;
 
 
-for ss = 3:3
+for ss = 4:4
     if ss == 1
         pathParams.session = '2018-05-02_session_1';
         
@@ -493,6 +493,12 @@ for ss = 3:3
       fitParams.glintFrameMask = [280 500 200 500];
         fitParams.pupilFrameMask = [150 420 150 480];
         fitParams.pupilRange = [60 200];
+    end
+    if ss == 4
+        fitParams = defaultFitParams;
+
+        pathParams.session = '2018-05-16_session_4';
+        fitParams.glintFrameMask = [300 550 250 550];
     end
     
     cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', pathParams.protocol, 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
