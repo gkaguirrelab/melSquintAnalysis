@@ -1,4 +1,67 @@
-function [medianResponses, trialStruct] = analyzeAudioResponses(subjectID, varargin)
+function [medianResponseStruct, trialStruct] = analyzeAudioResponses(subjectID, varargin)
+% Analyzes a single subject's verbal discomfort ratings  from the OLApproach_Squint,
+% SquintToPulse Experiment
+%
+% Syntax:
+%  [medianResponses, trialStruct] = analyzeAudioResponses(subjectID)
+
+% Description:
+%   This function compiles the verbal discomfort ratings from the
+%   OLApproach_Squint Experiment. Basically we first figure out how many
+%   sessions a given subject has completed. Then we loop over each trial
+%   completed -- the audio response is played, and the operator is prompted
+%   to enter the heard rating. After completion of all trials, these
+%   ratings are compiled and summarized.
+
+% Inputs:
+%	subjectID             - A string describing the subjectID (e.g.
+%                           MELA_0121) to be analyzed)
+
+% Optional Key-Value Pairs:
+%   resume                - A logical statement. If false, the routine
+%                           starts at Session 1, Acquisition 1, Trial 1. If
+%                           true, the routine assumes the operator has
+%                           started analyzing this subject. It then finds
+%                           the saved intermediate data, and resumes from
+%                           the trial left off.
+
+% Outputs:
+%   medianResponseStruct - A 3x1 structure, where each subfield
+%                           corresponds to the stimulus type (LMS,
+%                           Melanopsin, or Light flux). Each subfield is
+%                           itself a 9x1 structure, with each nested
+%                           subfield named after the contrast levels (100%,
+%                           200%, and 400%) and whether the content refers
+%                           to the median value, or confidence interval
+%                           boundary.
+%  trialStruct            - A nested structure similar in format to
+%                           averageResponseStruct, where the first layer
+%                           describes the stimulus type and second layer
+%                           describes the contrast level. The innermost
+%                           layer, however, is a vector containing the
+%                           verbal responses from each trial
+
+% Usage:
+%   If no data has been analyzed yet for the given subject, call the
+%   function as [medianResponses, trialStruct] =
+%   analyzeAudioResponses(subjectID) with the 'resume' behavior as the
+%   default 'false.' This will then start the analysis at Session 1,
+%   Acquisition 1, Trial 1. If data analysis had previously begun for this
+%   subject, use [medianResponses, trialStruct] =
+%   analyzeAudioResponses(subjectID, 'resume', true) and now the user will
+%   be prompted to begin from wherever left off.
+%
+%   As the routine begins looping over trials, the verbal discomfort rating
+%   will be played aloud through whatever default audio output is
+%   configured on the operator's computer. At the end of teh audio clip,
+%   the operator will be prompted to enter the verbal rating into the
+%   console. If the operator desires to repeat the trial, the operator
+%   should simply hit enter without inputting any value. If the operator
+%   wishes to quit and resume later, simply enter the string 'quit' rather
+%   than a value, and the intermediate data will be saved within the
+%   relevant subject's directory as part of MELA_analysis.
+
+
 
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
@@ -142,12 +205,12 @@ for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
         
         
-        medianRMS.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}) '_median']) = nanmedian(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})]));
+        medianResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}) '_median']) = nanmedian(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})]));
         
         sortedVector = sort(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})]));
         
-        medianRMS.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_', num2str(p.Results.confidenceInterval(1))]) = sortedVector(round(p.Results.confidenceInterval(1)/100*length((trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])))));
-        medianRMS.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_', num2str(p.Results.confidenceInterval(2))]) = sortedVector(round(p.Results.confidenceInterval(2)/100*length((trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])))));
+        medianResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_', num2str(p.Results.confidenceInterval(1))]) = sortedVector(round(p.Results.confidenceInterval(1)/100*length((trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])))));
+        medianResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_', num2str(p.Results.confidenceInterval(2))]) = sortedVector(round(p.Results.confidenceInterval(2)/100*length((trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])))));
         
         
     end

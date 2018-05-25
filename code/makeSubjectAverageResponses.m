@@ -1,5 +1,61 @@
 function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(subjectID)
 
+% Analyzes a single subject's pupillometry data from the OLApproach_Squint,
+% SquintToPulse Experiment
+%
+% Syntax:
+%  [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(subjectID)
+%
+% Description:
+%   This function analyzes the pupillometry data across all sessions for a
+%   given subject as part of the OLApproach_Squint main experiment. The
+%   ultimate output of the function is the average pupil response for each
+%   stimulus type, at each contrast level, for the inputted subject as well
+%   as the response of each individual trial organized according to trial
+%   type.
+
+%   This routine first figures out how many sessions of data have been
+%   preprocessed for the inputted subject. The routine loops through each
+%   session and ensures that the transparentTrack output for all trials is
+%   present. If so, this session is regarded as a completed session and
+%   these preprocessed pupillometry data are incorporated into further
+%   analysis.
+
+%   This routine also performs some additional preprocessing of the pupil
+%   data. The steps include: identifying bad pupil frames (bad pupil frames
+%   as defined by duplicate frames, frames in which the RMSE of the fit to
+%   the pupil perimeter is too high, or blinks), adjusting each time series
+%   according to the delay from issue of video capture command to first
+%   frame of captured data, and interpolation to a common timebase. This
+%   procedure is performed on each trial, and the data from these cleaned
+%   trials is stored as well as averaged together across all trials.
+%   Finally some summary plotting is performed.
+%
+% Inputs:
+%	subjectID             - A string describing the subjectID (e.g.
+%                           MELA_0121) to be analyzed)
+
+% Outputs:
+%   averageResponseStruct - A 3x1 structure, where each subfield
+%                           corresponds to the stimulus type (LMS,
+%                           Melanopsin, or Light flux). Each subfield is
+%                           itself a 3x1 structure, with each nested
+%                           subfield named after the contrast levels (100%,
+%                           200%, and 400%). The contents of this nested
+%                           layer is the average value across all trials at
+%                           each timepoint. The corresponding timebase of
+%                           these result values is 0:0.001:18.5.
+%  trialStruct            - A nested structure similar in format to
+%                           averageResponseStruct, where the first layer
+%                           describes the stimulus type and second layer
+%                           describes the contrast level. The innermost
+%                           layer, however, is a matrix instead of a
+%                           vector. Each row describes a different trial,
+%                           while columns refer to the timepoint. These
+%                           timeseries share the same timebase
+%                           (0:0.001:18.5)
+
+
 %% Find the data
 analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');

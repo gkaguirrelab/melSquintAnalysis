@@ -1,5 +1,70 @@
 function [ medianRMS, trialStruct ] = calculateRMSforEMG(subjectID, varargin)
 
+% Analyzes a single subject's EMG data from the OLApproach_Squint,
+% SquintToPulse Experiment
+%
+% Syntax:
+%  [ medianRMS, trialStruct ] = calculateRMSforEMG(subjectID)
+
+% Description:
+%   This function analyzes the EMG data from the OLApproach_Squint
+%   Experiment, ultimately providing the root mean square (RMS) over the
+%   designated squint window. Basically we first figure out how many
+%   sessions a given subject has completed. Then we loop over each trial
+%   and calculate the RMS over the designated window for each trial, and
+%   compile that result according to stimulus type and contrast level. The
+%   median RMS value across all trials, as well as the confidence interval
+%   bounds, are outputted as well.
+
+%   A couple of words on our chosen EMG metric, root mean square: We define
+%   a window 1s after the stimulus onset until 1s after stimulus offset.
+%   This window was chosen based on work by Stringham and colleagues
+%   ('Action spetrcum for photophobia'). Within this window, we calculate
+%   the square root of the sum of the squared voltage values. We then take
+%   the median value across all trials for each stimulus type.
+
+% Inputs:
+%	subjectID             - A string describing the subjectID (e.g.
+%                           MELA_0121) to be analyzed)
+
+% Optional Key-Value Pairs:
+%   windowOnset           - A number identifying the timepoint
+%                           corresponding to the beginning of our squint
+%                           window. The default is 2.5 s, which corresponds
+%                           to 1 s after the stimulus is presented (both
+%                           EMG and pupil data begin recording 1.5 s prior
+%                           to stimulus onset, so 2.5 - 1.5 = 1 s).
+%   windowOffset          - A number identifying the timepoint
+%                           correspodning to the end of our squint window.
+%                           The default is 6.5 s, which corresponds to 1 s
+%                           after the stimulus offset (the stimulus is
+%                           presented for 4 s)
+%   makePlots             - A logical that controls plotting behavior. If
+%                           set to true, plots showing the basic contrast
+%                           response function are saved out in the
+%                           subject's folder found in MELA_analysis
+%   confidenceInterval    - A vector of length 1x2 that provides the
+%                           percentile bounds for the confidence interval
+%                           saved as part of the medianRMS struct
+
+% Outputs:
+%   medianRMS             - A 3x1 structure, where each subfield
+%                           corresponds to the stimulus type (LMS,
+%                           Melanopsin, or Light flux). Each subfield is
+%                           itself a 9x1 structure, with each nested
+%                           subfield named after the contrast levels (100%,
+%                           200%, and 400%) and whether the content refers
+%                           to the median value, or confidence interval
+%                           boundary. The ultimate value contained is the
+%                           root-mean square
+%  trialStruct            - A nested structure similar in format to
+%                           averageResponseStruct, where the first layer
+%                           describes the stimulus type and second layer
+%                           describes the contrast level. The innermost
+%                           layer, however, is a vector containing the
+%                           RMS from each trial
+
+
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('makePlots',false,@islogical);
