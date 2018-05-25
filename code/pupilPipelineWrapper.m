@@ -52,6 +52,7 @@ if ~fitParams.resume
     firstRunIndex = 1;
 else
     
+    sessions = [];
     for rr = 1:length(pathParams.runNames)
         
         if ~exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfolders{rr}, [runNames{rr}(1:end-4), '_pupil.mat']), 'file')
@@ -64,7 +65,7 @@ else
 end
 
 for rr = firstRunIndex:length(pathParams.runNames)
-    fprintf('Analyzing subject %s, session %s, %s\n', pathParams.subject, pathParams.session, pathParams.runNames{rr});
+    fprintf('Analyzing subject %s, session %s, acquisition %s, %s\n', pathParams.subject, pathParams.session, subfolders{rr}(end-1:end), pathParams.runNames{rr}(1:end-4));
 
     pathParams.grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfolders{rr}, pathParams.runNames{rr});
 
