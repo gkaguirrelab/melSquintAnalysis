@@ -38,6 +38,8 @@ defaultFitParams.ellipseTransparentLB = [0, 0, 1000, 0, 0];
 defaultFitParams.constraintTolerance = 0.03;
 defaultFitParams.makeFitVideoByNumber = [3 6 8];
 defaultFitParams.overwriteControlFile = true;
+defaultFitParams.resume = false;
+
 
 
 %% analyze each subject
@@ -430,7 +432,7 @@ cameraDepthSD = 1.4; % just a value on the order of what depthFromIrisDiameter w
 fitParams = defaultFitParams;
 
 
-for ss = 3:4
+for ss = 4:4
     pathParams.session = ['2018-05-04_session_', num2str(ss)];
     if ss == 1
         fitParams.glintFrameMask = [300 500 200 500];
@@ -445,6 +447,10 @@ for ss = 3:4
         fitParams.glintFrameMask = [300 500 200 500];
         fitParams.pupilFrameMask = [200 450 150 450];
     end
+    if ss == 4
+        fitParams.resume = true;
+    end
+
     
     cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', pathParams.protocol, 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
     cameraDepthMean = cameraDepthMean.distanceFromCornealApexToIRLens;
@@ -472,7 +478,7 @@ cameraDepthSD = 1.4; % just a value on the order of what depthFromIrisDiameter w
 fitParams = defaultFitParams;
 
 
-for ss = 4:4
+for ss = 3:4
     if ss == 1
         pathParams.session = '2018-05-02_session_1';
         
@@ -493,12 +499,14 @@ for ss = 4:4
       fitParams.glintFrameMask = [280 500 200 500];
         fitParams.pupilFrameMask = [150 420 150 480];
         fitParams.pupilRange = [60 200];
+        fitParams.resume = true;
     end
     if ss == 4
         fitParams = defaultFitParams;
 
         pathParams.session = '2018-05-16_session_4';
         fitParams.glintFrameMask = [300 550 250 550];
+        fitParams.resume = true;
     end
     
     cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', pathParams.protocol, 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
