@@ -66,6 +66,12 @@ function [medianResponseStruct, trialStruct] = analyzeAudioResponses(subjectID, 
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('resume',false,@islogical);
+p.addParameter('nTrials',10,@isnumeric);
+p.addParameter('nAcquisitions',6,@isnumeric);
+p.addParameter('nSessions',4,@isnumeric);
+
+
+
 p.addParameter('confidenceInterval', [10 90], @isnumeric);
 
 
@@ -87,14 +93,14 @@ stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
 contrasts = {100, 200, 400};
 for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
-        trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).left = [];
-        trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).right = [];
+        trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]) = [];
     end
 end
 trialStruct.metaData = [];
-trialStruct.metaData.session = [];
-trialStruct.metaData.acquisition = [];
-trialStruct.metaData.trial = [];
+% trialStruct.metaData.session = [];
+% trialStruct.metaData.acquisition = [];
+% trialStruct.metaData.trial = [];
+trialStruct.metaData.index = [];
 
 sessions = [];
 for ss = 1:potentialNumberOfSessions
@@ -135,70 +141,81 @@ end
 % figure out where we're starting from
 if p.Results.resume
     load(fullfile(analysisBasePath, 'audioTrialStruct.mat'))
-    startingSession = trialStruct.metaData.session;
-    startingAcquisition = trialStruct.metaData.acquisition;
-    startingTrial = trialStruct.metaData.trial + 1;
+    %     startingSession = trialStruct.metaData.session;
+    %     startingAcquisition = trialStruct.metaData.acquisition;
+    %     startingTrial = trialStruct.metaData.trial + 1;
+    startingIndex = trialStruct.metaData.index;
 else
-    startingSession = 1;
-    startingAcquisition = 1;
-    startingTrial = 1;
+    %startingSession = 1;
+    %startingAcquisition = 1;
+    %startingTrial = 1;
+    startingIndex = 1;
+    
+    
+end
+
+totalTrials = p.Results.nTrials * p.Results.nAcquisitions * p.Results.nSessions;
+
+for ii = startingIndex:totalTrials
+    
+    [ss, aa, tt] = ind2sub([4;6;10], ii);
+    
+    
+    
+    acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', ss,aa)));
+    
+    
+    fprintf('Session %d, Acquisition %d, Trial %d\n', ss, aa, tt);
+    
+    trialData.response.values = acquisitionData.responseStruct.data(tt).audio;
+    
+    % listen to the audio
+    trialDoneFlag = false;
+    while ~trialDoneFlag
+        sound(trialData.response.values, 16000)
+        pause(5)
+        % prompt user to input rating
+        discomfortRating = GetWithDefault('>><strong>Enter discomfort rating:</strong>', '');
+        switch discomfortRating
+            % play the clip over again if necessary
+            case ''
+                
+            case 'quit'
+                %trialStruct.metaData.session = ss;
+                %trialStruct.metaData.acquisition = aa;
+                %trialStruct.metaData.trial = tt-1;
+                
+                trialStruct.metaData.index = ii;
+                save(fullfile(analysisBasePath, 'audioTrialStruct.mat'), 'trialStruct', 'trialStruct', '-v7.3');
+                return
+                
+            otherwise
+                trialDoneFlag = true;
+        end
+    end
+    
+    %stashing the result
+    % first figure out the stimulus type
+    directionNameLong = acquisitionData.trialList(tt).modulationData.modulationParams.direction;
+    directionNameSplit = strsplit(directionNameLong, ' ');
+    if strcmp(directionNameSplit{1}, 'Light')
+        directionName = 'LightFlux';
+    else
+        directionName = directionNameSplit{1};
+    end
+    contrastLong = strsplit(directionNameLong, '%');
+    contrast = contrastLong{1}(end-2:end);
+    % pool the results
+    nItems = length((trialStruct.(directionName).(['Contrast', contrast])));
+    trialStruct.(directionName).(['Contrast', contrast])(nItems+1) = str2num(discomfortRating);
+    save(fullfile(analysisBasePath, 'audioTrialStruct.mat'), 'trialStruct', 'trialStruct', '-v7.3');
+    
     
     
     
 end
 
-for ss = startingSession:completedSessions(end)
-    for aa = startingAcquisition:6
-        acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', ss,aa)));
-        for tt = startingTrial:10
-            
-            fprintf('Session %d, Acquisition %d, Trial %d\n', ss, aa, tt);
-            
-            trialData.response.values = acquisitionData.responseStruct.data(tt).audio;
-            
-            % listen to the audio
-            trialDoneFlag = false;
-            while ~trialDoneFlag
-                sound(trialData.response.values, 16000)
-                pause(5)
-                % prompt user to input rating
-                discomfortRating = GetWithDefault('>><strong>Enter discomfort rating:</strong>', '');
-                switch discomfortRating
-                    % play the clip over again if necessary
-                    case ''
-                        
-                    case 'quit'
-                        trialStruct.metaData.session = ss;
-                        trialStruct.metaData.acquisition = aa;
-                        trialStruct.metaData.trial = tt-1;
-                        save(fullfile(analysisBasePath, 'audioTrialStruct.mat'), 'trialStruct', 'trialStruct', '-v7.3');
-                        return
-                        
-                    otherwise
-                        trialDoneFlag = true;
-                end
-            end
-            
-            %stashing the result
-            % first figure out the stimulus type
-            directionNameLong = acquisitionData.trialList(tt).modulationData.modulationParams.direction;
-            directionNameSplit = strsplit(directionNameLong, ' ');
-            if strcmp(directionNameSplit{1}, 'Light')
-                directionName = 'LightFlux';
-            else
-                directionName = directionNameSplit{1};
-            end
-            contrastLong = strsplit(directionNameLong, '%');
-            contrast = contrastLong{1}(end-2:end);
-            % pool the results
-            nItems = length((trialStruct.(directionName).(['Contrast', contrast])));
-            trialStruct.(directionName).(['Contrast', contrast])(nItems+1) = str2num(discomfortRating);
-            
-            
-            
-        end
-    end
-end
+save(fullfile(analysisBasePath, 'audioTrialStruct.mat'), 'trialStruct', 'trialStruct', '-v7.3');
 
 %% make median responses
 for ss = 1:length(stimuli)
