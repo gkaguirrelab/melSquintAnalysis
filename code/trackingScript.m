@@ -192,7 +192,7 @@ sceneParams.UBp = [-8; 2; -3; cameraDepthMean+1*cameraDepthSD; 1.15; 1.05 ];
 sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
 fitParams = defaultFitParams;
-fitParams.glintFrameMask = [200 600 250 400];
+fitParams.glintFrameMask = [180 600 250 400];
 
 
 
@@ -432,7 +432,7 @@ cameraDepthSD = 1.4; % just a value on the order of what depthFromIrisDiameter w
 fitParams = defaultFitParams;
 
 
-for ss = 4:4
+for ss = 1:4
     pathParams.session = ['2018-05-04_session_', num2str(ss)];
     if ss == 1
         fitParams.glintFrameMask = [300 500 200 500];
