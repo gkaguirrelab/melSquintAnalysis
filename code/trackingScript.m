@@ -36,6 +36,7 @@ defaultFitParams.glintPatchRadius = 35;
 defaultFitParams.ellipseTransparentUB = [1280, 720, 90000, 0.6, pi];
 defaultFitParams.ellipseTransparentLB = [0, 0, 1000, 0, 0];
 defaultFitParams.constraintTolerance = 0.03;
+defaultFitParams.minRadiusProportion = 0;
 defaultFitParams.makeFitVideoByNumber = [3 6 8];
 defaultFitParams.overwriteControlFile = true;
 defaultFitParams.resume = false;
@@ -241,6 +242,8 @@ fitParams.ellipseTransparentUB = [1280,720,90000,0.2,pi];
 fitParams.pupilFrameMask = [100 400 150 300];
 fitParams.maskBox = [3 3];
 fitParams.badFrameErrorThreshold = 10;
+fitParams.minRadiusProportion = -0.5;
+fitParams.cutErrorThreshold = 4;
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 %% MELA_0127
