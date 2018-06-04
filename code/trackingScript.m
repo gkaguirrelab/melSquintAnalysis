@@ -312,6 +312,8 @@ fitParams = defaultFitParams;
 fitParams.ellipseTransparentUB = [1280, 720, 90000, 0.2, pi];
 fitParams.glintFrameMask = [250 400 250 400];
 fitParams.pupilFrameMask = [150 420 200 400];
+fitParams.minRadiusProportion = -0.5;
+fitParams.cutErrorThreshold = 4;
 
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
