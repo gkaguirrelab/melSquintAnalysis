@@ -420,6 +420,34 @@ fitParams.glintPatchRadius = 55;
 
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
+%% MELA_0140
+pathParams.subject = 'MELA_0140';
+pathParams.protocol = 'Screening';
+pathParams.session = '2018-06-05_session_1';
+pathParams.eyeLaterality = 'left';
+
+cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', pathParams.protocol, 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
+cameraDepthMean = cameraDepthMean.distanceFromCornealApexToIRLens;
+cameraDepthSD = 1.4; % just a value on the order of what depthFromIrisDiameter would provide
+
+
+% Set up scene parameter bounds
+sceneParams.LB = [-15; 1; -5; cameraDepthMean-2*cameraDepthSD; .75; 0.9];
+sceneParams.LBp = [-12; 1.5; -4; cameraDepthMean-1*cameraDepthSD; .85; 0.95];
+sceneParams.UBp = [-8; 2; -3; cameraDepthMean+1*cameraDepthSD; 1.15; 1.05 ];
+sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
+
+fitParams = defaultFitParams;
+fitParams.glintFrameMask = [300 550 250 500];
+fitParams.pupilFrameMask = [100 350 150 300];
+fitParams.pupilCircleThresh = 0.04;
+fitParams.pupilRange = [100 200];
+fitParams.maskBox = [1 1];
+
+
+
+
+pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 %% SQUINT TO PULSE DATA
 %% MELA_0130
 
