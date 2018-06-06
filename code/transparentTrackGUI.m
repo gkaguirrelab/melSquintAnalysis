@@ -1,4 +1,4 @@
-function [ initialParameters ] = transparentTrackGUI(grayVideoName, varargin)
+function [ initialParams ] = transparentTrackGUI(grayVideoName, varargin)
 
 %% Input parser
 p = inputParser; p.KeepUnmatched = true;
@@ -35,8 +35,21 @@ p.parse(grayVideoName, varargin{:})
 
 %% Load up the frame of interest
 videoInObj = VideoReader(grayVideoName);
-thisFrame = readFrame(videoInObj);
-thisFrame = squeeze(thisFrame);
+nFrames = floor(videoInObj.Duration*videoInObj.FrameRate);
+videoSizeX = videoInObj.Width;
+videoSizeY = videoInObj.Height;
+grayVideo = zeros(videoSizeY,videoSizeX,nFrames,'uint8');
+
+
+%thisFrame = readFrame(videoInObj);
+%thisFrame = squeeze(thisFrame);
+for ii = 1:nFrames
+        thisFrame = readFrame(videoInObj);
+%        thisFrame = imadjust(thisFrame,[],[],p.Results.glintGammaCorrection);
+        grayVideo(:,:,ii) = rgb2gray (thisFrame);
+end
+
+thisFrame = squeeze(grayVideo(:,:,p.Results.frameNumber));
 
 % open video file, if asked
 if p.Results.openVideo
@@ -44,8 +57,7 @@ if p.Results.openVideo
 end
 
 % present the video frame
-videoSizeX = videoInObj.Width;
-videoSizeY = videoInObj.Height;
+
 figure;
 imshow(thisFrame, 'Border', 'tight')
 hold on
@@ -123,7 +135,8 @@ pupilMask = insertShape(pupilMask,'FilledCircle',[explicitEllipseFitParams(1) ex
 %binarize the mask
 pupilMask = im2bw(pupilMask);
 % conver thisFrame so we can do some math with it
-thisFrameRGB = rgb2gray(thisFrame);
+%thisFrameRGB = rgb2gray(thisFrame);
+thisFrameRGB = thisFrame;
 
 % apply the pupilMask to the image, which gives us just the maskedPupil
 maskedPupil = immultiply(thisFrameRGB,pupilMask);
@@ -163,7 +176,8 @@ maskedIrisNaN(maskedIris == 0) = NaN;
 thisFrameMasked = imadjust(thisFrame,[],[],p.Results.pupilGammaCorrection);
 
 % conver to grayscale
-thisFrameMasked = rgb2gray(thisFrameMasked);
+%thisFrameMasked = rgb2gray(thisFrameMasked);
+
 % make the image, according to pupilFrameMask
 thisFrameMasked((1:initialParams.pupilFrameMask(1)),:) = p.Results.frameMaskValue; %top
 thisFrameMasked(:, (end - initialParams.pupilFrameMask(2):end)) = p.Results.frameMaskValue; %left
