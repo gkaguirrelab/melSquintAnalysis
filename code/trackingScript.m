@@ -64,8 +64,14 @@ sceneParams.UBp = [-8; 2; -3; cameraDepthMean+1*cameraDepthSD; 1.15; 1.05 ];
 sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
 fitParams = defaultFitParams;
-fitParams.glintFrameMask = [300 600 250 400];
-fitParams.pupilFrameMask = [200 450 150 300];
+% fitParams.glintFrameMask = [300 600 250 400];
+% fitParams.pupilFrameMask = [200 450 150 300];
+fitParams.pupilFrameMask = [176.6201 552.9986 183.7526 357.2165];
+          fitParams.pupilRange = [round(107.8882) round(131.8633)];
+       fitParams.glintFrameMask = [307 716.5000 286 463.5000];
+    fitParams.pupilCircleThresh = 0.0480;
+
+
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 
@@ -153,6 +159,10 @@ sceneParams.UBp = [-8; 2; -3; cameraDepthMean+1*cameraDepthSD; 1.15; 1.05 ];
 sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
 fitParams = defaultFitParams;
+       fitParams.pupilFrameMask =  [225 541 254 490];
+           fitParams.pupilRange = [72 88];
+       fitParams.glintFrameMask = [280 617 316 563];
+    fitParams.pupilCircleThresh = 0.0180;
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 %% MELA_0120
@@ -438,14 +448,16 @@ sceneParams.UBp = [-8; 2; -3; cameraDepthMean+1*cameraDepthSD; 1.15; 1.05 ];
 sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
 fitParams = defaultFitParams;
-fitParams.glintFrameMask = [300 550 250 500];
-fitParams.pupilFrameMask = [100 350 150 300];
-fitParams.pupilCircleThresh = 0.04;
-fitParams.pupilRange = [100 200];
-fitParams.maskBox = [1 1];
+% fitParams.glintFrameMask = [300 550 250 500];
+% fitParams.pupilFrameMask = [100 350 150 300];
+% fitParams.pupilCircleThresh = 0.04;
+% fitParams.pupilRange = [100 200];
+% fitParams.maskBox = [1 1];
 
 
-
+       fitParams.pupilFrameMask= [174.7702 383.4261 171.3281 511.5843];
+       fitParams.glintFrameMask= [307 559 282 621];
+    fitParams.pupilCircleThresh= 0.0470;
 
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 %% SQUINT TO PULSE DATA
@@ -595,3 +607,5 @@ for ss = 1:2
     sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
     pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 end
+
+%%
