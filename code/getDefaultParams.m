@@ -40,6 +40,7 @@ if strcmp(p.Results.approach, 'Squint')
     fitParams.minRadiusProportion = 0;
     fitParams.makeFitVideoByNumber = [3 6 8];
     fitParams.overwriteControlFile = true;
+    fitParams.frameMaskValue = 220;
     fitParams.resume = false;
     
     cameraParams.intrinsicCameraMatrix =  [1347.76, 0, 658.90; ...
