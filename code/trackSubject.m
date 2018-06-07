@@ -6,6 +6,7 @@ p = inputParser; p.KeepUnmatched = true;
 p.addParameter('approach', 'Squint' ,@isstr);
 p.addParameter('protocol', 'SquintToPulse' ,@isstr);
 p.addParameter('resume', false, @islogical);
+p.addParameter('skipProcessing', false, @islogical);
 
 p.parse(varargin{:})
 
@@ -42,14 +43,20 @@ if ~p.Results.resume
     fitParams.pupilCircleThresh = initialParams.pupilCircleThresh;
     
     % save the new params
+    
+    if ~exist(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID), 'dir')
+        mkdir(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID));
+    end
     save(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, 'fitParams.mat'),'fitParams', '-v7.3');
 else
     load(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, 'fitParams.mat'));
     fitParams.resume = true;
 end
 
-% do the tracking
-pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
+if ~p.Results.skipProcessing
+    % do the tracking
+    pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
+end
 
 
 
