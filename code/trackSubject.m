@@ -39,6 +39,10 @@ fitParams.pupilRange = initialParams.pupilRange;
 fitParams.glintFrameMask = initialParams.glintFrameMask;
 fitParams.pupilCircleThresh = initialParams.pupilCircleThresh;
 
+% save the new params
+save(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, 'fitParams.mat'),'fitParams', '-v7.3');
+
+
 % do the tracking
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
 
