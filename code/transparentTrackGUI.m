@@ -18,7 +18,7 @@ p.addParameter('openVideo',true,@islogical);
 p.addParameter('ellipseTransparentUB', [1280, 720, 90000, 0.6, pi], @isnumeric);
 p.addParameter('ellipseTransparentLB', [0, 0, 1000, 0, 0], @isnumeric);
 p.addParameter('pupilMaskShrinkFactor', 0.9, @isnumeric);
-p.addParameter('pupilMaskDilationFactor', 1.5, @isnumeric);
+p.addParameter('pupilMaskDilationFactor', 4, @isnumeric);
 p.addParameter('pupilRangeDilator', 1.1, @isnumeric);
 p.addParameter('pupilRangeContractor', 0.9, @isnumeric);
 p.addParameter('innerDilationFactor', 1.1, @isnumeric);
