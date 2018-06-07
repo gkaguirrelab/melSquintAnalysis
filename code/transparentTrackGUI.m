@@ -30,6 +30,8 @@ p.addParameter('outerDilationFactor', 1.3, @isnumeric);
 p.addParameter('potentialThreshValues', [0.001:0.001:0.2], @isnumeric);
 p.addParameter('intensityDividerComputeMethod', 'irisMaskMinimum', @isstr);
 p.addParameter('glintMaskPaddingFactor', 50, @isnumeric);
+p.addParameter('intensityDivider', [], @isnumeric);
+
 
 % parse
 p.parse(grayVideoName, varargin{:})
@@ -315,17 +317,21 @@ pI = pI(size(I,1)/2+1:size(I,1)/2+size(I,1),size(I,2)/2+1:size(I,2)/2+size(I,2))
 
 % figure out the intensity value that differentiates the pupil from the
 % iris
-if strcmp(p.Results.intensityDividerComputeMethod, 'mean')
-    % one way to do so is to take the average of the values corresponding
-    % to the pupil and iris, such that our dividing point is somewhere in
-    % between
-    intensityDivider = nanmean([maskedPupilNaN(:); maskedIrisNaN(:)]);
-elseif strcmp(p.Results.intensityDividerComputeMethod, 'irisMaskMinimum')
-    % alternatively, we can take the dividing point as the minimum value
-    % observed in the iris
-    intensityDivider = min(maskedIrisNaN(:));
+if isempty(p.Results.intensityDivider)
+    if strcmp(p.Results.intensityDividerComputeMethod, 'mean')
+        % one way to do so is to take the average of the values corresponding
+        % to the pupil and iris, such that our dividing point is somewhere in
+        % between
+        intensityDivider = nanmean([maskedPupilNaN(:); maskedIrisNaN(:)]);
+    elseif strcmp(p.Results.intensityDividerComputeMethod, 'irisMaskMinimum')
+        % alternatively, we can take the dividing point as the minimum value
+        % observed in the iris
+        intensityDivider = min(maskedIrisNaN(:));
+    else
+        warning('Intensity divider compute method not found. Please use either ''mean'' or ''irisMaskMinimum''')
+    end
 else
-    warning('Intensity divider compute method not found. Please use either ''mean'' or ''irisMaskMinimum''')
+    intensityDivider = p.Results.intensityDivider;
 end
 
 % i don't know of an analytical way to solve this quantile function, so
