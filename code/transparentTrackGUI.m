@@ -327,6 +327,23 @@ if isempty(p.Results.intensityDivider)
         % alternatively, we can take the dividing point as the minimum value
         % observed in the iris
         intensityDivider = min(maskedIrisNaN(:));
+    elseif strcmp(p.Results.intensityDividerComputeMethod, 'manual')
+        plotFig = figure;
+        set(gcf,'un','n','pos',[.05,.05,.7,.6])
+        axesP = axes('Parent', plotFig);
+        hold on
+        h1 = histogram(maskedIrisNaN);
+        h2 = histogram(maskedPupilNaN);
+        
+        textYlocation = 1.1*max([h1.Values, h2.Values]);
+        legend('Iris', 'Pupil')
+        xlabel('Pixel Intensity')
+        ylabel('Count')
+        string = sprintf('Click once to choose the pixel intensity that best differentiates pupil from iris.');
+        hText = text(1,textYlocation, string, 'FontSize', 16, 'BackgroundColor', 'white');
+        [x,y] = ginput(1);
+        intensityDivider = x;
+        close(plotFig);
     else
         warning('Intensity divider compute method not found. Please use either ''mean'' or ''irisMaskMinimum''')
     end
@@ -343,6 +360,27 @@ for xx = p.Results.potentialThreshValues
     counter = counter+1;
 end
 [minValue, potentialIndices] = min(abs(y-intensityDivider));
+
+if (min(potentialIndices)-1) < 1 || (min(potentialIndices)-1) > length(p.Results.potentialThreshValues)
+    fprintf('Attempt to determine pupilCircleThresh failed. Try again manually')
+    plotFig = figure;
+    set(gcf,'un','n','pos',[.05,.05,.7,.6])
+    axesP = axes('Parent', plotFig);
+    hold on
+    h1 = histogram(maskedIrisNaN);
+    h2 = histogram(maskedPupilNaN);
+    
+    textYlocation = 1.1*max([h1.Values, h2.Values]);
+    legend('Iris', 'Pupil')
+    xlabel('Pixel Intensity')
+    ylabel('Count')
+    string = sprintf('Click once to choose the pixel intensity that best differentiates pupil from iris.');
+    hText = text(1,textYlocation, string, 'FontSize', 16, 'BackgroundColor', 'white');
+    [x,y] = ginput(1);
+    intensityDivider = x;
+    close(plotFig);
+end
+ 
 
 pupilCircleThresh = p.Results.potentialThreshValues(min(potentialIndices)-1);
 initialParams.pupilCircleThresh = pupilCircleThresh;
