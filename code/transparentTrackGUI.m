@@ -94,6 +94,23 @@ figure;
 imshow(thisFrame, 'Border', 'tight')
 hold on
 
+if p.Results.frameNumber ==1
+    frameCheckChoice = GetWithDefault('>> Is this a good frame? Enter ''y'' to proceed, or ''n'' to choose new frame. [y/n]', 'y');
+    if strcmp(frameCheckChoice, 'n')
+        close all
+        frameRequest = GetWithDefault('>> Enter desired frame:', 1);
+        thisFrame = squeeze(grayVideo(:,:,frameRequest));
+        figure;
+        imshow(thisFrame, 'Border', 'tight');
+        hold on
+    end
+end
+
+
+
+
+
+
 %% Guess initial pupil position
 % begin user input
 fprintf('Define pupil boundary in figure.\n')
