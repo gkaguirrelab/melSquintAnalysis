@@ -5,6 +5,7 @@ p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('approach', 'Squint' ,@isstr);
 p.addParameter('protocol', 'SquintToPulse' ,@isstr);
+p.addParameter('resume', false, @islogical);
 
 p.parse(varargin{:})
 
@@ -27,21 +28,25 @@ sceneParams.LBp = [-12; 1.5; -4; cameraDepthMean-1*cameraDepthSD; .85; 0.95];
 sceneParams.UBp = [-8; 2; -3; cameraDepthMean+1*cameraDepthSD; 1.15; 1.05 ];
 sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
-% grab trial list
-[runNamesList, subfoldersList] = getTrialList(pathParams, varargin{:});
-
-grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfoldersList{1}, runNamesList{1});
-
-[initialParams] = transparentTrackGUI(grayVideoName, varargin{:});
-% incorporate new initialParams
-fitParams.pupilFrameMask = initialParams.pupilFrameMask;
-fitParams.pupilRange = initialParams.pupilRange;
-fitParams.glintFrameMask = initialParams.glintFrameMask;
-fitParams.pupilCircleThresh = initialParams.pupilCircleThresh;
-
-% save the new params
-save(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, 'fitParams.mat'),'fitParams', '-v7.3');
-
+if ~p.Results.resume
+    % grab trial list
+    [runNamesList, subfoldersList] = getTrialList(pathParams, varargin{:});
+    
+    grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfoldersList{1}, runNamesList{1});
+    
+    [initialParams] = transparentTrackGUI(grayVideoName, varargin{:});
+    % incorporate new initialParams
+    fitParams.pupilFrameMask = initialParams.pupilFrameMask;
+    fitParams.pupilRange = initialParams.pupilRange;
+    fitParams.glintFrameMask = initialParams.glintFrameMask;
+    fitParams.pupilCircleThresh = initialParams.pupilCircleThresh;
+    
+    % save the new params
+    save(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, 'fitParams.mat'),'fitParams', '-v7.3');
+else
+    load(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, 'fitParams.mat'));
+    fitParams.resume = true;
+end
 
 % do the tracking
 pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
