@@ -166,7 +166,7 @@ if ~strcmp(pupilCheckChoice, 'y')
         axis off;
         
         pupilCheckChoice = GetWithDefault('>> Satisfied with ellipse fit? Enter ''y'' to proceed, or ''n'' to redraw. [y/n]', 'y');
-      
+        
         switch pupilCheckChoice
             case 'y'
                 pupilEllipseDoneFlag = true;
@@ -195,6 +195,14 @@ initialParams.pupilFrameMask = [round(explicitEllipseFitParams(2)-explicitEllips
     round(videoSizeY - (explicitEllipseFitParams(2)+explicitEllipseFitParams(4)*p.Results.pupilMaskDilationFactor)) ...
     round(explicitEllipseFitParams(1)-explicitEllipseFitParams(3)*p.Results.pupilMaskDilationFactor)];
 
+% make sure that pupilFrameMask is actually within the window
+for ii = 1:4
+    if initialParams.pupilFrameMask(ii) < 1
+        initialParams.pupilFrameMask(ii) = 1;
+    end
+end
+
+
 %% Figure out initial pupil range
 % make the lower bound a little smaller, and upper bound bigger, than the
 % user-inputted pupil ellipse
@@ -211,14 +219,14 @@ gHandle = plot(x ,y, '+', 'Color', 'red');
 % ask if we need to redo glint placement
 glintCheckChoice = GetWithDefault('>> Satisfied with glint locations? Enter ''y'' to proceed, or ''n'' to redraw. [y/n]', 'y');
 if ~strcmp(glintCheckChoice, 'y')
-    delete(gHandle);   
+    delete(gHandle);
     glintDoneFlag = false;
     while ~glintDoneFlag
         string = sprintf('Define the glint position by clicking each of the %d glints.', numberOfGlints);
-                hText = text(1,10,string, 'FontSize', 16, 'BackgroundColor', 'white');
-                [x,y] = ginput(2);
-                gHandle = plot(x ,y, '+', 'Color', 'red');
-                glintCheckChoice = GetWithDefault('>> Satisfied with glint locations? Enter ''y'' to proceed, or ''n'' to redraw. [y/n]', 'y');
+        hText = text(1,10,string, 'FontSize', 16, 'BackgroundColor', 'white');
+        [x,y] = ginput(2);
+        gHandle = plot(x ,y, '+', 'Color', 'red');
+        glintCheckChoice = GetWithDefault('>> Satisfied with glint locations? Enter ''y'' to proceed, or ''n'' to redraw. [y/n]', 'y');
         switch glintCheckChoice
             case 'y'
                 glintDoneFlag = true;
@@ -242,6 +250,14 @@ initialParams.glintFrameMask = [round(glintYPositionUpper - p.Results.glintMaskP
     round(videoSizeX - (glintXPosition + p.Results.glintMaskPaddingFactor)) ...
     round(videoSizeY - (glintYPositionLower + p.Results.glintMaskPaddingFactor)) ...
     round(glintXPosition - p.Results.glintMaskPaddingFactor)];
+% make sure that glintFrameMask is actually within the window
+for ii = 1:4
+    if initialParams.glintFrameMask(ii) < 1
+        initialParams.glintFrameMask(ii) = 1;
+    end
+end
+
+
 close all
 
 %% Figure out the pupilCircleThresh
@@ -328,6 +344,8 @@ if isempty(p.Results.intensityDivider)
         % observed in the iris
         intensityDivider = min(maskedIrisNaN(:));
     elseif strcmp(p.Results.intensityDividerComputeMethod, 'manual')
+        fprintf('Manually identify intensityDivider in figure window.\n')
+        
         plotFig = figure;
         set(gcf,'un','n','pos',[.05,.05,.7,.6])
         axesP = axes('Parent', plotFig);
@@ -345,7 +363,7 @@ if isempty(p.Results.intensityDivider)
         intensityDivider = x;
         close(plotFig);
     else
-        warning('Intensity divider compute method not found. Please use either ''mean'' or ''irisMaskMinimum''')
+        warning('Intensity divider compute method not found. Please use either ''mean'', ''manual'', or ''irisMaskMinimum''')
     end
 else
     intensityDivider = p.Results.intensityDivider;
@@ -356,13 +374,13 @@ end
 % closest to our intended intensityDivider
 counter = 1;
 for xx = p.Results.potentialThreshValues
-    y(counter) = quantile(double(pI(:)),xx);
+    yy(counter) = quantile(double(pI(:)),xx);
     counter = counter+1;
 end
-[minValue, potentialIndices] = min(abs(y-intensityDivider));
+[minValue, potentialIndices] = min(abs(yy-intensityDivider));
 
 if (min(potentialIndices)-1) < 1 || (min(potentialIndices)-1) > length(p.Results.potentialThreshValues)
-    fprintf('Attempt to determine pupilCircleThresh failed. Try again manually')
+    fprintf('Attempt to determine pupilCircleThresh failed. Try again manually\n')
     plotFig = figure;
     set(gcf,'un','n','pos',[.05,.05,.7,.6])
     axesP = axes('Parent', plotFig);
@@ -380,7 +398,7 @@ if (min(potentialIndices)-1) < 1 || (min(potentialIndices)-1) > length(p.Results
     intensityDivider = x;
     close(plotFig);
 end
- 
+
 
 pupilCircleThresh = p.Results.potentialThreshValues(min(potentialIndices)-1);
 initialParams.pupilCircleThresh = pupilCircleThresh;
