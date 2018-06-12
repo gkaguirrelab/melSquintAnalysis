@@ -38,7 +38,7 @@ if strcmp(p.Results.approach, 'Squint')
     fitParams.ellipseTransparentLB = [0, 0, 1000, 0, 0];
     fitParams.constraintTolerance = 0.03;
     fitParams.minRadiusProportion = 0;
-    fitParams.makeFitVideoByNumber = [3 6 8];
+    fitParams.makeFitVideoByNumber = [6 8];
     fitParams.overwriteControlFile = true;
     fitParams.frameMaskValue = 220;
     fitParams.resume = false;
