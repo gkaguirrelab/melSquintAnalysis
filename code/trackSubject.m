@@ -37,7 +37,7 @@ if ~p.Results.resume
     
     grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfoldersList{1}, runNamesList{1});
     
-    [initialParams] = transparentTrackGUI(grayVideoName, fitParams, varargin{:});
+    [initialParams] = transparentTrackGUI(grayVideoName, 'SquintToPulse', varargin{:});
     % incorporate new initialParams
     fitParams.pupilFrameMask = initialParams.pupilFrameMask;
     fitParams.pupilRange = initialParams.pupilRange;
