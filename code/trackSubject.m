@@ -37,12 +37,18 @@ if ~p.Results.resume
     
     grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfoldersList{1}, runNamesList{1});
     
-    [initialParams] = transparentTrackGUI(grayVideoName, 'SquintToPulse', varargin{:});
+    [initialParams] = estimatePipelineParamsGUI(grayVideoName, 'SquintToPulse', varargin{:});
     % incorporate new initialParams
     fitParams.pupilFrameMask = initialParams.pupilFrameMask;
     fitParams.pupilRange = initialParams.pupilRange;
     fitParams.glintFrameMask = initialParams.glintFrameMask;
     fitParams.pupilCircleThresh = initialParams.pupilCircleThresh;
+    if isfield(initialParams, 'maskBox')
+        fitParams.maskBox = initialParams.maskBox;
+    end
+    if isfield(initialParams, 'pupilGammaCorrection')
+        fitParams.pupilGammaCorrection = initialParams.pupilGammaCorrection;
+    end
     
     % save the new params
     
