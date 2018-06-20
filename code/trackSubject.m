@@ -58,12 +58,12 @@ if ~p.Results.resume
     save(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, 'fitParams.mat'),'fitParams', '-v7.3');
 else
     load(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, 'fitParams.mat'));
-    fitParams.resume = true;
+    pathParams.resume = true;
 end
 
 if ~p.Results.skipProcessing
     % do the tracking
-    pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams);
+    pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams, varargin{:});
 end
 
 
