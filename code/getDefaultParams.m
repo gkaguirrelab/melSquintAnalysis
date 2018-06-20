@@ -17,6 +17,8 @@ if strcmp(p.Results.approach, 'Squint')
     pathParams.verbose = true;
     pathParams.useParallel = true;
     pathParams.eyeLaterality = 'left';
+    pathParams.resume = false;
+
     
     pathParams.dataSourceDirFull = fullfile(pathParams.dataBasePath,'Experiments','OLApproach_Squint',p.Results.protocol,'DataFiles');
     pathParams.dataOutputDirBase = fullfile(pathParams.analysisBasePath,'Experiments','OLApproach_Squint',p.Results.protocol,'DataFiles');
@@ -38,10 +40,9 @@ if strcmp(p.Results.approach, 'Squint')
     fitParams.ellipseTransparentLB = [0, 0, 1000, 0, 0];
     fitParams.constraintTolerance = 0.03;
     fitParams.minRadiusProportion = 0;
-    fitParams.makeFitVideoByNumber = [6 8];
+    fitParams.makeFitVideoByNumber = [6];
     fitParams.overwriteControlFile = true;
     fitParams.frameMaskValue = 220;
-    fitParams.resume = false;
     
     cameraParams.intrinsicCameraMatrix =  [1347.76, 0, 658.90; ...
                                             0, 1345.48, 365.68; ...
