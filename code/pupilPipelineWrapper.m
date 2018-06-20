@@ -1,70 +1,50 @@
 function pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams, varargin)
 
+%% Input parser
+p = inputParser; p.KeepUnmatched = true;
 
-%
-% 'pupilFrameMask', [100 400 240 300]
+p.addParameter('approach', 'Squint' ,@isstr);
+p.addParameter('protocol', 'SquintToPulse' ,@isstr);
 
-pathParams.dataSourceDirFull = fullfile(pathParams.dataBasePath,'Experiments','OLApproach_Squint',pathParams.protocol,'DataFiles');
-pathParams.dataOutputDirBase = fullfile(pathParams.analysisBasePath,'Experiments','OLApproach_Squint',pathParams.protocol,'DataFiles');
+p.parse(varargin{:})
 
- 
+%% Get the list of trials for the relevant protocol
 
+[pathParams.runNames, subfolders] = getTrialList(pathParams, 'protocol', p.Results.protocol);
 
-
-% figure out the relevant calibration video -- we want the last one created
-% first see if any were made after the session. if so, that's the one we
-% want
-potentialCalibrationVideos = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, 'pupilCalibration', '*post.mp4'));
-if ~isempty(potentialCalibrationVideos)
-    calibrationRunName = [potentialCalibrationVideos(end).name];
-    calibrationSubfolder = 'pupilCalibration';
-else
-    potentialCalibrationVideos = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, 'pupilCalibration', '*.mp4'));
-    calibrationRunName = [potentialCalibrationVideos(end).name];
-    calibrationSubfolder = 'pupilCalibration';
-end
-
-% now figure out the paths of the pulse trial videos
-if strcmp(pathParams.protocol, 'Screening')
-    for ii = 1:12
-        runNames{ii} = sprintf('trial_%03d.mp4',ii);
-        trialsSubfolders{ii} = 'videoFiles_acquisition_01';
-    end
-end
-
-counter = 1;
-if strcmp(pathParams.protocol, 'SquintToPulse')
-    for aa = 1:6
-        for ii = 1:10
-            runNames{counter} = sprintf('trial_%03d.mp4', ii);
-            trialsSubfolders{counter} = sprintf('videoFiles_acquisition_%02d', aa);
-            counter = counter + 1;
-        end
-    end
-end
-
-%package all of the runNames up so now we have a list of all of the video
-pathParams.runNames = [runNames, calibrationRunName];
-subfolders = [trialsSubfolders, calibrationSubfolder];
-
-% if we're resuming the analysis, figure out which trial we're resuming on
-if ~fitParams.resume
+%% if we're resuming the analysis, figure out which trial we're resuming on
+if ~pathParams.resume
     firstRunIndex = 1;
-else
-    
+else    
     sessions = [];
-    for rr = 1:length(pathParams.runNames)
-        
-        if ~exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfolders{rr}, [runNames{rr}(1:end-4), '_pupil.mat']), 'file')
+    for rr = 1:length(pathParams.runNames)        
+        if ~exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfolders{rr}, [pathParams.runNames{rr}(1:end-4), '_pupil.mat']), 'file')
             firstRunIndex = rr;
             break
-        end
-        
-    end
-    
+        end        
+    end 
 end
 
+%% assemble the fit params cell array
+% most runs will be processed according by the same fitParams, so prepare a
+% cell array that lists these fitParams for each run
+load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, 'fitParams.mat'));
+for rr = 1:length(pathParams.runNames)
+    fitParamsCellArray{rr} = fitParams;
+end
+% however, some runs might benefit from different params. for these runs,
+% swap the relevant fitParams in place of the default fitParams
+for rr = 1:length(pathParams.runNames)
+    if exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfolders{rr}, ['fitParams_', pathParams.runNames{rr}(1:end-4), '.mat']), 'file')
+        fitParams_new = load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfolders{rr}, ['fitParams_', pathParams.runNames{rr}(1:end-4), '.mat']));
+        fitParamsCellArray{rr} = fitParams_new;
+    end
+end
+
+fitParams = [];
+%% Run the video pipeline
 for rr = firstRunIndex:length(pathParams.runNames)
+    fitParams = fitParamsCellArray{rr};
     fprintf('Analyzing subject %s, session %s, acquisition %s, %s\n', pathParams.subject, pathParams.session, subfolders{rr}(end-1:end), pathParams.runNames{rr}(1:end-4));
 
     pathParams.grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfolders{rr}, pathParams.runNames{rr});
