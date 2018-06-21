@@ -29,9 +29,9 @@ end
 % most runs will be processed according by the same fitParams, so prepare a
 % cell array that lists these fitParams for each run
 if exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, 'fitParams.mat'), 'file')
-    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, 'fitParams.mat'));
+    fitParams_new = load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, 'fitParams.mat'));
     for rr = 1:length(pathParams.runNames)
-        fitParamsCellArray{rr} = fitParams;
+        fitParamsCellArray{rr} = fitParams_new;
     end
 end
 
