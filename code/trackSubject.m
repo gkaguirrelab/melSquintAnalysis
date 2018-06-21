@@ -47,39 +47,27 @@ if ~p.Results.resume
         grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfoldersList{tt}, runNamesList{tt});
         
         [initialParams] = estimatePipelineParamsGUI(grayVideoName, 'SquintToPulse', varargin{:});
+        
         % incorporate new initialParams
         initialParamsFieldNames = fieldnames(initialParams);
         for ff = 1:length(initialParamsFieldNames)
             fitParams.(initialParamsFieldNames{ff}) = initialParams.(initialParamsFieldNames{ff});
         end
         
-    
-        %fitParams.pupilFrameMask = initialParams.pupilFrameMask;
-        %fitParams.pupilRange = initialParams.pupilRange;
-        %fitParams.glintFrameMask = initialParams.glintFrameMask;
-        %fitParams.pupilCircleThresh = initialParams.pupilCircleThresh;
-        %if isfield(initialParams, 'maskBox')
-        %    fitParams.maskBox = initialParams.maskBox;
-        %end
-        %if isfield(initialParams, 'pupilGammaCorrection')
-        %    fitParams.pupilGammaCorrection = initialParams.pupilGammaCorrection;
-        %end
-        
-        % save the new params
-        
-        if ~exist(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID), 'dir')
-            mkdir(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID));
+
+        % save the new params        
+        if ~exist(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, subfoldersList{tt}), 'dir')
+            mkdir(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, subfoldersList{tt}));
         end
         save(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, subfoldersList{tt}, 'fitParams.mat'),'fitParams', '-v7.3');
     end
 else
-    load(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, 'fitParams.mat'));
     pathParams.resume = true;
 end
 
 if ~p.Results.skipProcessing
     % do the tracking
-    pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams, varargin{:});
+    pupilPipelineWrapper(pathParams, sceneParams, cameraParams, varargin{:});
 end
 
 

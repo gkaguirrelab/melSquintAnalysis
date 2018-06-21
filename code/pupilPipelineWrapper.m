@@ -1,4 +1,4 @@
-function pupilPipelineWrapper(pathParams, sceneParams, cameraParams, fitParams, varargin)
+function pupilPipelineWrapper(pathParams, sceneParams, cameraParams, varargin)
 
 %% Input parser
 p = inputParser; p.KeepUnmatched = true;
@@ -28,10 +28,32 @@ end
 %% assemble the fit params cell array
 % most runs will be processed according by the same fitParams, so prepare a
 % cell array that lists these fitParams for each run
-load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, 'fitParams.mat'));
-for rr = 1:length(pathParams.runNames)
-    fitParamsCellArray{rr} = fitParams;
+if exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, 'fitParams.mat'), 'file')
+    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, 'fitParams.mat'));
+    for rr = 1:length(pathParams.runNames)
+        fitParamsCellArray{rr} = fitParams;
+    end
 end
+
+if strcmp(pathParams.protocol, 'SquintToPulse')
+    for aa = 1:7
+        if exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfolders{(aa-1)*10+1}, ['fitParams.mat']), 'file')
+            fitParams_new = load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfolders{(aa-1)*10+1}, ['fitParams.mat']));
+            if aa ~= 7
+                relevantIndices = [((aa-1)*10+1):(aa*10)];
+            else
+                relevantIndices = [61];
+            end
+            for rr = relevantIndices
+                
+                
+                
+                fitParamsCellArray{rr} = fitParams_new;
+            end
+        end
+    end
+end
+
 % however, some runs might benefit from different params. for these runs,
 % swap the relevant fitParams in place of the default fitParams
 for rr = 1:length(pathParams.runNames)
@@ -44,7 +66,7 @@ end
 fitParams = [];
 %% Run the video pipeline
 for rr = firstRunIndex:length(pathParams.runNames)
-    fitParams = fitParamsCellArray{rr};
+    fitParams = fitParamsCellArray{rr}.fitParams;
     fprintf('Analyzing subject %s, session %s, acquisition %s, %s\n', pathParams.subject, pathParams.session, subfolders{rr}(end-1:end), pathParams.runNames{rr}(1:end-4));
 
     pathParams.grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfolders{rr}, pathParams.runNames{rr});
