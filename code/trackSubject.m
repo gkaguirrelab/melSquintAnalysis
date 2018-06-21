@@ -11,15 +11,16 @@ p.addParameter('skipProcessing', false, @islogical);
 p.parse(varargin{:})
 
 % grab generic info
-[ fitParams, cameraParams, pathParams ] = getDefaultParams(varargin{:});
+[ defaultFitParams, cameraParams, pathParams ] = getDefaultParams(varargin{:});
 
 
 pathParams.subject = subjectID;
 pathParams.protocol = p.Results.protocol;
 pathParams.session = sessionID;
 
-cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', pathParams.protocol, 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
-cameraDepthMean = cameraDepthMean.distanceFromCornealApexToIRLens;
+%cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', pathParams.protocol, 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
+%cameraDepthMean = cameraDepthMean.distanceFromCornealApexToIRLens;
+cameraDepthMean = 24;
 cameraDepthSD = 1.4; % just a value on the order of what depthFromIrisDiameter would provide
 
 
@@ -31,31 +32,46 @@ sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 
 % figure out if we're resuming a session, which dictates whether we're
 % figuring out the initialParameters
+if strcmp(p.Results.protocol, 'Screening')
+    trialsToEstimate = 1;
+elseif strcmp(p.Results.protocol, 'SquintToPulse')
+    trialsToEstimate = [2, 12, 22, 32, 42, 52, 61];
+end
+
 if ~p.Results.resume
     % grab trial list
-    [runNamesList, subfoldersList] = getTrialList(pathParams, varargin{:});
+    for tt = trialsToEstimate
+        fitParams = defaultFitParams;
+        [runNamesList, subfoldersList] = getTrialList(pathParams, varargin{:});
+        
+        grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfoldersList{tt}, runNamesList{tt});
+        
+        [initialParams] = estimatePipelineParamsGUI(grayVideoName, 'SquintToPulse', varargin{:});
+        % incorporate new initialParams
+        initialParamsFieldNames = fieldnames(initialParams);
+        for ff = 1:length(initialParamsFieldNames)
+            fitParams.(initialParamsFieldNames{ff}) = initialParams.(initialParamsFieldNames{ff});
+        end
+        
     
-    grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfoldersList{1}, runNamesList{1});
-    
-    [initialParams] = estimatePipelineParamsGUI(grayVideoName, 'SquintToPulse', varargin{:});
-    % incorporate new initialParams
-    fitParams.pupilFrameMask = initialParams.pupilFrameMask;
-    fitParams.pupilRange = initialParams.pupilRange;
-    fitParams.glintFrameMask = initialParams.glintFrameMask;
-    fitParams.pupilCircleThresh = initialParams.pupilCircleThresh;
-    if isfield(initialParams, 'maskBox')
-        fitParams.maskBox = initialParams.maskBox;
+        %fitParams.pupilFrameMask = initialParams.pupilFrameMask;
+        %fitParams.pupilRange = initialParams.pupilRange;
+        %fitParams.glintFrameMask = initialParams.glintFrameMask;
+        %fitParams.pupilCircleThresh = initialParams.pupilCircleThresh;
+        %if isfield(initialParams, 'maskBox')
+        %    fitParams.maskBox = initialParams.maskBox;
+        %end
+        %if isfield(initialParams, 'pupilGammaCorrection')
+        %    fitParams.pupilGammaCorrection = initialParams.pupilGammaCorrection;
+        %end
+        
+        % save the new params
+        
+        if ~exist(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID), 'dir')
+            mkdir(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID));
+        end
+        save(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, subfoldersList{tt}, 'fitParams.mat'),'fitParams', '-v7.3');
     end
-    if isfield(initialParams, 'pupilGammaCorrection')
-        fitParams.pupilGammaCorrection = initialParams.pupilGammaCorrection;
-    end
-    
-    % save the new params
-    
-    if ~exist(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID), 'dir')
-        mkdir(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID));
-    end
-    save(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, 'fitParams.mat'),'fitParams', '-v7.3');
 else
     load(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, 'fitParams.mat'));
     pathParams.resume = true;
