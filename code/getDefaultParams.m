@@ -33,7 +33,7 @@ if strcmp(p.Results.approach, 'Squint')
     fitParams.pupilCircleThresh = 0.05;
     fitParams.pupilGammaCorrection = 0.7;
     fitParams.maskBox = [2 2];
-    fitParams.cutErrorThreshold = 10;
+    fitParams.cutErrorThreshold = 4;
     fitParams.badFrameErrorThreshold = 6;
     fitParams.glintPatchRadius = 35;
     fitParams.ellipseTransparentUB = [1280, 720, 90000, 0.6, pi];
@@ -43,6 +43,9 @@ if strcmp(p.Results.approach, 'Squint')
     fitParams.makeFitVideoByNumber = [6];
     fitParams.overwriteControlFile = true;
     fitParams.frameMaskValue = 220;
+    fitParams.candidateThetas = 0:pi/16:2*pi;
+    fitParams.minRadiusProportion = -0.5;
+    fitParams.glintPatchRadius = 40;
     
     cameraParams.intrinsicCameraMatrix =  [1347.76, 0, 658.90; ...
                                             0, 1345.48, 365.68; ...
