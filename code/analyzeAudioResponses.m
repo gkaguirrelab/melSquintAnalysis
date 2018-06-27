@@ -209,8 +209,8 @@ for ii = startingIndex:totalTrials
     % pool the results
     nItems = length((trialStruct.(directionName).(['Contrast', contrast])));
     trialStruct.(directionName).(['Contrast', contrast])(nItems+1) = str2num(discomfortRating);
-    if ~exist(outDir, 'dir')
-            mkdir(outDir);
+    if ~exist(fullfile(analysisBasePath), 'dir')
+            mkdir(fullfile(analysisBasePath));
     end
     save(fullfile(analysisBasePath, 'audioTrialStruct.mat'), 'trialStruct', 'trialStruct', '-v7.3');
     
