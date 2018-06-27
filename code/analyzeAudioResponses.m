@@ -122,6 +122,7 @@ for ss = 1:potentialNumberOfSessions
 end
 
 completedSessions = sessions;
+nSessions = length(completedSessions);
 % get session IDs
 sessionIDs = [];
 for ss = completedSessions
@@ -154,11 +155,11 @@ else
     
 end
 
-totalTrials = p.Results.nTrials * p.Results.nAcquisitions * p.Results.nSessions;
+totalTrials = p.Results.nTrials * p.Results.nAcquisitions * nSessions;
 
 for ii = startingIndex:totalTrials
     
-    [ss, aa, tt] = ind2sub([4;6;10], ii);
+    [ss, aa, tt] = ind2sub([nSessions;6;10], ii);
     
     
     
@@ -208,6 +209,9 @@ for ii = startingIndex:totalTrials
     % pool the results
     nItems = length((trialStruct.(directionName).(['Contrast', contrast])));
     trialStruct.(directionName).(['Contrast', contrast])(nItems+1) = str2num(discomfortRating);
+    if ~exist(outDir, 'dir')
+            mkdir(outDir);
+    end
     save(fullfile(analysisBasePath, 'audioTrialStruct.mat'), 'trialStruct', 'trialStruct', '-v7.3');
     
     
