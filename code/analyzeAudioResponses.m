@@ -24,6 +24,13 @@ function [medianResponseStruct, trialStruct] = analyzeAudioResponses(subjectID, 
 %                           started analyzing this subject. It then finds
 %                           the saved intermediate data, and resumes from
 %                           the trial left off.
+%   repeat                - A logical statement. If false, which is the
+%                           default behavior, the name of the saved output
+%                           will be audioTrialStruct.mat. If true, the name
+%                           of the saved output will be
+%                           audioTrialStruct_repetition.mat. This
+%                           functionality has been added so we can have
+%                           more than one rating of the same subject.
 
 % Outputs:
 %   medianResponseStruct - A 3x1 structure, where each subfield
@@ -66,6 +73,7 @@ function [medianResponseStruct, trialStruct] = analyzeAudioResponses(subjectID, 
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('resume',false,@islogical);
+p.addParameter('repeat',false,@islogical);
 p.addParameter('nTrials',10,@isnumeric);
 p.addParameter('nAcquisitions',6,@isnumeric);
 p.addParameter('nSessions',4,@isnumeric);
@@ -83,6 +91,12 @@ p.parse(varargin{:});
 %% Find the data
 analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
+% figure out filename of trialStruct
+if (p.Results.repeat)
+    fileName = 'audioTrialStruct_repetition.mat';
+else
+    fileName = 'audioTrialStruct.mat';
+end
 
 % figure out the number of completed sessions
 potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, '*session*'));
@@ -141,7 +155,7 @@ end
 %% Load in the data for each session
 % figure out where we're starting from
 if p.Results.resume
-    load(fullfile(analysisBasePath, 'audioTrialStruct.mat'))
+    load(fullfile(analysisBasePath, fileName))
     %     startingSession = trialStruct.metaData.session;
     %     startingAcquisition = trialStruct.metaData.acquisition;
     %     startingTrial = trialStruct.metaData.trial + 1;
@@ -187,7 +201,7 @@ for ii = startingIndex:totalTrials
                 %trialStruct.metaData.trial = tt-1;
                 
                 trialStruct.metaData.index = ii;
-                save(fullfile(analysisBasePath, 'audioTrialStruct.mat'), 'trialStruct', 'trialStruct', '-v7.3');
+                save(fullfile(analysisBasePath, fileName), 'trialStruct', 'trialStruct', '-v7.3');
                 return
                 
             otherwise
@@ -212,14 +226,14 @@ for ii = startingIndex:totalTrials
     if ~exist(fullfile(analysisBasePath), 'dir')
             mkdir(fullfile(analysisBasePath));
     end
-    save(fullfile(analysisBasePath, 'audioTrialStruct.mat'), 'trialStruct', 'trialStruct', '-v7.3');
+    save(fullfile(analysisBasePath, fileName), 'trialStruct', 'trialStruct', '-v7.3');
     
     
     
     
 end
 
-save(fullfile(analysisBasePath, 'audioTrialStruct.mat'), 'trialStruct', 'trialStruct', '-v7.3');
+save(fullfile(analysisBasePath, fileName), 'trialStruct', 'trialStruct', '-v7.3');
 
 %% make median responses
 for ss = 1:length(stimuli)
