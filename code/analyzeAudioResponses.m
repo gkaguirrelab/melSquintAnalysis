@@ -87,7 +87,6 @@ p.addParameter('confidenceInterval', [10 90], @isnumeric);
 p.parse(varargin{:});
 
 
-
 %% Find the data
 analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
@@ -152,9 +151,21 @@ for ss = completedSessions
     end
 end
 
+%% perform a safety check to make sure we don't overwrite our existing data
+resumeStatus = p.Results.resume;
+if ~(resumeStatus) % if resume is false
+    if exist(fullfile(analysisBasePath, fileName), 'file')
+        resumeCheck = GetWithDefault('>> It looks like this analysis has already begun for this subject. Would you like to resume this analysis instead?', 'y');
+        if strcmp(resumeCheck, 'y')
+            resumeStatus = true;
+        end
+    end
+end
+
+
 %% Load in the data for each session
 % figure out where we're starting from
-if p.Results.resume
+if resumeStatus
     load(fullfile(analysisBasePath, fileName))
     %     startingSession = trialStruct.metaData.session;
     %     startingAcquisition = trialStruct.metaData.acquisition;
@@ -204,8 +215,33 @@ for ii = startingIndex:totalTrials
                 save(fullfile(analysisBasePath, fileName), 'trialStruct', 'trialStruct', '-v7.3');
                 return
                 
-            otherwise
+            case '0'
                 trialDoneFlag = true;
+            case '1'
+                trialDoneFlag = true;
+            case '2'
+                trialDoneFlag = true;
+            case '3'
+                trialDoneFlag = true;
+            case '4'
+                trialDoneFlag = true;
+            case '5'
+                trialDoneFlag = true;
+            case '6'
+                trialDoneFlag = true;
+            case '7'
+                trialDoneFlag = true;
+            case '8'
+                trialDoneFlag = true;
+            case '9'
+                trialDoneFlag = true;
+            case '10'
+                trialDoneFlag = true;
+            case 'NaN'
+                trialDoneFlag = true;
+                
+            otherwise
+                fprintf('Please provide a valid numerical rating.\n')
         end
     end
     
@@ -226,6 +262,7 @@ for ii = startingIndex:totalTrials
     if ~exist(fullfile(analysisBasePath), 'dir')
             mkdir(fullfile(analysisBasePath));
     end
+    trialStruct.metaData.index = ii + 1;
     save(fullfile(analysisBasePath, fileName), 'trialStruct', 'trialStruct', '-v7.3');
     
     
