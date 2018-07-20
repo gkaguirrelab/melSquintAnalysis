@@ -24,7 +24,7 @@ else
         end        
     end 
 end
-if firstRunIndex == length(pathParams.runNames)
+if ~(exist('firstRunIndex', 'var'))
     fprintf('All videos have been processed for this session\n')
     return
 end
