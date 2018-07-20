@@ -24,6 +24,10 @@ else
         end        
     end 
 end
+if firstRunIndex == length(pathParams.runNames)
+    fprintf('All videos have been processed for this session\n')
+    return
+end
 
 %% assemble the fit params cell array
 % most runs will be processed according by the same fitParams, so prepare a
@@ -76,6 +80,11 @@ for rr = firstRunIndex:length(pathParams.runNames)
     runName = strsplit(pathParams.runNames{rr}, '.');
     pathParams.runName = runName{1};
     
+    if ~isfield(fitParams, 'expandPupilRange')
+        fitParams.expandPupilRange = true;
+    end
+        
+    
     runVideoPipeline(pathParams,...
     'skipStageByNumber', fitParams.skipStageByNumber,...
     'useParallel', pathParams.useParallel,...
@@ -92,6 +101,7 @@ for rr = firstRunIndex:length(pathParams.runNames)
     'eyeLaterality',pathParams.eyeLaterality, ...
     'makeFitVideoByNumber',fitParams.makeFitVideoByNumber, ...
     'overwriteControlFile', fitParams.overwriteControlFile, ...
-    'minRadiusProportion', fitParams.minRadiusProportion);
+    'minRadiusProportion', fitParams.minRadiusProportion, ...
+    'expandPupilRange', fitParams.expandPupilRange);
 
 end
