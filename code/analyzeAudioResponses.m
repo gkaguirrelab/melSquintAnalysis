@@ -258,7 +258,9 @@ for ii = startingIndex:totalTrials
     contrast = contrastLong{1}(end-2:end);
     % pool the results
     nItems = length((trialStruct.(directionName).(['Contrast', contrast])));
-    trialStruct.(directionName).(['Contrast', contrast])(nItems+1) = str2num(discomfortRating);
+    if tt ~= 1
+        trialStruct.(directionName).(['Contrast', contrast])(nItems+1) = str2num(discomfortRating);
+    end
     if ~exist(fullfile(analysisBasePath), 'dir')
             mkdir(fullfile(analysisBasePath));
     end
