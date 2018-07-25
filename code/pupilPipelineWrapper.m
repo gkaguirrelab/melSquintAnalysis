@@ -58,6 +58,12 @@ if strcmp(pathParams.protocol, 'SquintToPulse')
     end
 end
 
+if strcmp(pathParams.protocol, 'Screening')
+    for tt = 1:12
+        fitParamsCellArray{tt} = load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfolders{tt}, 'fitParams.mat'));
+    end
+end
+
 % however, some runs might benefit from different params. for these runs,
 % swap the relevant fitParams in place of the default fitParams
 for rr = 1:length(pathParams.runNames)
