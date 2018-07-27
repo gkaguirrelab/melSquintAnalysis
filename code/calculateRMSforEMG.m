@@ -148,6 +148,16 @@ for ss = completedSessions
                 trialData.response.values.right = acquisitionData.responseStruct.data(tt).emg.response(1,:);
                 trialData.response.values.left = acquisitionData.responseStruct.data(tt).emg.response(2,:);
                 
+                % center the voltages at 0. we've noticed that for whatever
+                % reason, the baseline EMG results are not centered around
+                % 0, but are in fact shifted a bit negative. even more
+                % confusing, this is worse for the left EMG leads relative
+                % to the right. centering at 0 should take care of this
+                
+                trialData.response.values.right = trialData.response.values.right - mean(trialData.response.values.right);
+                trialData.response.values.left = trialData.response.values.left - mean(trialData.response.values.left);
+
+                
                 if p.Results.makePlots
                     subplot(2,5,tt)
                     hold on
