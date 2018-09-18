@@ -122,8 +122,10 @@ for ss = completedSessions
                 
                 % censor bad data points. bad data points are 1) blinks
                 % identified by transparentTrack (these are already censored),
-                % 2) duplicate frames (indicate camera stutter), or 3) poor
-                % ellipse fits (as judged by RMSE)
+                % 2) duplicate frames (indicate camera stutter). Another potential class  (poor
+                % ellipse fits (as judged by RMSE)) constitute bad data
+                % points, but they will be removed later, because they are
+                % useful for blink detection
                 
                 % identify duplicate frames
                 differential = diff(trialData.response.RMSE);
@@ -133,13 +135,7 @@ for ss = completedSessions
                     trialData.response.values(dd+1) = NaN;
                 end
                 
-                % identify poor ellipse fits
-                threshold = 5; % set the threshold for a bad fit as RMSE > 5
-                poorFitFrameIndices = find(trialData.response.RMSE > threshold);
-                % censor poor ellipse fits
-                for pp = poorFitFrameIndices
-                    trialData.response.values(pp) = NaN;
-                end
+                
                 
                 
                 % adjust the timebase by adding the delay
@@ -175,30 +171,46 @@ for ss = completedSessions
                 
                 % resample the timebase so we can put all trials on the same
                 % timebase
-                resampledTimebase = 0:0.001:18.5;
+                stepSize = 0.001;
+                resampledTimebase = 0:stepSize:18.5;
                 
                 resampledValues = interp1(trialData.response.timebase,trialData.response.values,resampledTimebase,'linear',NaN);
+                resampledRMSE = interp1(trialData.response.timebase,trialData.response.RMSE,resampledTimebase,'linear',NaN);
+
                 trialData.responseResampled.values = resampledValues;
                 trialData.responseResampled.timebase = resampledTimebase;
+                trialData.responseResampled.RMSE = resampledRMSE;
                 
                 
-                plot(trialData.responseResampled.timebase, trialData.responseResampled.values)
+                %plot(trialData.responseResampled.timebase, trialData.responseResampled.values)
                 
                 % censor out poor bad windows from our resampled timeseries
                 for bb = 1:length(badWindowsIndices)
                     firstTimePoint = round(trialData.response.timebase(badWindowsIndices{bb}(1)),3);
                     secondTimePoint = round(trialData.response.timebase(badWindowsIndices{bb}(2)),3);
                     if firstTimePoint ~= secondTimePoint
-                        trialData.responseResampled.values((firstTimePoint*1000+1):(secondTimePoint*1000+1)) = NaN;
+                        trialData.responseResampled.values((firstTimePoint*1/stepSize+1):(secondTimePoint*1/stepSize+1)) = NaN;
                     end
                 end
                 
                 % normalize by baseline pupil size
-                baselineWindow = 1001:1501;
+                baselineWindow = 1/stepSize+1:1.5/stepSize+1;
                 baselineSize = nanmean(trialData.responseResampled.values(baselineWindow));
-                trialData.responseResampled.values = trialData.responseResampled.values./baselineSize;
+                trialData.responseResampled.values = (trialData.responseResampled.values-baselineSize)./baselineSize;
                 
-                
+                % remove blinks
+                [iy, removePoints] = PupilAnalysisToolbox_SpikeRemover(trialData.responseResampled.values);
+                figure; hold on;
+                plot(trialData.responseResampled.values)
+                plot(removePoints, trialData.responseResampled.values(removePoints), 'o', 'Color', 'r')
+
+                % identify poor ellipse fits
+                threshold = 2; % set the threshold for a bad fit as RMSE > 5
+                poorFitFrameIndices = find(trialData.responseResampled.RMSE > threshold);
+                % censor poor ellipse fits
+                for pp = poorFitFrameIndices
+                    trialData.responseResampled.values(pp) = NaN;
+                end
                 
                 % stash the trial
                 % first figure out what type of trial we're working with
@@ -225,48 +237,56 @@ for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
         for tt = 1:length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,:))
             averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,tt) = nanmean(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt));
+            averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_SEM'])(1,tt) = nanstd(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt))/length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt));
         end
     end
 end
 
 
+
+
 plotFig = figure;
+subplot(1,3,1)
 title('Melanopsin')
 hold on
 plot(resampledTimebase, averageResponseStruct.Melanopsin.Contrast100)
 plot(resampledTimebase, averageResponseStruct.Melanopsin.Contrast200)
 plot(resampledTimebase, averageResponseStruct.Melanopsin.Contrast400)
-ylim([0.4 1.3])
+ylim([-0.65 0.2])
+xlim([0 18])
 legend('100%', '200%', '400%')
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
-saveas(plotFig, fullfile(analysisBasePath, 'melanopsin.pdf'), 'pdf');
-close(plotFig)
+%saveas(plotFig, fullfile(analysisBasePath, 'melanopsin.pdf'), 'pdf');
+%close(plotFig)
 
-plotFig = figure;
+subplot(1,3,2)
 title('LMS')
 hold on
 plot(resampledTimebase, averageResponseStruct.LMS.Contrast100)
 plot(resampledTimebase, averageResponseStruct.LMS.Contrast200)
 plot(resampledTimebase, averageResponseStruct.LMS.Contrast400)
-ylim([0.4 1.3])
+ylim([-0.65 0.2])
+xlim([0 18])
 legend('100%', '200%', '400%')
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
-saveas(plotFig, fullfile(analysisBasePath, 'LMS.pdf'), 'pdf');
-close(plotFig)
+%saveas(plotFig, fullfile(analysisBasePath, 'LMS.pdf'), 'pdf');
+%close(plotFig)
 
-plotFig = figure;
+subplot(1,3,3)
 title('LightFlux')
 hold on
 plot(resampledTimebase, averageResponseStruct.LightFlux.Contrast100)
 plot(resampledTimebase, averageResponseStruct.LightFlux.Contrast200)
 plot(resampledTimebase, averageResponseStruct.LightFlux.Contrast400)
 legend('100%', '200%', '400%')
-ylim([0.4 1.3])
+ylim([-0.65 0.2])
+xlim([0 18])
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
-saveas(plotFig, fullfile(analysisBasePath, 'lightFlux.pdf'), 'pdf');
+orient(plotFig, 'landscape')
+print(plotFig, fullfile(analysisBasePath,'averageResponse'), '-dpdf', '-fillpage')
 close(plotFig)
 
 
