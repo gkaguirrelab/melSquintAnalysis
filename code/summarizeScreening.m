@@ -17,6 +17,7 @@ for ss = 1:length(potentialSubjects)
     summary{ss+1,1} = screenedSubjects{ss};
     try
         [passStatus, percentageGoodFramesPerTrial] = analyzeScreening(screenedSubjects{ss});
+        close all
         summary{ss+1,2} = passStatus;
         for tt = 1:12
             summary{ss+1,tt+2} = round(percentageGoodFramesPerTrial(tt),3);
