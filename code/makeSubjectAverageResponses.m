@@ -160,25 +160,6 @@ for ss = completedSessions
                 % adjust the timebase
                 trialData.response.timebase = trialData.response.timebase + delay;
                 
-                % now that we've found our poor fits, identify time windows
-                % that will require censoring
-                % the idea is that when we resample our data, these bad frames
-                % shuold not be interpolated
-                counter = 1;
-                NaNIndices = find(isnan(trialData.response.values));
-                runLengths = diff(find(diff([nan ; NaNIndices(:) ; nan]) ~= 1));
-                relevantNaNIndex = 1;
-                badWindowsIndices = [];
-                for rr = 1:length(runLengths)
-                    
-                    badWindowsIndices{counter}(2) = NaNIndices(sum(runLengths(1:counter)));
-                    
-                    badWindowsIndices{counter}(1) = NaNIndices(sum(runLengths(1:counter)) - runLengths(counter) +1);
-                    
-                    %relevantNaNIndex = relevantNaNIndex+runLengths(rr)-1;
-                    %badWindows{counter}(2) = NaNIndices(relevantNaNIndex+1);
-                    counter = counter + 1;
-                end
                 
                 % resample the timebase so we can put all trials on the same
                 % timebase
@@ -191,18 +172,6 @@ for ss = completedSessions
                 trialData.responseResampled.values = resampledValues;
                 trialData.responseResampled.timebase = resampledTimebase;
                 trialData.responseResampled.RMSE = resampledRMSE;
-                
-                
-                %plot(trialData.responseResampled.timebase, trialData.responseResampled.values)
-                
-                % censor out poor bad windows from our resampled timeseries
-                for bb = 1:length(badWindowsIndices)
-                    firstTimePoint = round(trialData.response.timebase(badWindowsIndices{bb}(1)),3);
-                    secondTimePoint = round(trialData.response.timebase(badWindowsIndices{bb}(2)),3);
-                    if firstTimePoint ~= secondTimePoint
-                        trialData.responseResampled.values((firstTimePoint*1/stepSize+1):(secondTimePoint*1/stepSize+1)) = NaN;
-                    end
-                end
                 
                 % normalize by baseline pupil size
                 baselineWindow = 1/stepSize+1:1.5/stepSize+1;
