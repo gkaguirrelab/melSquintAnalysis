@@ -1,4 +1,4 @@
-function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(subjectID)
+function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(subjectID, varargin)
 
 % Analyzes a single subject's pupillometry data from the OLApproach_Squint,
 % SquintToPulse Experiment
@@ -34,7 +34,13 @@ function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(su
 % Inputs:
 %	subjectID             - A string describing the subjectID (e.g.
 %                           MELA_0121) to be analyzed)
-
+%
+% Optional Key-Value Pairs:
+%   debugSpikeRemover     - A logical. If set to true, the routine will
+%                           display a plot of each trial's response and
+%                           which points have been identified as spikes to
+%                           be removed.
+%
 % Outputs:
 %   averageResponseStruct - A 3x1 structure, where each subfield
 %                           corresponds to the stimulus type (LMS,
@@ -55,6 +61,11 @@ function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(su
 %                           timeseries share the same timebase
 %                           (0:0.001:18.5)
 
+%% Parse the input
+
+p = inputParser; p.KeepUnmatched = true;
+p.addParameter('debugSpikeRemover',false,@islogical);
+p.parse(varargin{:});
 
 %% Find the data
 analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
@@ -171,7 +182,7 @@ for ss = completedSessions
                 
                 % resample the timebase so we can put all trials on the same
                 % timebase
-                stepSize = 0.001;
+                stepSize = 1/60;
                 resampledTimebase = 0:stepSize:18.5;
                 
                 resampledValues = interp1(trialData.response.timebase,trialData.response.values,resampledTimebase,'linear',NaN);
@@ -200,10 +211,14 @@ for ss = completedSessions
                 
                 % remove blinks
                 [iy, removePoints] = PupilAnalysisToolbox_SpikeRemover(trialData.responseResampled.values);
-                figure; hold on;
-                plot(trialData.responseResampled.values)
-                plot(removePoints, trialData.responseResampled.values(removePoints), 'o', 'Color', 'r')
-
+                if p.Results.debugSpikeRemover
+                    figure; hold on;
+                    plot(trialData.responseResampled.values)
+                    plot(removePoints, trialData.responseResampled.values(removePoints), 'o', 'Color', 'r')
+                end
+                trialData.responseResampled.values(removePoints) = NaN;
+                
+                
                 % identify poor ellipse fits
                 threshold = 2; % set the threshold for a bad fit as RMSE > 5
                 poorFitFrameIndices = find(trialData.responseResampled.RMSE > threshold);
