@@ -131,13 +131,6 @@ for ss = completedSessions
                 trialData.response.timebase = acquisitionData.responseStruct.data(tt).pupil.timebase;
                 trialData.response.RMSE = trialData.pupilData.initial.ellipses.RMSE;
                 
-                % censor bad data points. bad data points are 1) blinks
-                % identified by transparentTrack (these are already censored),
-                % 2) duplicate frames (indicate camera stutter). Another potential class  (poor
-                % ellipse fits (as judged by RMSE)) constitute bad data
-                % points, but they will be removed later, because they are
-                % useful for blink detection
-                
                 % identify duplicate frames
                 differential = diff(trialData.response.RMSE);
                 duplicateFrameIndices = find(differential == 0);
@@ -174,6 +167,9 @@ for ss = completedSessions
                 trialData.responseResampled.RMSE = resampledRMSE;
                 
                 % normalize by baseline pupil size
+                % the 4 second pulse of light begins at 1.5 s, so we're
+                % taking the 0.5 seconds before that as our normalization
+                % window
                 baselineWindow = 1/stepSize+1:1.5/stepSize+1;
                 baselineSize = nanmean(trialData.responseResampled.values(baselineWindow));
                 trialData.responseResampled.values = (trialData.responseResampled.values-baselineSize)./baselineSize;
@@ -221,7 +217,7 @@ for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
         for tt = 1:length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,:))
             averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,tt) = nanmean(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt));
-            averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_SEM'])(1,tt) = nanstd(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt))/length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt));
+            averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_SEM'])(1,tt) = nanstd(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt))/(length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt)) - sum(isnan((trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt)))));
         end
     end
 end
@@ -230,46 +226,67 @@ end
 
 
 plotFig = figure;
-subplot(1,3,1)
+subplot(3,1,1)
 title('Melanopsin')
 hold on
-plot(resampledTimebase, averageResponseStruct.Melanopsin.Contrast100)
-plot(resampledTimebase, averageResponseStruct.Melanopsin.Contrast200)
-plot(resampledTimebase, averageResponseStruct.Melanopsin.Contrast400)
-ylim([-0.65 0.2])
-xlim([0 18])
-legend('100%', '200%', '400%')
+line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5)
+
+lineProps.width = 1;
+lineProps.col{1} = [220/255, 237/255, 200/255];
+mseb(resampledTimebase-1, averageResponseStruct.Melanopsin.Contrast100, averageResponseStruct.Melanopsin.Contrast100_SEM, lineProps)
+
+lineProps.col{1} = [66/255, 179/255, 213/255];
+mseb(resampledTimebase-1, averageResponseStruct.Melanopsin.Contrast200, averageResponseStruct.Melanopsin.Contrast200_SEM, lineProps)
+
+lineProps.col{1} = [26/255, 35/255, 126/255];
+mseb(resampledTimebase-1, averageResponseStruct.Melanopsin.Contrast400, averageResponseStruct.Melanopsin.Contrast400_SEM, lineProps)
+ylim([-0.8 0.1])
+xlim([0 17])
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
 %saveas(plotFig, fullfile(analysisBasePath, 'melanopsin.pdf'), 'pdf');
 %close(plotFig)
 
-subplot(1,3,2)
+subplot(3,1,2)
 title('LMS')
 hold on
-plot(resampledTimebase, averageResponseStruct.LMS.Contrast100)
-plot(resampledTimebase, averageResponseStruct.LMS.Contrast200)
-plot(resampledTimebase, averageResponseStruct.LMS.Contrast400)
-ylim([-0.65 0.2])
-xlim([0 18])
-legend('100%', '200%', '400%')
+line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5)
+
+grayColorMap = colormap(gray);
+lineProps.width = 1;
+lineProps.col{1} = grayColorMap(50,:);
+mseb(resampledTimebase-1, averageResponseStruct.LMS.Contrast100, averageResponseStruct.LMS.Contrast100_SEM, lineProps)
+
+lineProps.col{1} = grayColorMap(25,:);
+mseb(resampledTimebase-1, averageResponseStruct.LMS.Contrast200, averageResponseStruct.LMS.Contrast200_SEM, lineProps)
+
+lineProps.col{1} = grayColorMap(1,:);
+mseb(resampledTimebase-1, averageResponseStruct.LMS.Contrast400, averageResponseStruct.LMS.Contrast400_SEM, lineProps)
+ylim([-0.8 0.1])
+xlim([0 17])
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
 %saveas(plotFig, fullfile(analysisBasePath, 'LMS.pdf'), 'pdf');
 %close(plotFig)
 
-subplot(1,3,3)
+subplot(3,1,3)
 title('LightFlux')
 hold on
-plot(resampledTimebase, averageResponseStruct.LightFlux.Contrast100)
-plot(resampledTimebase, averageResponseStruct.LightFlux.Contrast200)
-plot(resampledTimebase, averageResponseStruct.LightFlux.Contrast400)
-legend('100%', '200%', '400%')
-ylim([-0.65 0.2])
-xlim([0 18])
+line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5)
+
+lineProps.width = 1;
+lineProps.col{1} = [254/255, 235/255, 101/255];
+mseb(resampledTimebase-1, averageResponseStruct.LightFlux.Contrast100, averageResponseStruct.LightFlux.Contrast100_SEM, lineProps)
+
+lineProps.col{1} = [228/255, 82/255, 27/255];
+mseb(resampledTimebase-1, averageResponseStruct.LightFlux.Contrast200, averageResponseStruct.LightFlux.Contrast200_SEM, lineProps)
+
+lineProps.col{1} = [77/255, 52/255, 47/255];
+mseb(resampledTimebase-1, averageResponseStruct.LightFlux.Contrast400, averageResponseStruct.LightFlux.Contrast400_SEM, lineProps)
+ylim([-0.8 0.1])
+xlim([0 17])
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
-orient(plotFig, 'landscape')
 print(plotFig, fullfile(analysisBasePath,'averageResponse'), '-dpdf', '-fillpage')
 close(plotFig)
 
