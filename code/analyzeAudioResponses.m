@@ -1,4 +1,4 @@
-function [medianResponseStruct, trialStruct] = analyzeAudioResponses(subjectID, varargin)
+function [medianResponseStruct, trialStruct] = saveOutAudioResponses(subjectID, varargin)
 % Analyzes a single subject's verbal discomfort ratings  from the OLApproach_Squint,
 % SquintToPulse Experiment
 %
@@ -41,7 +41,7 @@ function [medianResponseStruct, trialStruct] = analyzeAudioResponses(subjectID, 
 %                           200%, and 400%) and whether the content refers
 %                           to the median value, or confidence interval
 %                           boundary.
-%  trialStruct            - A nested structure similar in format to
+%   trialStruct           - A nested structure similar in format to
 %                           averageResponseStruct, where the first layer
 %                           describes the stimulus type and second layer
 %                           describes the contrast level. The innermost
@@ -86,6 +86,16 @@ p.addParameter('confidenceInterval', [10 90], @isnumeric);
 % Parse and check the parameters
 p.parse(varargin{:});
 
+
+%% Pre-allocate results variable
+% initialize outputStruct
+stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
+contrasts = {100, 200, 400};
+for ss = 1:length(stimuli)
+    for cc = 1:length(contrasts)
+        trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]) = [];
+    end
+end
 
 %% Find the data
 analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
@@ -151,99 +161,23 @@ for ss = completedSessions
     end
 end
 
-%% perform a safety check to make sure we don't overwrite our existing data
-resumeStatus = p.Results.resume;
-if ~(resumeStatus) % if resume is false
-    if exist(fullfile(analysisBasePath, fileName), 'file')
-        resumeCheck = GetWithDefault('>> It looks like this analysis has already begun for this subject. Would you like to resume this analysis instead?', 'y');
-        if strcmp(resumeCheck, 'y')
-            resumeStatus = true;
-        end
-    end
-end
-
-
-%% Load in the data for each session
-% figure out where we're starting from
-if resumeStatus
-    load(fullfile(analysisBasePath, fileName))
-    %     startingSession = trialStruct.metaData.session;
-    %     startingAcquisition = trialStruct.metaData.acquisition;
-    %     startingTrial = trialStruct.metaData.trial + 1;
-    startingIndex = trialStruct.metaData.index;
-else
-    %startingSession = 1;
-    %startingAcquisition = 1;
-    %startingTrial = 1;
-    startingIndex = 1;
-    
-    
-end
-
 totalTrials = p.Results.nTrials * p.Results.nAcquisitions * nSessions;
 
-for ii = startingIndex:totalTrials
+%% Load in the transcribed responses
+responseTable = xlsread(fullfile(analysisBasePath, 'audioResponses/transcribed.xlsx'));
+
+%% Loop over the trials
+
+for ii = 1:totalTrials
     
-    [ss, aa, tt] = ind2sub([nSessions;6;10], ii);
+    [tt, aa, ss] = ind2sub([10;6;nSessions], ii);
     
-    
+    trialDiscomfortResponse = responseTable(ii);
     
     acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', ss,aa)));
     
     
-    fprintf('Session %d, Acquisition %d, Trial %d\n', ss, aa, tt);
     
-    trialData.response.values = acquisitionData.responseStruct.data(tt).audio;
-    
-    % listen to the audio
-    trialDoneFlag = false;
-    while ~trialDoneFlag
-        sound(trialData.response.values, 16000)
-        pause(5)
-        % prompt user to input rating
-        discomfortRating = GetWithDefault('>><strong>Enter discomfort rating:</strong>', '');
-        switch discomfortRating
-            % play the clip over again if necessary
-            case ''
-                
-            case 'quit'
-                %trialStruct.metaData.session = ss;
-                %trialStruct.metaData.acquisition = aa;
-                %trialStruct.metaData.trial = tt-1;
-                
-                trialStruct.metaData.index = ii;
-                save(fullfile(analysisBasePath, fileName), 'trialStruct', 'trialStruct', '-v7.3');
-                return
-                
-            case '0'
-                trialDoneFlag = true;
-            case '1'
-                trialDoneFlag = true;
-            case '2'
-                trialDoneFlag = true;
-            case '3'
-                trialDoneFlag = true;
-            case '4'
-                trialDoneFlag = true;
-            case '5'
-                trialDoneFlag = true;
-            case '6'
-                trialDoneFlag = true;
-            case '7'
-                trialDoneFlag = true;
-            case '8'
-                trialDoneFlag = true;
-            case '9'
-                trialDoneFlag = true;
-            case '10'
-                trialDoneFlag = true;
-            case 'NaN'
-                trialDoneFlag = true;
-                
-            otherwise
-                fprintf('Please provide a valid numerical rating.\n')
-        end
-    end
     
     %stashing the result
     % first figure out the stimulus type
@@ -259,22 +193,15 @@ for ii = startingIndex:totalTrials
     % pool the results
     nItems = length((trialStruct.(directionName).(['Contrast', contrast])));
     if tt ~= 1
-        trialStruct.(directionName).(['Contrast', contrast])(nItems+1) = str2num(discomfortRating);
+        trialStruct.(directionName).(['Contrast', contrast])(nItems+1) = trialDiscomfortResponse;
     end
-    if ~exist(fullfile(analysisBasePath), 'dir')
-            mkdir(fullfile(analysisBasePath));
-    end
-    trialStruct.metaData.index = ii + 1;
-    save(fullfile(analysisBasePath, fileName), 'trialStruct', 'trialStruct', '-v7.3');
-    
     
     
     
 end
 
-save(fullfile(analysisBasePath, fileName), 'trialStruct', 'trialStruct', '-v7.3');
+save(fullfile(analysisBasePath, 'audioTrialStruct'), 'trialStruct', 'trialStruct', '-v7.3');
 
-%% make median responses
 for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
         
@@ -290,4 +217,27 @@ for ss = 1:length(stimuli)
     end
 end
 
+%% Plot to summarize
+plotFig = figure;
+subplot(3,1,1);
+data = horzcat( trialStruct.Melanopsin.Contrast100', trialStruct.Melanopsin.Contrast200',  trialStruct.Melanopsin.Contrast400');
+plotSpread(data, 'distributionColors', {[220/255, 237/255, 200/255], [66/255, 179/255, 213/255], [26/255, 35/255, 126/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+title('Melanopsin')
+xlabel('Contrast')
+ylabel('Discomfort Rating')
+
+grayColorMap = colormap(gray);
+subplot(3,1,2);
+data = horzcat( trialStruct.LMS.Contrast100', trialStruct.LMS.Contrast200',  trialStruct.LMS.Contrast400');
+plotSpread(data, 'distributionColors', {grayColorMap(50,:), grayColorMap(25,:), grayColorMap(1,:)}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+title('LMS')
+xlabel('Contrast')
+ylabel('Discomfort Rating')
+
+subplot(3,1,3);
+data = horzcat( trialStruct.LightFlux.Contrast100', trialStruct.LightFlux.Contrast200',  trialStruct.LightFlux.Contrast400');
+plotSpread(data, 'distributionColors', {[254/255, 235/255, 101/255], [228/255, 82/255, 27/255], [77/255, 52/255, 47/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+title('Light Flux')
+xlabel('Contrast')
+ylabel('Discomfort Rating')
 end % end function
