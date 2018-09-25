@@ -5,6 +5,8 @@ p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('approach', 'Squint' ,@isstr);
 p.addParameter('protocol', 'SquintToPulse' ,@isstr);
+p.addParameter('expandPupilRange', true ,@islogical);
+
 
 p.parse(varargin{:})
 
@@ -87,7 +89,7 @@ for rr = firstRunIndex:length(pathParams.runNames)
     pathParams.runName = runName{1};
     
     if ~isfield(fitParams, 'expandPupilRange')
-        fitParams.expandPupilRange = true;
+        fitParams.expandPupilRange = p.Results.expandPupilRange;
     end
         
     
