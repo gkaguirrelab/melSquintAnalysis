@@ -64,5 +64,18 @@
 		"type": "git",
 		"update": "",
 		"url": "https://github.com/gkaguirrelab/melSquintAnalysis.git"
+	},
+    {
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "plotSpread",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "webget",
+		"update": "",
+		"url": "https:\/\/www.mathworks.com\/matlabcentral\/mlc-downloads\/downloads\/submissions\/37105\/versions\/3\/download\/zip"
 	}
 ]
