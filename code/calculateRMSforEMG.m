@@ -71,6 +71,7 @@ p.addParameter('makePlots',false,@islogical);
 p.addParameter('windowOnset',2.5,@isnumeric);
 p.addParameter('windowOffset',6.5,@isnumeric);
 p.addParameter('confidenceInterval', [10 90], @isnumeric);
+p.addParameter('sessions', {}, @iscell);
 
 % Parse and check the parameters
 p.parse(varargin{:});
@@ -94,6 +95,7 @@ for ss = 1:length(stimuli)
     end
 end
 
+if isempty(p.Results.sessions)
 sessions = [];
 for ss = 1:potentialNumberOfSessions
     acquisitions = [];
@@ -113,10 +115,10 @@ for ss = 1:potentialNumberOfSessions
     end
 end
 
-completedSessions = sessions;
+numberOfCompletedSessions = sessions;
 % get session IDs
 sessionIDs = [];
-for ss = completedSessions
+for ss = numberOfCompletedSessions
     potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sprintf('*session_%d*', ss)));
     % in the event of more than one entry for a given session (which would
     % happen if something weird happened with a session and it was
@@ -128,12 +130,19 @@ for ss = completedSessions
         end
     end
 end
+else
+   sessionIDs = p.Results.sessions; 
+   numberOfCompletedSessions = 1:length(sessionIDs);
+end
+
 
 %% Load in the data for each session
-for ss = completedSessions
+for ss = numberOfCompletedSessions
+    sessionNumber = strsplit(sessionIDs{ss}, 'session_');
+    sessionNumber = sessionNumber{2};
     for aa = 1:6
-        acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_emg.mat', ss,aa)));
-        stimulusData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', ss,aa)));
+        acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_emg.mat', str2num(sessionNumber),aa)));
+        stimulusData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', str2num(sessionNumber),aa)));
         
         if p.Results.makePlots
             figure;
@@ -218,41 +227,61 @@ for ss = 1:length(stimuli)
     end
 end
 
-%% save out some summary plots
+%% Plot to summarize
 plotFig = figure;
-set(gcf,'un','n','pos',[.05,.05,.7,.6])
-for ss = 1:length(stimuli)
-    x = [];
-    for ll = 1:2
-        if ll == 1
-            laterality = 'left';
-        elseif ll == 2
-            laterality = 'right';
-        end
-        subplot(1,2,ll)
-        hold on
-        
-        title(laterality)
-        
-        x = [1:3] + 3*(ss-1);
-        y = [medianRMS.(stimuli{ss}).Contrast100_median.(laterality), medianRMS.(stimuli{ss}).Contrast200_median.(laterality), medianRMS.(stimuli{ss}).Contrast400_median.(laterality)];
-        yneg = y - [medianRMS.(stimuli{ss}).Contrast100_10.(laterality), medianRMS.(stimuli{ss}).Contrast200_10.(laterality), medianRMS.(stimuli{ss}).Contrast400_10.(laterality)];
-        ypos = [medianRMS.(stimuli{ss}).Contrast100_90.(laterality), medianRMS.(stimuli{ss}).Contrast200_90.(laterality), medianRMS.(stimuli{ss}).Contrast400_90.(laterality)] - y;
-        
-        
-        errorbar(x, y, yneg, ypos)
-        xlim([ 0 10])
-        
-        xticks([1:9])
-        xticklabels({'100%', '200%', '400%', '100%', '200%', '400%', '100%', '200%', '400%'})
-        legend(stimuli)
-        
-        ylabel(['Median RMS (+/- ', num2str(p.Results.confidenceInterval(2) - p.Results.confidenceInterval(1)), '% CI)'])
-        xlabel('Contrast')
-    end
-end
+melAxis1 = subplot(3,2,1);
+data = horzcat( trialStruct.Melanopsin.Contrast100.left', trialStruct.Melanopsin.Contrast200.left',  trialStruct.Melanopsin.Contrast400.left');
+plotSpread(data, 'distributionColors', {[220/255, 237/255, 200/255], [66/255, 179/255, 213/255], [26/255, 35/255, 126/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+title('Melanopsin, Left')
+xlabel('Contrast')
+ylabel('RMS')
+%ylim([0 4]);
+melAxis2 = subplot(3,2,2);
+data = horzcat( trialStruct.Melanopsin.Contrast100.right', trialStruct.Melanopsin.Contrast200.right',  trialStruct.Melanopsin.Contrast400.right');
+plotSpread(data, 'distributionColors', {[220/255, 237/255, 200/255], [66/255, 179/255, 213/255], [26/255, 35/255, 126/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+title('Melanopsin, Right')
+xlabel('Contrast')
+ylabel('RMS')
+%ylim([0 4]);
+linkaxes([melAxis1, melAxis2]);
 
-print(plotFig, fullfile(analysisBasePath, 'EMG_RMS.pdf'), '-dpdf', '-bestfit');
+
+grayColorMap = colormap(gray);
+lmsAxis1 = subplot(3,2,3);
+data = horzcat( trialStruct.LMS.Contrast100.left', trialStruct.LMS.Contrast200.left',  trialStruct.LMS.Contrast400.left');
+plotSpread(data, 'distributionColors', {grayColorMap(50,:), grayColorMap(25,:), grayColorMap(1,:)}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+title('LMS, Left')
+xlabel('Contrast')
+ylabel('RMS')
+%ylim([0 4]);
+lmsAxis2= subplot(3,2,4);
+data = horzcat( trialStruct.LMS.Contrast100.right', trialStruct.LMS.Contrast200.right',  trialStruct.LMS.Contrast400.right');
+plotSpread(data, 'distributionColors', {grayColorMap(50,:), grayColorMap(25,:), grayColorMap(1,:)}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+title('LMS, Right')
+xlabel('Contrast')
+ylabel('RMS')
+%ylim([0 4]);
+linkaxes([lmsAxis1, lmsAxis2]);
+
+
+lightFluxAxis1 = subplot(3,2,5);
+data = horzcat( trialStruct.LightFlux.Contrast100.left', trialStruct.LightFlux.Contrast200.left',  trialStruct.LightFlux.Contrast400.left');
+plotSpread(data, 'distributionColors', {[254/255, 235/255, 101/255], [228/255, 82/255, 27/255], [77/255, 52/255, 47/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+title('Light Flux, Left')
+xlabel('Contrast')
+ylabel('RMS')
+%ylim([0 4]);
+lightFluxAxis2 = subplot(3,2,6);
+data = horzcat( trialStruct.LightFlux.Contrast100.right', trialStruct.LightFlux.Contrast200.right',  trialStruct.LightFlux.Contrast400.right');
+plotSpread(data, 'distributionColors', {[254/255, 235/255, 101/255], [228/255, 82/255, 27/255], [77/255, 52/255, 47/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+title('Light Flux, Right')
+xlabel('Contrast')
+ylabel('RMS')
+%ylim([0 4]);
+linkaxes([lightFluxAxis1, lightFluxAxis2]);
+
+analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
+print(plotFig, fullfile(analysisBasePath,'EMG_RMS'), '-dpdf', '-fillpage')
 close(plotFig)
 
 
