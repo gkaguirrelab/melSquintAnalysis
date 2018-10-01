@@ -284,5 +284,28 @@ analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Ex
 print(plotFig, fullfile(analysisBasePath,'EMG_RMS'), '-dpdf', '-fillpage')
 close(plotFig)
 
+plotFig = figure;
+melAxCombined = subplot(3,1,1);
+data = horzcat( nanmean([trialStruct.Melanopsin.Contrast100.left; trialStruct.Melanopsin.Contrast100.right])', nanmean([trialStruct.Melanopsin.Contrast200.left; trialStruct.Melanopsin.Contrast200.right])',  nanmean([trialStruct.Melanopsin.Contrast400.left; trialStruct.Melanopsin.Contrast400.right])');
+plotSpread(data, 'distributionColors', {[220/255, 237/255, 200/255], [66/255, 179/255, 213/255], [26/255, 35/255, 126/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+title('Melanopsin')
+xlabel('Contrast')
+ylabel('RMS')
+
+lmsAxCombined = subplot(3,1,2);
+data = horzcat( nanmean([trialStruct.LMS.Contrast100.left; trialStruct.LMS.Contrast100.right])', nanmean([trialStruct.LMS.Contrast200.left; trialStruct.LMS.Contrast200.right])',  nanmean([trialStruct.LMS.Contrast400.left; trialStruct.LMS.Contrast400.right])');
+plotSpread(data, 'distributionColors', {grayColorMap(50,:), grayColorMap(25,:), grayColorMap(1,:)}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+title('LMS')
+xlabel('Contrast')
+ylabel('RMS')
+
+lightFluxAxCombined = subplot(3,1,3);
+data = horzcat( nanmean([trialStruct.LightFlux.Contrast100.left; trialStruct.LightFlux.Contrast100.right])', nanmean([trialStruct.LightFlux.Contrast200.left; trialStruct.LightFlux.Contrast200.right])',  nanmean([trialStruct.LightFlux.Contrast400.left; trialStruct.LightFlux.Contrast400.right])');
+plotSpread(data, 'distributionColors', {[254/255, 235/255, 101/255], [228/255, 82/255, 27/255], [77/255, 52/255, 47/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+title('LightFlux')
+xlabel('Contrast')
+ylabel('RMS')
+print(plotFig, fullfile(analysisBasePath,'EMG_RMS_leftRightCombined'), '-dpdf', '-fillpage')
+close(plotFig)
 
 end % end function
