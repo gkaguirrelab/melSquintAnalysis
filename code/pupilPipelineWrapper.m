@@ -6,6 +6,8 @@ p = inputParser; p.KeepUnmatched = true;
 p.addParameter('approach', 'Squint' ,@isstr);
 p.addParameter('protocol', 'SquintToPulse' ,@isstr);
 p.addParameter('expandPupilRange', true ,@islogical);
+p.addParameter('candidateThetas', pi/2:pi/16:pi,@isnumeric);
+
 
 
 p.parse(varargin{:})
@@ -91,7 +93,9 @@ for rr = firstRunIndex:length(pathParams.runNames)
     if ~isfield(fitParams, 'expandPupilRange')
         fitParams.expandPupilRange = p.Results.expandPupilRange;
     end
-        
+    if ~isfield(fitParams, 'candidateThetas')
+        fitParams.candidateThetas = p.Results.candidateThetas;
+    end    
     
     runVideoPipeline(pathParams,...
     'skipStageByNumber', fitParams.skipStageByNumber,...
@@ -110,6 +114,7 @@ for rr = firstRunIndex:length(pathParams.runNames)
     'makeFitVideoByNumber',fitParams.makeFitVideoByNumber, ...
     'overwriteControlFile', fitParams.overwriteControlFile, ...
     'minRadiusProportion', fitParams.minRadiusProportion, ...
-    'expandPupilRange', fitParams.expandPupilRange);
+    'expandPupilRange', fitParams.expandPupilRange, ...
+    'candidateThetas', fitParams.candidateThetas);
 
 end
