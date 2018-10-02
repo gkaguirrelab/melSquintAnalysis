@@ -65,6 +65,7 @@ function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(su
 
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('debugSpikeRemover',false,@islogical);
+p.addParameter('debugNumberOfNaNValuesPerTrial', false, @islogical);
 p.parse(varargin{:});
 
 %% Find the data
@@ -112,14 +113,20 @@ for ss = completedSessions
     % happen if something weird happened with a session and it was
     % restarted on a different day), it'll grab the later dated session,
     % which should always be the one we want
-    sessionIDs{ss} = potentialSessions(end).name;
+    for ii = 1:length(potentialSessions)
+        if ~strcmp(potentialSessions(ii).name(1), 'x')
+            sessionIDs{ss} = potentialSessions(ii).name;
+        end
+    end
 end
 
 %% Load in the data for each session
-for ss = completedSessions
+for ss = 1:length(sessionIDs)
+        sessionNumber = strsplit(sessionIDs{ss}, 'session_');
+    sessionNumber = sessionNumber{2};
     for aa = 1:6
-        acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_pupil.mat', ss,aa)));
-        stimulusData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', ss,aa)));
+        acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_pupil.mat', str2num(sessionNumber),aa)));
+        stimulusData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', str2num(sessionNumber),aa)));
         
         for tt = 1:10
             if tt ~= 1
@@ -132,7 +139,9 @@ for ss = completedSessions
                 trialData.response.RMSE = trialData.pupilData.initial.ellipses.RMSE;
                 
                 % identify duplicate frames
+                differential = [];
                 differential = diff(trialData.response.RMSE);
+                duplicateFrameIndices = [];
                 duplicateFrameIndices = find(differential == 0);
                 % censor duplicate frames
                 for dd = duplicateFrameIndices
@@ -159,9 +168,13 @@ for ss = completedSessions
                 stepSize = 1/60;
                 resampledTimebase = 0:stepSize:18.5;
                 
+                resampledValues = [];
+                resampledRMSE = [];
+                
                 resampledValues = interp1(trialData.response.timebase,trialData.response.values,resampledTimebase,'linear',NaN);
                 resampledRMSE = interp1(trialData.response.timebase,trialData.response.RMSE,resampledTimebase,'linear',NaN);
 
+                trialData.responseResampled = [];
                 trialData.responseResampled.values = resampledValues;
                 trialData.responseResampled.timebase = resampledTimebase;
                 trialData.responseResampled.RMSE = resampledRMSE;
@@ -175,6 +188,7 @@ for ss = completedSessions
                 trialData.responseResampled.values = (trialData.responseResampled.values-baselineSize)./baselineSize;
                 
                 % remove blinks
+                removePoints = [];
                 [iy, removePoints] = PupilAnalysisToolbox_SpikeRemover(trialData.responseResampled.values);
                 if p.Results.debugSpikeRemover
                     figure; hold on;
@@ -186,6 +200,7 @@ for ss = completedSessions
                 
                 % identify poor ellipse fits
                 threshold = 2; % set the threshold for a bad fit as RMSE > 5
+                poorFitFrameIndices = [];
                 poorFitFrameIndices = find(trialData.responseResampled.RMSE > threshold);
                 % censor poor ellipse fits
                 for pp = poorFitFrameIndices
@@ -205,7 +220,28 @@ for ss = completedSessions
                 contrast = contrastLong{1}(end-2:end);
                 % pool the results
                 nRow = size(trialStruct.(directionName).(['Contrast', contrast]),1);
-                trialStruct.(directionName).(['Contrast', contrast])(nRow+1,:) = trialData.responseResampled.values;
+                
+                % throw out a trial if we have too many bad points
+                % find all indices that are NaN
+                nonNanIndices = [];
+                nonNanIndices = find(~isnan(trialData.responseResampled.values));
+                
+                if isempty(nonNanIndices)
+                    nonNanIndices = [1, length(trialData.responseResampled.values)];
+                end
+                
+                trialNanThreshold = 0.2;
+                
+                if p.Results.debugNumberOfNaNValuesPerTrial
+                    sprintf('Session %d, Acquisition %d, Trial %d: %f', str2num(sessionNumber), aa, tt, sum(isnan(trialData.responseResampled.values(nonNanIndices(1):nonNanIndices(end))))/length(trialData.responseResampled.values(nonNanIndices(1):nonNanIndices(end))))
+                end
+                    
+                if sum(isnan(trialData.responseResampled.values(nonNanIndices(1):nonNanIndices(end))))/length(trialData.responseResampled.values(nonNanIndices(1):nonNanIndices(end))) >= trialNanThreshold;
+                    %trialStruct.(directionName).(['Contrast', contrast])(nRow+1,:) = nan(1,length(trialData.responseResampled.values));
+                    badTrial = tt;
+                else
+                    trialStruct.(directionName).(['Contrast', contrast])(nRow+1,:) = trialData.responseResampled.values;
+                end
             end
             
         end
