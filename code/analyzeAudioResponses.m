@@ -240,4 +240,7 @@ plotSpread(data, 'distributionColors', {[254/255, 235/255, 101/255], [228/255, 8
 title('Light Flux')
 xlabel('Contrast')
 ylabel('Discomfort Rating')
+
+print(plotFig, fullfile(analysisBasePath,'audioResponses'), '-dpdf', '-fillpage')
+close(plotFig)
 end % end function
