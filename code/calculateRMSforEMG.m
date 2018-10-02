@@ -185,8 +185,35 @@ for ss = numberOfCompletedSessions
                 voltages.left = trialData.response.values.left(onsetIndex:offsetIndex);
                 voltages.right = trialData.response.values.right(onsetIndex:offsetIndex);
                 
-                RMS.left = (sum(((voltages.left).^2)))^(1/2);
-                RMS.right = (sum(((voltages.right).^2)))^(1/2);
+                numberOfIndicesEvoked = offsetIndex - onsetIndex + 1;
+                numberOfIndicesBaseline = baselineOffsetIndex - baselineOnsetIndex + 1;
+                
+                counter = 1;
+                startingEvokedIndex = onsetIndex;
+                
+                RMSEvokedPooledAcrossSlidingWindows = [];
+                while startingEvokedIndex + numberOfIndicesBaseline - 1 < offsetIndex
+
+                    
+                    voltages.left = trialData.response.values.left(startingEvokedIndex:(startingEvokedIndex+numberOfIndicesBaseline));
+                    voltages.right = trialData.response.values.right(startingEvokedIndex:(startingEvokedIndex+numberOfIndicesBaseline));
+                    
+                    RMS.left = (sum(((voltages.left).^2)))^(1/2);
+                    RMS.right = (sum(((voltages.right).^2)))^(1/2);
+                    
+                    RMSEvokedPooledAcrossSlidingWindows(1,counter) = RMS.left;
+                    RMSEvokedPooledAcrossSlidingWindows(2,counter) = RMS.right;
+                    
+                    
+                    counter = counter + 1;
+                    startingEvokedIndex = startingEvokedIndex + 1;
+                    
+                end
+                
+                
+                
+                RMS.left = mean(RMSEvokedPooledAcrossSlidingWindows(1,:));
+                RMS.right = mean(RMSEvokedPooledAcrossSlidingWindows(2,:));
                 
                 baselineVoltages.left = trialData.response.values.left(baselineOnsetIndex:baselineOffsetIndex);
                 baselineVoltages.right = trialData.response.values.right(baselineOnsetIndex:baselineOffsetIndex);
@@ -208,11 +235,11 @@ for ss = numberOfCompletedSessions
                 contrast = contrastLong{1}(end-2:end);
                 % pool the results
                 nItems = length((trialStruct.(directionName).(['Contrast', contrast]).left));
-                trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = RMS.left;
-                %trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left/length(voltages.left) - baselineRMS.left/length(baselineVoltages.left))/(baselineRMS.left/length(baselineVoltages.left));
+                %trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = RMS.left;
+                trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left - baselineRMS.left)/(baselineRMS.left);
                 
-                trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = RMS.right;
-                %trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right/length(voltages.right) - baselineRMS.right/length(baselineVoltages.right))/(baselineRMS.right/length(baselineVoltages.right));
+                %trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = RMS.right;
+                trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right - baselineRMS.right)/(baselineRMS.right);
                 
             end
             
