@@ -70,6 +70,8 @@ p = inputParser; p.KeepUnmatched = true;
 p.addParameter('makePlots',false,@islogical);
 p.addParameter('windowOnset',2.5,@isnumeric);
 p.addParameter('windowOffset',6.5,@isnumeric);
+p.addParameter('baselineOnset',1,@isnumeric);
+p.addParameter('baselineOffset',1.5,@isnumeric);
 p.addParameter('confidenceInterval', [10 90], @isnumeric);
 p.addParameter('sessions', {}, @iscell);
 
@@ -177,11 +179,20 @@ for ss = numberOfCompletedSessions
                 % calculate RMS for the trial
                 onsetIndex = find(trialData.response.timebase == p.Results.windowOnset);
                 offsetIndex = find(trialData.response.timebase == p.Results.windowOffset);
+                baselineOnsetIndex = find(trialData.response.timebase == p.Results.baselineOnset);
+                baselineOffsetIndex = find(trialData.response.timebase == p.Results.baselineOffset);
+                
                 voltages.left = trialData.response.values.left(onsetIndex:offsetIndex);
                 voltages.right = trialData.response.values.right(onsetIndex:offsetIndex);
                 
                 RMS.left = (sum(((voltages.left).^2)))^(1/2);
                 RMS.right = (sum(((voltages.right).^2)))^(1/2);
+                
+                baselineVoltages.left = trialData.response.values.left(baselineOnsetIndex:baselineOffsetIndex);
+                baselineVoltages.right = trialData.response.values.right(baselineOnsetIndex:baselineOffsetIndex);
+                
+                baselineRMS.left = (sum(((baselineVoltages.left).^2)))^(1/2);
+                baselineRMS.right = (sum(((baselineVoltages.right).^2)))^(1/2);
                 
                 
                 % stash the trial
@@ -198,7 +209,11 @@ for ss = numberOfCompletedSessions
                 % pool the results
                 nItems = length((trialStruct.(directionName).(['Contrast', contrast]).left));
                 trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = RMS.left;
+                %trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left/length(voltages.left) - baselineRMS.left/length(baselineVoltages.left))/(baselineRMS.left/length(baselineVoltages.left));
+                
                 trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = RMS.right;
+                %trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right/length(voltages.right) - baselineRMS.right/length(baselineVoltages.right))/(baselineRMS.right/length(baselineVoltages.right));
+                
             end
             
             
