@@ -66,6 +66,8 @@ function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(su
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('debugSpikeRemover',false,@islogical);
 p.addParameter('debugNumberOfNaNValuesPerTrial', false, @islogical);
+p.addParameter('sessions', {}, @iscell);
+
 p.parse(varargin{:});
 
 %% Find the data
@@ -85,44 +87,49 @@ for ss = 1:length(stimuli)
     end
 end
 
-sessions = [];
-for ss = 1:potentialNumberOfSessions
-    acquisitions = [];
-    for aa = 1:6
-        trials = [];
-        for tt = 1:10
-            if exist(fullfile(analysisBasePath, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)), 'file');
-                trials = [trials, tt];
+if isempty(p.Results.sessions)
+    sessions = [];
+    for ss = 1:potentialNumberOfSessions
+        acquisitions = [];
+        for aa = 1:6
+            trials = [];
+            for tt = 1:10
+                if exist(fullfile(analysisBasePath, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)), 'file');
+                    trials = [trials, tt];
+                end
+            end
+            if isequal(trials, 1:10)
+                acquisitions = [acquisitions, aa];
             end
         end
-        if isequal(trials, 1:10)
-            acquisitions = [acquisitions, aa];
+        if isequal(acquisitions, 1:6)
+            sessions = [sessions, ss];
         end
     end
-    if isequal(acquisitions, 1:6)
-        sessions = [sessions, ss];
-    end
-end
-
-completedSessions = sessions;
-% get session IDs
-sessionIDs = [];
-for ss = completedSessions
-    potentialSessions = dir(fullfile(analysisBasePath, sprintf('*session_%d*', ss)));
-    % in the event of more than one entry for a given session (which would
-    % happen if something weird happened with a session and it was
-    % restarted on a different day), it'll grab the later dated session,
-    % which should always be the one we want
-    for ii = 1:length(potentialSessions)
-        if ~strcmp(potentialSessions(ii).name(1), 'x')
-            sessionIDs{ss} = potentialSessions(ii).name;
+    
+    completedSessions = sessions;
+    % get session IDs
+    sessionIDs = [];
+    for ss = completedSessions
+        potentialSessions = dir(fullfile(analysisBasePath, sprintf('*session_%d*', ss)));
+        % in the event of more than one entry for a given session (which would
+        % happen if something weird happened with a session and it was
+        % restarted on a different day), it'll grab the later dated session,
+        % which should always be the one we want
+        for ii = 1:length(potentialSessions)
+            if ~strcmp(potentialSessions(ii).name(1), 'x')
+                sessionIDs{ss} = potentialSessions(ii).name;
+            end
         end
     end
+else
+    sessionIDs = p.Results.sessions;
+    numberOfCompletedSessions = 1:length(sessionIDs)
 end
 
 %% Load in the data for each session
 for ss = 1:length(sessionIDs)
-        sessionNumber = strsplit(sessionIDs{ss}, 'session_');
+    sessionNumber = strsplit(sessionIDs{ss}, 'session_');
     sessionNumber = sessionNumber{2};
     for aa = 1:6
         acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_pupil.mat', str2num(sessionNumber),aa)));
@@ -153,9 +160,9 @@ for ss = 1:length(sessionIDs)
                 
                 
                 
-             
                 
-
+                
+                
                 
                 
                 % adjust the timebase by adding the delay
@@ -186,7 +193,7 @@ for ss = 1:length(sessionIDs)
                 end
                 trialData.response.values(removePoints) = NaN;
                 
-                   % identify poor ellipse fits
+                % identify poor ellipse fits
                 threshold = 2; % set the threshold for a bad fit as RMSE > 5
                 poorFitFrameIndices = [];
                 poorFitFrameIndices = find(trialData.response.RMSE > threshold);
@@ -194,8 +201,8 @@ for ss = 1:length(sessionIDs)
                 for pp = poorFitFrameIndices
                     trialData.response.values(pp) = NaN;
                 end
-           
-                                numberOfBadFrames = sum(isnan(trialData.response.values));
+                
+                numberOfBadFrames = sum(isnan(trialData.response.values));
                 percentageBadFrames = numberOfBadFrames/(length(trialData.response.values));
                 
                 % resample the timebase so we can put all trials on the same
@@ -217,7 +224,7 @@ for ss = 1:length(sessionIDs)
                 % interpolate onto common timebase across trials
                 resampledValues = interp1(trialData.response.timebase,trialData.response.values,resampledTimebase,'linear');
                 
-
+                
                 trialData.responseResampled = [];
                 trialData.responseResampled.values = resampledValues;
                 trialData.responseResampled.timebase = resampledTimebase;
@@ -259,7 +266,7 @@ for ss = 1:length(sessionIDs)
                 if p.Results.debugNumberOfNaNValuesPerTrial
                     sprintf('Session %d, Acquisition %d, Trial %d: %f', str2num(sessionNumber), aa, tt, percentageBadFrames)
                 end
-                    
+                
                 if percentageBadFrames >= trialNanThreshold;
                     %trialStruct.(directionName).(['Contrast', contrast])(nRow+1,:) = nan(1,length(trialData.responseResampled.values));
                     badTrial = tt;
@@ -282,6 +289,8 @@ for ss = 1:length(stimuli)
     end
 end
 
+fileName = 'trialStruct';
+save(fullfile(analysisBasePath, fileName), 'trialStruct', 'trialStruct', '-v7.3');
 
 
 
