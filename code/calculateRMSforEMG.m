@@ -98,43 +98,43 @@ for ss = 1:length(stimuli)
 end
 
 if isempty(p.Results.sessions)
-sessions = [];
-for ss = 1:potentialNumberOfSessions
-    acquisitions = [];
-    for aa = 1:6
-        trials = [];
-        for tt = 1:10
-            if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d.mp4', tt)), 'file');
-                trials = [trials, tt];
+    sessions = [];
+    for ss = 1:potentialNumberOfSessions
+        acquisitions = [];
+        for aa = 1:6
+            trials = [];
+            for tt = 1:10
+                if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d.mp4', tt)), 'file');
+                    trials = [trials, tt];
+                end
+            end
+            if isequal(trials, 1:10)
+                acquisitions = [acquisitions, aa];
             end
         end
-        if isequal(trials, 1:10)
-            acquisitions = [acquisitions, aa];
+        if isequal(acquisitions, 1:6)
+            sessions = [sessions, ss];
         end
     end
-    if isequal(acquisitions, 1:6)
-        sessions = [sessions, ss];
-    end
-end
-
-numberOfCompletedSessions = sessions;
-% get session IDs
-sessionIDs = [];
-for ss = numberOfCompletedSessions
-    potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sprintf('*session_%d*', ss)));
-    % in the event of more than one entry for a given session (which would
-    % happen if something weird happened with a session and it was
-    % restarted on a different day), it'll grab the later dated session,
-    % which should always be the one we want
-    for ii = 1:length(potentialSessions)
-        if ~strcmp(potentialSessions(ii).name(1), 'x')
-            sessionIDs{ss} = potentialSessions(ii).name;
+    
+    numberOfCompletedSessions = sessions;
+    % get session IDs
+    sessionIDs = [];
+    for ss = numberOfCompletedSessions
+        potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sprintf('*session_%d*', ss)));
+        % in the event of more than one entry for a given session (which would
+        % happen if something weird happened with a session and it was
+        % restarted on a different day), it'll grab the later dated session,
+        % which should always be the one we want
+        for ii = 1:length(potentialSessions)
+            if ~strcmp(potentialSessions(ii).name(1), 'x')
+                sessionIDs{ss} = potentialSessions(ii).name;
+            end
         end
     end
-end
 else
-   sessionIDs = p.Results.sessions; 
-   numberOfCompletedSessions = 1:length(sessionIDs);
+    sessionIDs = p.Results.sessions;
+    numberOfCompletedSessions = 1:length(sessionIDs);
 end
 
 
@@ -235,11 +235,11 @@ for ss = numberOfCompletedSessions
                 contrast = contrastLong{1}(end-2:end);
                 % pool the results
                 nItems = length((trialStruct.(directionName).(['Contrast', contrast]).left));
-                %trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = RMS.left;
-                trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left - baselineRMS.left)/(baselineRMS.left);
+                trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = RMS.left;
+                %trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left - baselineRMS.left)/(baselineRMS.left);
                 
-                %trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = RMS.right;
-                trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right - baselineRMS.right)/(baselineRMS.right);
+                trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = RMS.right;
+                %trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right - baselineRMS.right)/(baselineRMS.right);
                 
             end
             
@@ -324,7 +324,7 @@ linkaxes([lightFluxAxis1, lightFluxAxis2]);
 
 analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
 print(plotFig, fullfile(analysisBasePath,'EMG_RMS'), '-dpdf', '-fillpage')
-close(plotFig)
+%close(plotFig)
 
 plotFig = figure;
 melAxCombined = subplot(3,1,1);
@@ -348,6 +348,5 @@ title('LightFlux')
 xlabel('Contrast')
 ylabel('RMS')
 print(plotFig, fullfile(analysisBasePath,'EMG_RMS_leftRightCombined'), '-dpdf', '-fillpage')
-close(plotFig)
-
+%
 end % end function
