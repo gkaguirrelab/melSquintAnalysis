@@ -182,24 +182,75 @@ end
 
 totalTrials = p.Results.nTrials * p.Results.nAcquisitions * nSessions;
 
-for ii = startingIndex:totalTrials
+trialAccumulator = [];
+
+%% pool the audio files
+% to speed up just rolling through trials
+for ii = 1:totalTrials
     
-    [ss, aa, tt] = ind2sub([nSessions;6;10], ii);
+    [tt, aa, ss] = ind2sub([10;6;nSessions], ii);
     
     
     
     acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', ss,aa)));
     
     
-    fprintf('Session %d, Acquisition %d, Trial %d\n', ss, aa, tt);
     
     trialData.response.values = acquisitionData.responseStruct.data(tt).audio;
+    [ firstTimePoint, secondTimePoint ] = grabRelevantAudioIndices(trialData.response.values, 16000);
+    % convert timepoint to indices
+    firstIndex = firstTimePoint * 16000;
+    secondIndex = secondTimePoint * 16000;
+    if isempty(firstIndex)
+        firstIndex = 1;
+    elseif firstIndex < 1
+        firstIndex = 1;
+    end
+    if isempty(secondIndex)
+        secondIndex = length(trialData.response.values);
+    elseif (secondIndex > length(trialData.response.values))
+        secondIndex = length(trialData.response.values);
+    end
+    trialAccumulator(ii).audio = trialData.response.values(firstIndex:secondIndex);
+    
+    
+    
+    directionNameLong = acquisitionData.trialList(tt).modulationData.modulationParams.direction;
+    directionNameSplit = strsplit(directionNameLong, ' ');
+    if strcmp(directionNameSplit{1}, 'Light')
+        directionName = 'LightFlux';
+    else
+        directionName = directionNameSplit{1};
+    end
+    contrastLong = strsplit(directionNameLong, '%');
+    contrast = contrastLong{1}(end-2:end);
+    % pool the results
+    nItems = length((trialStruct.(directionName).(['Contrast', contrast])));
+    trialAccumulator(ii).stimulus =[directionName, '_Contrast' contrast];
+    
+    
+    
+    
+end
+
+for ii = startingIndex:totalTrials
+    
+    [tt, aa, ss] = ind2sub([10;6;nSessions], ii);
+    
+    
+    
+    %acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', ss,aa)));
+    
+    
+    fprintf('Session %d, Acquisition %d, Trial %d\n', ss, aa, tt);
+    
+    trialData.response.values = trialAccumulator(ii).audio;
     
     % listen to the audio
     trialDoneFlag = false;
     while ~trialDoneFlag
         sound(trialData.response.values, 16000)
-        pause(5)
+        pause(length(trialData.response.values)/16000)
         % prompt user to input rating
         discomfortRating = GetWithDefault('>><strong>Enter discomfort rating:</strong>', '');
         switch discomfortRating
@@ -247,22 +298,17 @@ for ii = startingIndex:totalTrials
     
     %stashing the result
     % first figure out the stimulus type
-    directionNameLong = acquisitionData.trialList(tt).modulationData.modulationParams.direction;
-    directionNameSplit = strsplit(directionNameLong, ' ');
-    if strcmp(directionNameSplit{1}, 'Light')
-        directionName = 'LightFlux';
-    else
-        directionName = directionNameSplit{1};
-    end
-    contrastLong = strsplit(directionNameLong, '%');
-    contrast = contrastLong{1}(end-2:end);
+    stimulusNameFull = trialAccumulator(ii).stimulus;
+    stimulusNameFull_split = strsplit(stimulusNameFull, '_');
+    directionName = stimulusNameFull_split(1);
+    contrastName = stimulusNameFull_split(2);
     % pool the results
-    nItems = length((trialStruct.(directionName).(['Contrast', contrast])));
+    nItems = length((trialStruct.(directionName{1}).([contrastName{1}])));
     if tt ~= 1
-        trialStruct.(directionName).(['Contrast', contrast])(nItems+1) = str2num(discomfortRating);
+        trialStruct.(directionName{1}).([contrastName{1}])(nItems+1) = str2num(discomfortRating);
     end
     if ~exist(fullfile(analysisBasePath), 'dir')
-            mkdir(fullfile(analysisBasePath));
+        mkdir(fullfile(analysisBasePath));
     end
     trialStruct.metaData.index = ii + 1;
     save(fullfile(analysisBasePath, fileName), 'trialStruct', 'trialStruct', '-v7.3');
@@ -289,5 +335,24 @@ for ss = 1:length(stimuli)
         
     end
 end
+
+%% local functions
+function inputVal = GetWithDefault(prompt,defaultVal)
+% inputVal = GetWithDefault(prompt,defaultVal)
+%
+% Prompt for a number or string, with a default returned if user
+% hits return.
+%
+% 4/3/10  dhb  Wrote it.
+
+if (ischar(defaultVal))
+    inputVal = input(sprintf([prompt ' [%s]: '],defaultVal),'s');
+else
+    inputVal = input(sprintf([prompt ' [%g]: '],defaultVal));
+end
+if (isempty(inputVal))
+    inputVal = defaultVal;
+end
+end % end GetWithDefault
 
 end % end function
