@@ -225,6 +225,7 @@ plotSpread(data, 'distributionColors', {[220/255, 237/255, 200/255], [66/255, 17
 title('Melanopsin')
 xlabel('Contrast')
 ylabel('Discomfort Rating')
+ylim([0 10])
 
 grayColorMap = colormap(gray);
 subplot(3,1,2);
@@ -233,6 +234,8 @@ plotSpread(data, 'distributionColors', {grayColorMap(50,:), grayColorMap(25,:), 
 title('LMS')
 xlabel('Contrast')
 ylabel('Discomfort Rating')
+ylim([0 10])
+
 
 subplot(3,1,3);
 data = horzcat( trialStruct.LightFlux.Contrast100', trialStruct.LightFlux.Contrast200',  trialStruct.LightFlux.Contrast400');
@@ -240,6 +243,8 @@ plotSpread(data, 'distributionColors', {[254/255, 235/255, 101/255], [228/255, 8
 title('Light Flux')
 xlabel('Contrast')
 ylabel('Discomfort Rating')
+ylim([0 10])
+
 
 print(plotFig, fullfile(analysisBasePath,'audioResponses'), '-dpdf', '-fillpage')
 close(plotFig)
