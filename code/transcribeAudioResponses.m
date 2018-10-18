@@ -77,6 +77,7 @@ p.addParameter('repeat',false,@islogical);
 p.addParameter('nTrials',10,@isnumeric);
 p.addParameter('nAcquisitions',6,@isnumeric);
 p.addParameter('nSessions',4,@isnumeric);
+p.addParameter('sessions', {}, @iscell);
 
 
 
@@ -115,6 +116,7 @@ trialStruct.metaData = [];
 % trialStruct.metaData.trial = [];
 trialStruct.metaData.index = [];
 
+if isempty(p.Results.sessions)
 sessions = [];
 for ss = 1:potentialNumberOfSessions
     acquisitions = [];
@@ -149,6 +151,10 @@ for ss = completedSessions
             sessionIDs{ss} = potentialSessions(ii).name;
         end
     end
+end
+else
+    sessionIDs = p.Results.sessions;
+    nSessions = length(sessionIDs);
 end
 
 %% perform a safety check to make sure we don't overwrite our existing data
