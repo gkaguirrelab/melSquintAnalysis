@@ -72,7 +72,7 @@ function [trialStructTemplate] = makeTrialStructTemplate(varargin)
 
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
-p.addParameter('includeFirstTrial',true,@islogical);
+p.addParameter('includeFirstTrial',false,@islogical);
 p.addParameter('loopAroundSessionsFirst',true,@islogical);
 
 
