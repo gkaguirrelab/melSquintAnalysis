@@ -188,8 +188,13 @@ for ii = 1:totalTrials
     contrast = contrastLong{1}(end-2:end);
     % pool the results
     nItems = length((trialStructTemplate.(directionName).(['Contrast', contrast])));
+    if tt == 1
+        if p.Results.includeFirstTrial
+            trialStructTemplate.(directionName).(['Contrast', contrast]){nItems+1} = ['s', sprintf('%02d', ss), 'a', sprintf('%02d', aa), 't', sprintf('%02d', tt)];
+        end
+    else
         trialStructTemplate.(directionName).(['Contrast', contrast]){nItems+1} = ['s', sprintf('%02d', ss), 'a', sprintf('%02d', aa), 't', sprintf('%02d', tt)];
-    
+    end
     
     
 end
