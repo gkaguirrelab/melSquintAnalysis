@@ -117,41 +117,41 @@ trialStruct.metaData = [];
 trialStruct.metaData.index = [];
 
 if isempty(p.Results.sessions)
-sessions = [];
-for ss = 1:potentialNumberOfSessions
-    acquisitions = [];
-    for aa = 1:6
-        trials = [];
-        for tt = 1:10
-            if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d.mp4', tt)), 'file');
-                trials = [trials, tt];
+    sessions = [];
+    for ss = 1:potentialNumberOfSessions
+        acquisitions = [];
+        for aa = 1:6
+            trials = [];
+            for tt = 1:10
+                if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d.mp4', tt)), 'file');
+                    trials = [trials, tt];
+                end
+            end
+            if isequal(trials, 1:10)
+                acquisitions = [acquisitions, aa];
             end
         end
-        if isequal(trials, 1:10)
-            acquisitions = [acquisitions, aa];
+        if isequal(acquisitions, 1:6)
+            sessions = [sessions, ss];
         end
     end
-    if isequal(acquisitions, 1:6)
-        sessions = [sessions, ss];
-    end
-end
-
-completedSessions = sessions;
-nSessions = length(completedSessions);
-% get session IDs
-sessionIDs = [];
-for ss = completedSessions
-    potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sprintf('*session_%d*', ss)));
-    % in the event of more than one entry for a given session (which would
-    % happen if something weird happened with a session and it was
-    % restarted on a different day), it'll grab the later dated session,
-    % which should always be the one we want
-    for ii = 1:length(potentialSessions)
-        if ~strcmp(potentialSessions(ii).name(1), 'x')
-            sessionIDs{ss} = potentialSessions(ii).name;
+    
+    completedSessions = sessions;
+    nSessions = length(completedSessions);
+    % get session IDs
+    sessionIDs = [];
+    for ss = completedSessions
+        potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sprintf('*session_%d*', ss)));
+        % in the event of more than one entry for a given session (which would
+        % happen if something weird happened with a session and it was
+        % restarted on a different day), it'll grab the later dated session,
+        % which should always be the one we want
+        for ii = 1:length(potentialSessions)
+            if ~strcmp(potentialSessions(ii).name(1), 'x')
+                sessionIDs{ss} = potentialSessions(ii).name;
+            end
         end
     end
-end
 else
     sessionIDs = p.Results.sessions;
     nSessions = length(sessionIDs);
@@ -343,22 +343,22 @@ for ss = 1:length(stimuli)
 end
 
 %% local functions
-function inputVal = GetWithDefault(prompt,defaultVal)
-% inputVal = GetWithDefault(prompt,defaultVal)
-%
-% Prompt for a number or string, with a default returned if user
-% hits return.
-%
-% 4/3/10  dhb  Wrote it.
-
-if (ischar(defaultVal))
-    inputVal = input(sprintf([prompt ' [%s]: '],defaultVal),'s');
-else
-    inputVal = input(sprintf([prompt ' [%g]: '],defaultVal));
-end
-if (isempty(inputVal))
-    inputVal = defaultVal;
-end
-end % end GetWithDefault
+    function inputVal = GetWithDefault(prompt,defaultVal)
+        % inputVal = GetWithDefault(prompt,defaultVal)
+        %
+        % Prompt for a number or string, with a default returned if user
+        % hits return.
+        %
+        % 4/3/10  dhb  Wrote it.
+        
+        if (ischar(defaultVal))
+            inputVal = input(sprintf([prompt ' [%s]: '],defaultVal),'s');
+        else
+            inputVal = input(sprintf([prompt ' [%g]: '],defaultVal));
+        end
+        if (isempty(inputVal))
+            inputVal = defaultVal;
+        end
+    end % end GetWithDefault
 
 end % end function
