@@ -6,17 +6,17 @@ directionObjectsBase = fullfile(getpref(projectName, 'melaDataPath'), 'Experimen
 
 for ss = 1:length(sessionList.ID)
     load(fullfile(directionObjectsBase, sessionList.ID{ss}, sessionList.date{ss}, 'MaxMelDirection.mat'))
-    [ XYChromaticity ] = calculateChromaticity(MaxMelDirection);
+    [ XYChromaticity ] = calculateChromaticity(MaxMelDirection, 'whichValidation', 'postcorrection');
     chromaticityAccumulator.Mel(ss,1) = XYChromaticity(1);
     chromaticityAccumulator.Mel(ss,2) = XYChromaticity(2);
     
     load(fullfile(directionObjectsBase, sessionList.ID{ss}, sessionList.date{ss}, 'MaxLMSDirection.mat'))
-    [ XYChromaticity ] = calculateChromaticity(MaxLMSDirection);
+    [ XYChromaticity ] = calculateChromaticity(MaxLMSDirection, 'whichValidation', 'postcorrection');
     chromaticityAccumulator.LMS(ss,1) = XYChromaticity(1);
     chromaticityAccumulator.LMS(ss,2) = XYChromaticity(2);
     
     load(fullfile(directionObjectsBase, sessionList.ID{ss}, sessionList.date{ss}, 'LightFluxDirection.mat'))
-    [ XYChromaticity ] = calculateChromaticity(LightFluxDirection);
+    [ XYChromaticity ] = calculateChromaticity(LightFluxDirection, 'whichValidation', 'postcorrection');
     chromaticityAccumulator.LightFlux(ss,1) = XYChromaticity(1);
     chromaticityAccumulator.LightFlux(ss,2) = XYChromaticity(2);
 end
