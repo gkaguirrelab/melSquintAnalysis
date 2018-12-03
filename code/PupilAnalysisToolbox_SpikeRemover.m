@@ -9,8 +9,8 @@ params.VelocityOnsetThreshold = -0.02;
 params.VelocitySearchWindowSize = 5;
 
 % Remove points exceeding the % percent change threshold
-removePoints = find(abs(iy) > params.BadPercentChangeThreshold);
-iy(removePoints) = NaN;
+%removePoints = find(abs(iy) > params.BadPercentChangeThreshold);
+%iy(removePoints) = NaN;
 
 % Go through the velocity signal and try to find the onset of a blink event
 velocityTrace = diff(smooth(iy, params.VelocitySmoothingParam));
@@ -85,4 +85,4 @@ while v < length(velocityTrace)
     end
     iy(foundPeaks) = NaN;
 end
-removePoints = [removePoints foundPeaks];
+removePoints = [foundPeaks];
