@@ -14,6 +14,8 @@ trackSubject('MELA_0166', '2018-11-30_session_1', 'Protocol', 'Screening', 'resu
 trackSubject('MELA_0167', '2018-11-30_session_1', 'Protocol', 'Screening', 'resume', true);
 trackSubject('MELA_0169', '2018-12-03_session_1', 'Protocol', 'Screening', 'resume', true);
 trackSubject('MELA_0174', '2018-12-17_session_1', 'Protocol', 'Screening', 'resume', true)
+trackSubject('MELA_0169', '2019-01-24_session_2', 'resume', true)
+trackSubject('MELA_0169', '2019-01-24_session_1', 'resume', true)
 trackSubject('MELA_0181', '2019-01-23_session_1', 'resume', true)
 trackSubject('MELA_0181', '2019-01-23_session_2', 'resume', true)
 trackSubject('MELA_0179', '2019-01-18_session_2', 'resume', true)
