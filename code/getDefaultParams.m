@@ -32,7 +32,7 @@ if strcmp(p.Results.approach, 'Squint')
     fitParams.pupilFrameMask = [100 400 150 300];
     fitParams.pupilCircleThresh = 0.05;
     fitParams.pupilGammaCorrection = 0.7;
-    fitParams.maskBox = [2 2];
+    fitParams.maskBox = [1 1];
     fitParams.cutErrorThreshold = 4;
     fitParams.badFrameErrorThreshold = 6;
     fitParams.glintPatchRadius = 35;
