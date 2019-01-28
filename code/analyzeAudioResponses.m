@@ -98,7 +98,7 @@ for ss = 1:length(stimuli)
 end
 
 %% Find the data
-analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
+analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), '../MELA_analysis/Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 % figure out filename of trialStruct
 if (p.Results.repeat)
