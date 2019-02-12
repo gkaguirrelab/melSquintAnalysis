@@ -43,3 +43,14 @@ trackSubject('MELA_0167', '2018-12-04_session_2', 'resume', true);
 trackSubject('MELA_0167', '2018-12-11_session_4', 'resume', true);
 trackSubject('MELA_0167', '2018-12-11_session_3', 'resume', true)
 
+
+trackSubject('MELA_0169', '2019-02-08_session_3', 'resume', true);
+trackSubject('MELA_0169', '2019-02-08_session_4', 'resume', true);
+trackSubject('MELA_0181', '2019-02-06_session_3', 'resume', true);
+trackSubject('MELA_0181', '2019-02-06_session_4', 'resume', true);
+trackSubject('MELA_0164', '2019-02-04_session_2', 'resume', true);
+trackSubject('MELA_0164', '2019-02-04_session_1', 'resume', true);
+
+
+
+
