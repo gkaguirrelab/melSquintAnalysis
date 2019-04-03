@@ -145,6 +145,8 @@ for ss = 1:length(sessionIDs)
                 trialData.response.timebase = acquisitionData.responseStruct.data(tt).pupil.timebase;
                 trialData.response.RMSE = trialData.pupilData.initial.ellipses.RMSE;
                 
+                initialNaNFrames = find(isnan(trialData.response.values));
+                
                 % identify duplicate frames
                 differential = [];
                 differential = diff(trialData.response.RMSE);
@@ -186,14 +188,31 @@ for ss = 1:length(sessionIDs)
                 % remove blinks
                 controlFile = loadControlFile(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_controlFile.csv', tt)));
                 blinkIndices = [];
+                blinkBufferFrames = 2;
                 for ii = 1:length(controlFile)
                     if strcmp(controlFile(ii).type, 'blink')
                         blinkFrame = controlFile(ii).frame;
-                        blinkIndices = [blinkIndices, blinkFrame];
-                        trialData.response.values((blinkFrame-5):(blinkFrame+5)) = NaN;
+                        if blinkFrame - blinkBufferFrames < 1
+                            beginningOfBlinkFrame = 1;
+                        else
+                            beginningOfBlinkFrame = blinkFrame - blinkBufferFrames;
+                        end
+                        if blinkFrame + blinkBufferFrames > length(trialData.response.values)
+                            endingOfBlinkFrame = length(trialData.response.values);
+                        else
+                            endingOfBlinkFrame = blinkFrame + blinkBufferFrames;
+                        end
+                        blinkIndices = [blinkIndices, beginningOfBlinkFrame:endingOfBlinkFrame];
+
+                        trialData.response.values(beginningOfBlinkFrame:endingOfBlinkFrame) = NaN;
                     end
                 end
-                    
+                blinkIndices = unique(blinkIndices);
+                % identify frames that were NaN initially (prior to this
+                % routine assigning them as NaN) that were not assigned so
+                % because they were blinks (i.e. we couldn't find the pupil
+                % to begin with);
+                initialNaNFrames = setdiff(initialNaNFrames,blinkIndices);
                 
                 removePoints = [];
                 [iy, removePoints] = PupilAnalysisToolbox_SpikeRemover(trialData.response.values);
@@ -283,6 +302,9 @@ for ss = 1:length(sessionIDs)
                     fprintf('\tBlink frames: %d\n', length(blinkIndices));
                     fprintf('\tDuplicate frames: %d\n', length(duplicateFrameIndices));
                     fprintf('\tPoor fit frames: %d\n', length(poorFitFrameIndices));
+                    fprintf('\tInitial NaN frames: %d\n', length(initialNaNFrames));
+
+                    
 
                 end
                 
