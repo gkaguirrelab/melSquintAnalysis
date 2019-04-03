@@ -1,4 +1,4 @@
-function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(subjectID, varargin)
+function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses_interpolateLast(subjectID, varargin)
 
 % Analyzes a single subject's pupillometry data from the OLApproach_Squint,
 % SquintToPulse Experiment
@@ -184,6 +184,17 @@ for ss = 1:length(sessionIDs)
                 trialData.response.values = (trialData.response.values - baselineSize)./baselineSize;
                 
                 % remove blinks
+                controlFile = loadControlFile(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_controlFile.csv', tt)));
+                blinkIndices = [];
+                for ii = 1:length(controlFile)
+                    if strcmp(controlFile(ii).type, 'blink')
+                        blinkFrame = controlFile(ii).frame;
+                        blinkIndices = [blinkIndices, blinkFrame];
+                        trialData.response.values((blinkFrame-5):(blinkFrame+5)) = NaN;
+                    end
+                end
+                    
+                
                 removePoints = [];
                 [iy, removePoints] = PupilAnalysisToolbox_SpikeRemover(trialData.response.values);
                 if p.Results.debugSpikeRemover
@@ -194,7 +205,7 @@ for ss = 1:length(sessionIDs)
                 trialData.response.values(removePoints) = NaN;
                 
                 % identify poor ellipse fits
-                threshold = 2; % set the threshold for a bad fit as RMSE > 5
+                threshold = 5; % set the threshold for a bad fit as RMSE > 5
                 poorFitFrameIndices = [];
                 poorFitFrameIndices = find(trialData.response.RMSE > threshold);
                 % censor poor ellipse fits
@@ -264,7 +275,15 @@ for ss = 1:length(sessionIDs)
                 trialNanThreshold = 0.2;
                 
                 if p.Results.debugNumberOfNaNValuesPerTrial
-                    sprintf('Session %d, Acquisition %d, Trial %d: %f', str2num(sessionNumber), aa, tt, percentageBadFrames)
+                    close all;
+                    figure; plot(trialData.response.timebase, (trialData.pupilData.initial.ellipses.values(:,3)-baselineSize)./baselineSize); hold on; plot(resampledTimebase, resampledValues)
+
+                    
+                    fprintf('Session %d, Acquisition %d, Trial %d: %f\n', str2num(sessionNumber), aa, tt, percentageBadFrames);
+                    fprintf('\tBlink frames: %d\n', length(blinkIndices));
+                    fprintf('\tDuplicate frames: %d\n', length(duplicateFrameIndices));
+                    fprintf('\tPoor fit frames: %d\n', length(poorFitFrameIndices));
+
                 end
                 
                 if percentageBadFrames >= trialNanThreshold;
