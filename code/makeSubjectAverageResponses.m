@@ -284,15 +284,7 @@ for ss = 3:length(sessionIDs)
                 % pool the results
                 nRow = size(trialStruct.(directionName).(['Contrast', contrast]),1);
                 
-                % throw out a trial if we have too many bad points
-                % find all indices that are NaN
-                nonNanIndices = [];
-                nonNanIndices = find(~isnan(trialData.responseResampled.values));
-                
-                if isempty(nonNanIndices)
-                    nonNanIndices = [1, length(trialData.responseResampled.values)];
-                end
-                
+            
                 trialNanThreshold = 0.2;
                 
                 if p.Results.debugNumberOfNaNValuesPerTrial

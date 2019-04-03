@@ -246,7 +246,7 @@ for ss = 1:length(sessionIDs)
                 TotalNaNIndices = find(isnan(trialData.response.values));
                 NaNRunsCellArray = identifyRuns(TotalNaNIndices);
                 
-                interpolationLimitInFrames = 30;
+                interpolationLimitInFrames = 30; % initial data is collected at 60 Hz, so this is saying interpolate through missing data of duration < 0.5 s
                 for rr = 1:length(NaNRunsCellArray)
                     if length(NaNRunsCellArray{rr}) <= interpolationLimitInFrames
                         theNans = zeros(1,length(trialData.response.values));
@@ -302,14 +302,7 @@ for ss = 1:length(sessionIDs)
                 % pool the results
                 nRow = size(trialStruct.(directionName).(['Contrast', contrast]),1);
                 
-                % throw out a trial if we have too many bad points
-                % find all indices that are NaN
-                nonNanIndices = [];
-                nonNanIndices = find(~isnan(trialData.responseResampled.values));
                 
-                if isempty(nonNanIndices)
-                    nonNanIndices = [1, length(trialData.responseResampled.values)];
-                end
                 
                 trialNanThreshold = 0.2;
                 
@@ -328,7 +321,7 @@ for ss = 1:length(sessionIDs)
 
                 end
                 
-                if percentageBadFrames >= trialNanThreshold;
+                if percentageBadFrames >= trialNanThreshold
                     %trialStruct.(directionName).(['Contrast', contrast])(nRow+1,:) = nan(1,length(trialData.responseResampled.values));
                     badTrial = tt;
                 else
