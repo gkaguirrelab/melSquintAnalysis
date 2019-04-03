@@ -5,6 +5,7 @@ testVector = [1 2 3 5 6 9 10];
 runCellArray = identifyRuns(testVector);
 
 %}
+inputVector = sort(inputVector);
 differenceVector = diff(inputVector);
 runsCellArray = [];
 runsCellArray{1} = inputVector(1);
