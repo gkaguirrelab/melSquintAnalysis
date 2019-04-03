@@ -128,7 +128,7 @@ else
 end
 
 %% Load in the data for each session
-for ss = 1:length(sessionIDs)
+for ss = 3:length(sessionIDs)
     sessionNumber = strsplit(sessionIDs{ss}, 'session_');
     sessionNumber = sessionNumber{2};
     for aa = 1:6
@@ -222,6 +222,8 @@ for ss = 1:length(sessionIDs)
                     plot(removePoints, trialData.response.values(removePoints), 'o', 'Color', 'r')
                 end
                 trialData.response.values(removePoints) = NaN;
+                blinkIndices = [blinkIndices, removePoints];
+                blinkIndices = unique(blinkIndices);
                 
                 % identify poor ellipse fits
                 threshold = 5; % set the threshold for a bad fit as RMSE > 5
