@@ -18,7 +18,7 @@ for ss = 1:length(subjectDirs)
     
     
 end
-
+commandList = fliplr(commandList);
 for cc = 1:length(commandList)
     eval(commandList{cc})
     splitCommand = strsplit(commandList{cc}, '''skipProcessing''');
