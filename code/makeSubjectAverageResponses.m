@@ -68,6 +68,17 @@ p.addParameter('debugSpikeRemover',false,@islogical);
 p.addParameter('debugNumberOfNaNValuesPerTrial', false, @islogical);
 p.addParameter('sessions', {}, @iscell);
 
+
+% Fixed experimental parameters
+p.addParameter('baselineWindowOnsetTime', 1, @isnumeric);
+p.addParameter('baselineWindowOffsetTime', 1.5, @isnumeric);
+p.addParameter('frameRate', 60, @isnumeric);
+p.addParameter('trialNaNThreshold', 0.2, @isnumeric); % meaning 20%
+
+% Parameters that may vary between subjects
+p.addParameter('blinkBufferFrames', 4, @isnumeric);
+p.addParameter('RMSEThreshold', 5, @isnumeric);
+
 p.parse(varargin{:});
 
 %% Find the data
@@ -124,11 +135,11 @@ if isempty(p.Results.sessions)
     end
 else
     sessionIDs = p.Results.sessions;
-    numberOfCompletedSessions = 1:length(sessionIDs)
+    numberOfCompletedSessions = 1:length(sessionIDs);
 end
 
 %% Load in the data for each session
-for ss = 3:length(sessionIDs)
+for ss = 1:length(sessionIDs)
     sessionNumber = strsplit(sessionIDs{ss}, 'session_');
     sessionNumber = sessionNumber{2};
     for aa = 1:6
@@ -180,15 +191,15 @@ for ss = 3:length(sessionIDs)
                 
                 % find the indices corresponding to 1 and 1.5 s with the
                 % new timebase
-                [~, baselineWindowOnsetIndex ] = min(abs(1-trialData.response.timebase));
-                [~, baselineWindowOffsetIndex ] = min(abs(1.5-trialData.response.timebase));
+                [~, baselineWindowOnsetIndex ] = min(abs(p.Results.baselineWindowOnsetTime-trialData.response.timebase));
+                [~, baselineWindowOffsetIndex ] = min(abs(p.Results.baselineWindowOffsetTime-trialData.response.timebase));
                 baselineSize = nanmean(trialData.response.values(baselineWindowOnsetIndex:baselineWindowOffsetIndex));
                 trialData.response.values = (trialData.response.values - baselineSize)./baselineSize;
                 
                 % remove blinks
                 controlFile = loadControlFile(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_controlFile.csv', tt)));
                 blinkIndices = [];
-                blinkBufferFrames = 2;
+                blinkBufferFrames = p.Results.blinkBufferFrames;
                 for ii = 1:length(controlFile)
                     if strcmp(controlFile(ii).type, 'blink')
                         blinkFrame = controlFile(ii).frame;
@@ -226,20 +237,21 @@ for ss = 3:length(sessionIDs)
                 blinkIndices = unique(blinkIndices);
                 
                 % identify poor ellipse fits
-                threshold = 5; % set the threshold for a bad fit as RMSE > 5
+                threshold = p.Results.RMSEThreshold; % set the threshold for a bad fit as RMSE > 5
                 poorFitFrameIndices = [];
                 poorFitFrameIndices = find(trialData.response.RMSE > threshold);
                 % censor poor ellipse fits
                 for pp = poorFitFrameIndices
                     trialData.response.values(pp) = NaN;
                 end
+                poorFitFrameIndices = setdiff(poorFitFrameIndices, blinkIndices);
                 
                 numberOfBadFrames = sum(isnan(trialData.response.values));
                 percentageBadFrames = numberOfBadFrames/(length(trialData.response.values));
                 
                 % resample the timebase so we can put all trials on the same
                 % timebase
-                stepSize = 1/60;
+                stepSize = 1/p.Results.frameRate;
                 resampledTimebase = 0:stepSize:18.5;
                 
                 resampledValues = [];
@@ -261,13 +273,6 @@ for ss = 3:length(sessionIDs)
                 trialData.responseResampled.values = resampledValues;
                 trialData.responseResampled.timebase = resampledTimebase;
                 
-                % normalize by baseline pupil size
-                % the 4 second pulse of light begins at 1.5 s, so we're
-                % taking the 0.5 seconds before that as our normalization
-                % window
-                baselineWindow = 1/stepSize+1:1.5/stepSize+1;
-                %baselineSize = nanmean(trialData.responseResampled.values(baselineWindow));
-                %trialData.responseResampled.values = (trialData.responseResampled.values-baselineSize)./baselineSize;
                 
                 
                 % stash the trial
@@ -285,7 +290,7 @@ for ss = 3:length(sessionIDs)
                 nRow = size(trialStruct.(directionName).(['Contrast', contrast]),1);
                 
             
-                trialNanThreshold = 0.2;
+                trialNaNThreshold = p.Results.trialNaNThreshold;
                 
                 if p.Results.debugNumberOfNaNValuesPerTrial
                     close all;
@@ -302,7 +307,7 @@ for ss = 3:length(sessionIDs)
 
                 end
                 
-                if percentageBadFrames >= trialNanThreshold;
+                if percentageBadFrames >= trialNaNThreshold
                     %trialStruct.(directionName).(['Contrast', contrast])(nRow+1,:) = nan(1,length(trialData.responseResampled.values));
                     badTrial = tt;
                 else
@@ -391,7 +396,7 @@ ylim([-0.8 0.1])
 xlim([0 17])
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
-print(plotFig, fullfile(analysisBasePath,'averageResponse_interpolateLast'), '-dpdf', '-fillpage')
+print(plotFig, fullfile(analysisBasePath,'averageResponse'), '-dpdf', '-fillpage')
 close(plotFig)
 
 
