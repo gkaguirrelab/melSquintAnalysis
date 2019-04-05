@@ -5,8 +5,8 @@ p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('approach', 'Squint' ,@isstr);
 p.addParameter('protocol', 'SquintToPulse' ,@isstr);
-p.addParameter('resume', false, @islogical);
-p.addParameter('skipProcessing', false, @islogical);
+p.addParameter('skipParamsAdjustment', false, @islogical);
+p.addParameter('processVideo', false, @islogical);
 
 p.parse(varargin{:})
 
@@ -30,123 +30,143 @@ else
     load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']));
 end
 % if no trial-specific params exist, get the acquisition-specific params
-
+if ~isfield(fitParams, 'smallObjThresh')
+    fitParams.smallObjThresh = defaultFitParams.smallObjThresh;
+end
 
 
 
 grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, acquisitionFolderName, videoName);
-
-%% Ask user which params we'd like to modify
-
-% Including ability to look at additional params
-
-%% Test new params
-framesToCheck = GetWithDefault('Test findPupilPerimeter on which frames: ', '');
-if ~isempty(framesToCheck)
-    videoInObj = VideoReader(grayVideoName);
+if ~(p.Results.skipParamsAdjustment)
     
+    %% Ask user which params we'd like to modify
+    params = fieldnames(fitParams);
+    fprintf('Select the parameter you would like to adjust:\n')
     counter = 1;
-    for ii = framesToCheck
-        perimeter = [];
-        plotFig = figure;
-        hold on
-        
-        %subplot(2, round(nFrames/2), counter)
+    for ii = 1:length(params)
+        %[fprintf('\t%d. ellipseTransparentUB: ', counter) fitParams.(params{ii})(:), '\n'];
+        fmt = ['\t%d. %s: ', repmat('%g ', 1, numel(fitParams.(params{ii}))-1), '%g\n'];
+        fprintf(fmt, counter, params{ii}, fitParams.(params{ii})(:));
         counter = counter + 1;
-        string = [];
-        string = (['Frame ', num2str(ii)]);
-        
-        videoInObj.CurrentTime = (ii - 1)/(videoInObj.FrameRate);
-        thisFrameDiagnostics = readFrame(videoInObj);
-        thisFrameDiagnostics = rgb2gray(thisFrameDiagnostics);
-        thisFrameDiagnostics = squeeze(thisFrameDiagnostics);
-        
-        
-        perimeter = findPupilPerimeter(grayVideoName, 'temp', ...
-            'startFrame', ii, ...
-            'nFrames', 1, ...
-            'ellipseTransparentUB', ellipseTransparentUB, ...
-            'ellipseTransparentLB', ellipseTransparentLB, ...
-            'pupilGammaCorrection', pupilGammaCorrection, ...
-            'frameMaskValue', frameMaskValue, ...
-            'pupilFrameMask', initialParams.pupilFrameMask, ...
-            'pupilRange', initialParams.pupilRange, ...
-            'pupilCircleThresh', initialParams.pupilCircleThresh, ...
-            'maskBox', maskBox, ...
-            'smallObjThresh', smallObjThresh);
-        displayFrame=thisFrameDiagnostics;
-        if ~isempty(perimeter.data{1}.Xp)
-            displayFrame(sub2ind(size(thisFrameDiagnostics),perimeter.data{1}.Yp,perimeter.data{1}.Xp))=255;
-        end
-        if isempty(perimeter.data{1}.Xp)
-            string = 'No pupil found';
-            text(350, 200, string);
-        end
-        imshow(displayFrame, 'Border', 'tight')
-        dText = text(1,10,string, 'FontSize', 16, 'BackgroundColor', 'white');
-        delete('temp.mat')
     end
+    fprintf('\t%d. Add additional parameter\n', counter);
     
-    %% allow the user to adjust certain parameters, then test finding the pupil perimeter again
-    adjustParamsChoice = GetWithDefault('>> Satisfied with these parameters? Enter ''y'' to proceed and exit, or ''n'' to manually adjust the parameters. [y/n]', 'y');
-    if ~strcmp(adjustParamsChoice, 'y')
-        close all
-        adjustParamsFlag = false;
-        while ~adjustParamsFlag
-            
-            fprintf('Select the parameter you would like to adjust:\n')
-            fprintf('\t1. ellipseTransparentUB: %g %g %g %g %g \n', ellipseTransparentUB(:));
-            fprintf('\t2. ellipseTransparentLB: %g %g %g %g %g \n', ellipseTransparentLB(:));
-            fprintf('\t3. pupilGammaCorrection: %g\n', pupilGammaCorrection);
-            fprintf('\t4. frameMaskValue: %g\n', frameMaskValue);
-            fprintf('\t5. pupilFrameMask: %g %g %g %g\n', initialParams.pupilFrameMask(:));
-            fprintf('\t6. pupilCircleThresh: %g\n', initialParams.pupilCircleThresh);
-            fprintf('\t7. maskBox: %g %g\n', maskBox(:));
-            fprintf('\t8. pupilRange: %g %g\n', initialParams.pupilRange(:));
-            fprintf('\t9. smallObjThresh: %g\n', smallObjThresh);
-            
-            
-            choice = input('\nYour choice: ', 's');
-            
-            switch choice
-                case '1'
-                    ellipseTransparentUB = input('Enter new ellipseTransparentUB:     ');
-                    initialParams.ellipseTransparentUB = ellipseTransparentUB;
-                case '2'
-                    ellipseTransparentLB = input('Enter new ellipseTransparentLB:     ');
-                    initialParams.ellipseTransparentLB = ellipseTransparentLB;
-                case '3'
-                    pupilGammaCorrection = input('Enter new pupilGammaCorrection:     ');
-                    initialParams.pupilGammaCorrection = pupilGammaCorrection;
-                case '4'
-                    frameMaskValue = input('Enter new frameMaskValue:     ');
-                    initialParams.frameMaskValue = frameMaskValue;
-                case '5'
-                    initialParams.pupilFrameMask = input('Enter new pupilFrameMask:     ');
-                case '6'
-                    initialParams.pupilCircleThresh = input('Enter new pupilCircleThresh:     ');
-                case '7'
-                    maskBox = input('Enter new maskBox:     ');
-                    initialParams.maskBox = maskBox;
-                case '8'
-                    initialParams.pupilRange = input('Enter new pupilRange:     ');
-                case '9'
-                    smallObjThresh = input('Enter new smallObjThresh:       ');
+    
+    choice = input('\nYour choice: ', 's');
+    if ~isempty(choice)
+        if str2num(choice) ~= counter
+            paramOfInterest = params{str2num(choice)};
+            string = sprintf('Enter new %s:      \n', paramOfInterest);
+            answer = input(string, 's');
+            if strcmp(answer, 'true') || strcmp(answer, 'false')
+                if strcmp(answer, 'true')
+                    fitParams.(paramOfInterest) = true;
+                elseif strcmp(answer, 'false')
+                    fitParams(paramOfInterest) = false;
+                end
+            else
+                fitParams.(paramOfInterest) = str2num(answer);
             end
             
-            fprintf('New parameters:\n')
-            fprintf('\tellipseTransparentUB: %g %g %g %g %g \n', ellipseTransparentUB(:));
-            fprintf('\tellipseTransparentLB: %g %g %g %g %g \n', ellipseTransparentLB(:));
-            fprintf('\tpupilGammaCorrection: %g\n', pupilGammaCorrection);
-            fprintf('\tframeMaskValue: %g\n', frameMaskValue);
-            fprintf('\tpupilFrameMask: %g %g %g %g\n', initialParams.pupilFrameMask(:));
-            fprintf('\tpupilCircleThresh: %g\n', initialParams.pupilCircleThresh);
-            fprintf('\tmaskBox: %g %g\n', maskBox(:));
-            fprintf('\tpupilRange: %g %g\n', initialParams.pupilRange(:));
+        else
+            paramName = input('Enter new param name:       ', 's');
+            answer = input(sprintf('Enter %s:       ', paramName), 's');
+            if strcmp(answer, 'true') || strcmp(answer, 'false')
+                if strcmp(answer, 'true')
+                    fitParams.(paramName) = true;
+                elseif strcmp(answer, 'false')
+                    fitParams(paramName) = false;
+                end
+            else
+                fitParams.(paramName) = str2num(answer);
+            end
             
+        end
+        
+        params = fieldnames(fitParams);
+        fprintf('Current params:\n')
+        counter = 1;
+        for ii = 1:length(params)
+            %[fprintf('\t%d. ellipseTransparentUB: ', counter) fitParams.(params{ii})(:), '\n'];
+            fmt = ['\t%d. %s: ', repmat('%g ', 1, numel(fitParams.(params{ii}))-1), '%g\n'];
+            fprintf(fmt, counter, params{ii}, fitParams.(params{ii})(:));
+            counter = counter + 1;
+        end
+        adjustParamsChoice = GetWithDefault('>> Satisfied with these parameters? Enter ''y'' to proceed and exit, or ''n'' to manually adjust the parameters. [y/n]', 'y');
+        if ~strcmp(adjustParamsChoice, 'y')
+            params = fieldnames(fitParams);
             
-            
-            
+            adjustParamsFlag = false;
+            while ~adjustParamsFlag
+                fprintf('Select the parameter you would like to adjust:\n')
+                counter = 1;
+                for ii = 1:length(params)
+                    %[fprintf('\t%d. ellipseTransparentUB: ', counter) fitParams.(params{ii})(:), '\n'];
+                    fmt = ['\t%d. %s: ', repmat('%g ', 1, numel(fitParams.(params{ii}))-1), '%g\n'];
+                    fprintf(fmt, counter, params{ii}, fitParams.(params{ii})(:));
+                    counter = counter + 1;
+                end
+                fprintf('\t%d. Add additional parameter\n', counter);
+                
+                
+                choice = input('\nYour choice: ', 's');
+                if ~isempty(choice)
+                    if str2num(choice) ~= counter
+                        paramOfInterest = params{str2num(choice)};
+                        string = sprintf('Enter new %s:      \n', paramOfInterest);
+                        answer = input(string, 's');
+                        if strcmp(answer, 'true') || strcmp(answer, 'false')
+                            if strcmp(answer, 'true')
+                                fitParams.(paramOfInterest) = true;
+                            elseif strcmp(answer, 'false')
+                                fitParams(paramOfInterest) = false;
+                            end
+                        else
+                            fitParams.(paramOfInterest) = str2num(answer);
+                        end
+                        
+                    else
+                        paramName = input('Enter new param name:       ', 's');
+                        answer = input(sprintf('Enter %s:       ', paramName), 's');
+                        if strcmp(answer, 'true') || strcmp(answer, 'false')
+                            if strcmp(answer, 'true')
+                                fitParams.(paramName) = true;
+                            elseif strcmp(answer, 'false')
+                                fitParams(paramName) = false;
+                            end
+                        else
+                            fitParams.(paramName) = str2num(answer);
+                        end
+                        
+                    end
+                    
+                    params = fieldnames(fitParams);
+                    fprintf('Current params:\n')
+                    counter = 1;
+                    for ii = 1:length(params)
+                        %[fprintf('\t%d. ellipseTransparentUB: ', counter) fitParams.(params{ii})(:), '\n'];
+                        fmt = ['\t%d. %s: ', repmat('%g ', 1, numel(fitParams.(params{ii}))-1), '%g\n'];
+                        fprintf(fmt, counter, params{ii}, fitParams.(params{ii})(:));
+                        counter = counter + 1;
+                    end
+                end
+                adjustParamsChoice = GetWithDefault('>> Satisfied with these parameters? Enter ''y'' to proceed and exit, or ''n'' to manually adjust the parameters. [y/n]', 'y');
+                switch adjustParamsChoice
+                    case 'y'
+                        adjustParamsFlag = true;
+                    case 'n'
+                        adjustParamsFlag = false;
+                        close all
+                end
+            end
+        end
+        
+        
+        %% Test new params
+        framesToCheck = GetWithDefault('Test findPupilPerimeter on which frames: ', '');
+        framesToCheck = str2num(framesToCheck);
+        if ~isempty(framesToCheck)
+            videoInObj = VideoReader(grayVideoName);
             
             counter = 1;
             for ii = framesToCheck
@@ -168,15 +188,15 @@ if ~isempty(framesToCheck)
                 perimeter = findPupilPerimeter(grayVideoName, 'temp', ...
                     'startFrame', ii, ...
                     'nFrames', 1, ...
-                    'ellipseTransparentUB', ellipseTransparentUB, ...
-                    'ellipseTransparentLB', ellipseTransparentLB, ...
-                    'pupilGammaCorrection', pupilGammaCorrection, ...
-                    'frameMaskValue', frameMaskValue, ...
-                    'pupilFrameMask', initialParams.pupilFrameMask, ...
-                    'pupilRange', initialParams.pupilRange, ...
-                    'pupilCircleThresh', initialParams.pupilCircleThresh, ...
-                    'maskBox', maskBox, ...
-                    'smallObjThresh', smallObjThresh);
+                    'ellipseTransparentUB', fitParams.ellipseTransparentUB, ...
+                    'ellipseTransparentLB', fitParams.ellipseTransparentLB, ...
+                    'pupilGammaCorrection', fitParams.pupilGammaCorrection, ...
+                    'frameMaskValue', fitParams.frameMaskValue, ...
+                    'pupilFrameMask', fitParams.pupilFrameMask, ...
+                    'pupilRange', fitParams.pupilRange, ...
+                    'pupilCircleThresh', fitParams.pupilCircleThresh, ...
+                    'maskBox', fitParams.maskBox, ...
+                    'smallObjThresh', fitParams.smallObjThresh);
                 displayFrame=thisFrameDiagnostics;
                 if ~isempty(perimeter.data{1}.Xp)
                     displayFrame(sub2ind(size(thisFrameDiagnostics),perimeter.data{1}.Yp,perimeter.data{1}.Xp))=255;
@@ -189,22 +209,132 @@ if ~isempty(framesToCheck)
                 dText = text(1,10,string, 'FontSize', 16, 'BackgroundColor', 'white');
                 delete('temp.mat')
             end
+            
+            %% allow the user to adjust certain parameters, then test finding the pupil perimeter again
             adjustParamsChoice = GetWithDefault('>> Satisfied with these parameters? Enter ''y'' to proceed and exit, or ''n'' to manually adjust the parameters. [y/n]', 'y');
-            switch adjustParamsChoice
-                case 'y'
-                    adjustParamsFlag = true;
-                case 'n'
-                    adjustParamsFlag = false;
-                    close all
+            if ~strcmp(adjustParamsChoice, 'y')
+                close all
+                adjustParamsFlag = false;
+                while ~adjustParamsFlag
+                    
+                    fprintf('Select the parameter you would like to adjust:\n')
+                    fprintf('\t1. ellipseTransparentUB: %g %g %g %g %g \n', fitParams.ellipseTransparentUB(:));
+                    fprintf('\t2. ellipseTransparentLB: %g %g %g %g %g \n', fitParams.ellipseTransparentLB(:));
+                    fprintf('\t3. pupilGammaCorrection: %g\n', fitParams.pupilGammaCorrection);
+                    fprintf('\t4. frameMaskValue: %g\n', fitParams.frameMaskValue);
+                    fprintf('\t5. pupilFrameMask: %g %g %g %g\n', fitParams.pupilFrameMask(:));
+                    fprintf('\t6. pupilCircleThresh: %g\n', fitParams.pupilCircleThresh);
+                    fprintf('\t7. maskBox: %g %g\n', fitParams.maskBox(:));
+                    fprintf('\t8. pupilRange: %g %g\n', fitParams.pupilRange(:));
+                    fprintf('\t9. smallObjThresh: %g\n', fitParams.smallObjThresh);
+                    fprintf('\t10. Choose new frames to test\n');
+                    
+                    
+                    choice = input('\nYour choice: ', 's');
+                    
+                    switch choice
+                        case '1'
+                            ellipseTransparentUB = input('Enter new ellipseTransparentUB:     ');
+                            fitParams.ellipseTransparentUB = ellipseTransparentUB;
+                        case '2'
+                            ellipseTransparentLB = input('Enter new ellipseTransparentLB:     ');
+                            fitParams.ellipseTransparentLB = ellipseTransparentLB;
+                        case '3'
+                            pupilGammaCorrection = input('Enter new pupilGammaCorrection:     ');
+                            fitParams.pupilGammaCorrection = pupilGammaCorrection;
+                        case '4'
+                            frameMaskValue = input('Enter new frameMaskValue:     ');
+                            fitParams.frameMaskValue = frameMaskValue;
+                        case '5'
+                            fitParams.pupilFrameMask = input('Enter new pupilFrameMask:     ');
+                        case '6'
+                            fitParams.pupilCircleThresh = input('Enter new pupilCircleThresh:     ');
+                        case '7'
+                            maskBox = input('Enter new maskBox:     ');
+                            fitParams.maskBox = maskBox;
+                        case '8'
+                            fitParams.pupilRange = input('Enter new pupilRange:     ');
+                        case '9'
+                            fitParams.smallObjThresh = input('Enter new smallObjThresh:       ');
+                        case '10'
+                            framesToCheck = GetWithDefault('Test on which frames: ', '');
+                            framesToCheck = str2num(framesToCheck);
+                    end
+                    
+                    fprintf('New parameters:\n')
+                    fprintf('\tellipseTransparentUB: %g %g %g %g %g \n', fitParams.ellipseTransparentUB(:));
+                    fprintf('\tellipseTransparentLB: %g %g %g %g %g \n', fitParams.ellipseTransparentLB(:));
+                    fprintf('\tpupilGammaCorrection: %g\n', fitParams.pupilGammaCorrection);
+                    fprintf('\tframeMaskValue: %g\n', fitParams.frameMaskValue);
+                    fprintf('\tpupilFrameMask: %g %g %g %g\n', fitParams.pupilFrameMask(:));
+                    fprintf('\tpupilCircleThresh: %g\n', fitParams.pupilCircleThresh);
+                    fprintf('\tmaskBox: %g %g\n', fitParams.maskBox(:));
+                    fprintf('\tpupilRange: %g %g\n', fitParams.pupilRange(:));
+                    fprintf('\tsmallObjThresh: %g\n', fitParams.smallObjThresh);
+                    
+                    
+                    
+                    
+                    counter = 1;
+                    for ii = framesToCheck
+                        perimeter = [];
+                        plotFig = figure;
+                        hold on
+                        
+                        %subplot(2, round(nFrames/2), counter)
+                        counter = counter + 1;
+                        string = [];
+                        string = (['Frame ', num2str(ii)]);
+                        
+                        videoInObj.CurrentTime = (ii - 1)/(videoInObj.FrameRate);
+                        thisFrameDiagnostics = readFrame(videoInObj);
+                        thisFrameDiagnostics = rgb2gray(thisFrameDiagnostics);
+                        thisFrameDiagnostics = squeeze(thisFrameDiagnostics);
+                        
+                        
+                        perimeter = findPupilPerimeter(grayVideoName, 'temp', ...
+                            'startFrame', ii, ...
+                            'nFrames', 1, ...
+                            'ellipseTransparentUB', fitParams.ellipseTransparentUB, ...
+                            'ellipseTransparentLB', fitParams.ellipseTransparentLB, ...
+                            'pupilGammaCorrection', fitParams.pupilGammaCorrection, ...
+                            'frameMaskValue', fitParams.frameMaskValue, ...
+                            'pupilFrameMask', fitParams.pupilFrameMask, ...
+                            'pupilRange', fitParams.pupilRange, ...
+                            'pupilCircleThresh', fitParams.pupilCircleThresh, ...
+                            'maskBox', fitParams.maskBox, ...
+                            'smallObjThresh', fitParams.smallObjThresh);
+                        displayFrame=thisFrameDiagnostics;
+                        if ~isempty(perimeter.data{1}.Xp)
+                            displayFrame(sub2ind(size(thisFrameDiagnostics),perimeter.data{1}.Yp,perimeter.data{1}.Xp))=255;
+                        end
+                        if isempty(perimeter.data{1}.Xp)
+                            string = 'No pupil found';
+                            text(350, 200, string);
+                        end
+                        imshow(displayFrame, 'Border', 'tight')
+                        dText = text(1,10,string, 'FontSize', 16, 'BackgroundColor', 'white');
+                        delete('temp.mat')
+                    end
+                    adjustParamsChoice = GetWithDefault('>> Satisfied with these parameters? Enter ''y'' to proceed and exit, or ''n'' to manually adjust the parameters. [y/n]', 'y');
+                    switch adjustParamsChoice
+                        case 'y'
+                            adjustParamsFlag = true;
+                        case 'n'
+                            adjustParamsFlag = false;
+                            close all
+                    end
+                    
+                    
+                end
             end
-            
-            
         end
     end
+    % save out new params
+    % save according to trial number
+    save(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']), 'fitParams', '-v7.3')
+    
 end
-% save out new params
-% save according to trial number
-
 %% Process the video, if desired
 if p.Results.processVideo
     fprintf('Analyzing subject %s, session %s, acquisition %s, %s\n', pathParams.subject, pathParams.session, acquisitionNumber, trialNumber);
@@ -220,6 +350,9 @@ if p.Results.processVideo
     end
     if ~isfield(fitParams, 'candidateThetas')
         fitParams.candidateThetas = p.Results.candidateThetas;
+    end
+    if ~isfield(fitParams, 'smallObjThresh')
+        fitParams.smallObjThresh = defaultFitParams.smallObjThresh;
     end
     
     runVideoPipeline(pathParams,...
@@ -241,7 +374,7 @@ if p.Results.processVideo
         'minRadiusProportion', fitParams.minRadiusProportion, ...
         'expandPupilRange', fitParams.expandPupilRange, ...
         'candidateThetas', fitParams.candidateThetas, ...
-        'smallObjThresh', 5000);
+        'smallObjThresh', fitParams.smallObjThresh);
 end
 
 end
