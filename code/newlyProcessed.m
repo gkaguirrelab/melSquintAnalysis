@@ -40,3 +40,6 @@
 % trackSubject('MELA_0177', '2019-03-20_session_4', 'resume', true)
 % trackSubject('MELA_0177', '2019-03-20_session_3', 'resume', true)
 % trackSubject('MELA_0194', '2019-04-03_session_2', 'resume', true)
+% trackSubject('MELA_0194', '2019-04-03_session_1', 'resume', true)
+% trackSubject('MELA_0192', '2019-04-05_session_2', 'resume', true)
+% trackSubject('MELA_0192', '2019-04-05_session_1', 'resume', true)
