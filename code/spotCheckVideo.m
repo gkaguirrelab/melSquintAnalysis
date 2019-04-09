@@ -344,7 +344,7 @@ if ~(p.Results.skipParamsAdjustment)
     save(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']), 'fitParams', '-v7.3')
     
     % prep command for ease of use
-    newCommand = ['spotCheckVideo(''', pathParams.subject, ''', ''' pathParams.session, ''', ', num2str(acquisitionNumber), ', ', num2str(trialNumber), ', ''skipParamsAdjustment'', true, ''processVideo'', true);'];
+    newCommand = ['spotCheckVideo(''', pathParams.subject, ''', ''' pathParams.session, ''', ', num2str(acquisitionNumber), ', ', num2str(trialNumber), ', ''skipParamsAdjustment'', true, ''processVideo'', true, ''openVideo'', false);'];
     system(['echo "', newCommand, '" >> ', '~/Documents/MATLAB/projects/melSquintAnalysis/code/newlySpotchecked.m']);
 end
 %% Process the video, if desired
