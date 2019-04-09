@@ -7,6 +7,7 @@ p.addParameter('approach', 'Squint' ,@isstr);
 p.addParameter('protocol', 'SquintToPulse' ,@isstr);
 p.addParameter('skipParamsAdjustment', false, @islogical);
 p.addParameter('processVideo', false, @islogical);
+p.addParameter('openVideo', true, @islogical);
 
 p.parse(varargin{:})
 
@@ -37,6 +38,13 @@ end
 
 
 grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, acquisitionFolderName, videoName);
+processedVideoName = strrep(grayVideoName, 'MELA_data', 'MELA_processing');
+processedVideoName = strrep(processedVideoName, '.mp4', '_fitStage6.avi');
+
+if p.Results.openVideo
+    [recordedErrorFlag, consoleOutput] = system(['open ''' processedVideoName '''']);
+end
+
 if ~(p.Results.skipParamsAdjustment)
     
     %% Ask user which params we'd like to modify
