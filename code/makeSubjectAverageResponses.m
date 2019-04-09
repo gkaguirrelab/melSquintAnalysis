@@ -322,14 +322,17 @@ for ss = 1:length(sessionIDs)
                     
                     string = sprintf('Session %d, Acquisition %d, Trial %d: %f\n\tBlink frames: %d (%d from CF, %d from SR)\n\tDuplicate frames: %d\n\tPoor fit frames: %d\n\tInitial NaN frames: %d', str2num(sessionNumber), aa, tt, percentageBadFrames, length(blinkIndices), length(controlFileBlinkIndices), length(spikeRemoverBlinkIndices), length(duplicateFrameIndices), length(poorFitFrameIndices), length(initialNaNFrames));
                     ax = gca;
-                    ax.YLim(1) = ax.YLim(1) - 0.2;
-                    text(0.3, ax.YLim(1) + 0.1, string);
+                    axesRange = ax.YLim(2) - ax.YLim(1);
+                    ogYLowerLimit = ax.YLim(1);
+                    ax.YLim(1) = ogYLowerLimit - 0.25*axesRange;
+                    text(0.3, ogYLowerLimit - 0.125*axesRange, string);
+
                     
-%                     fprintf('Session %d, Acquisition %d, Trial %d: %f\n', str2num(sessionNumber), aa, tt, percentageBadFrames);
-%                     fprintf('\tBlink frames: %d (%d from CF, %d from SR)\n', length(blinkIndices), length(controlFileBlinkIndices), length(spikeRemoverBlinkIndices));
-%                     fprintf('\tDuplicate frames: %d\n', length(duplicateFrameIndices));
-%                     fprintf('\tPoor fit frames: %d\n', length(poorFitFrameIndices));
-%                     fprintf('\tInitial NaN frames: %d\n', length(initialNaNFrames));
+                    fprintf('Session %d, Acquisition %d, Trial %d: %f\n', str2num(sessionNumber), aa, tt, percentageBadFrames);
+                    fprintf('\tBlink frames: %d (%d from CF, %d from SR)\n', length(blinkIndices), length(controlFileBlinkIndices), length(spikeRemoverBlinkIndices));
+                    fprintf('\tDuplicate frames: %d\n', length(duplicateFrameIndices));
+                    fprintf('\tPoor fit frames: %d\n', length(poorFitFrameIndices));
+                    fprintf('\tInitial NaN frames: %d\n', length(initialNaNFrames));
 
                     
 
