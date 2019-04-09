@@ -76,8 +76,10 @@ p.addParameter('frameRate', 60, @isnumeric);
 p.addParameter('trialNaNThreshold', 0.2, @isnumeric); % meaning 20%
 
 % Parameters that may vary between subjects
-p.addParameter('blinkBufferFrames', 4, @isnumeric);
+p.addParameter('blinkBufferFrames', 0, @isnumeric);
 p.addParameter('RMSEThreshold', 5, @isnumeric);
+p.addParameter('nTimePointsToSkipPlotting', 40, @isnumeric);
+
 
 p.parse(varargin{:});
 
@@ -338,64 +340,71 @@ plotFig = figure;
 subplot(3,1,1)
 title('Melanopsin')
 hold on
-line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5)
 
 lineProps.width = 1;
 lineProps.col{1} = [220/255, 237/255, 200/255];
-mseb(resampledTimebase-1, averageResponseStruct.Melanopsin.Contrast100, averageResponseStruct.Melanopsin.Contrast100_SEM, lineProps)
+ax1 = mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.Melanopsin.Contrast100(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.Melanopsin.Contrast100_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps);
 
 lineProps.col{1} = [66/255, 179/255, 213/255];
-mseb(resampledTimebase-1, averageResponseStruct.Melanopsin.Contrast200, averageResponseStruct.Melanopsin.Contrast200_SEM, lineProps)
+ax2 = mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.Melanopsin.Contrast200(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.Melanopsin.Contrast200_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps);
 
 lineProps.col{1} = [26/255, 35/255, 126/255];
-mseb(resampledTimebase-1, averageResponseStruct.Melanopsin.Contrast400, averageResponseStruct.Melanopsin.Contrast400_SEM, lineProps)
+ax3 = mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.Melanopsin.Contrast400(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.Melanopsin.Contrast400_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps);
 ylim([-0.8 0.1])
 xlim([0 17])
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
+legend(['100% Contrast, N = ' num2str(size(trialStruct.Melanopsin.Contrast100,1))], ['200% Contrast, N = ' num2str(size(trialStruct.Melanopsin.Contrast200,1))], ['400% Contrast, N = ' num2str(size(trialStruct.Melanopsin.Contrast400,1))], 'Location', 'southeast')
+legend('boxoff')
+line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
+
 %saveas(plotFig, fullfile(analysisBasePath, 'melanopsin.pdf'), 'pdf');
 %close(plotFig)
 
 subplot(3,1,2)
 title('LMS')
 hold on
-line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5)
 
 grayColorMap = colormap(gray);
 lineProps.width = 1;
 lineProps.col{1} = grayColorMap(50,:);
-mseb(resampledTimebase-1, averageResponseStruct.LMS.Contrast100, averageResponseStruct.LMS.Contrast100_SEM, lineProps)
+mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.LMS.Contrast100(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.LMS.Contrast100_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps)
 
 lineProps.col{1} = grayColorMap(25,:);
-mseb(resampledTimebase-1, averageResponseStruct.LMS.Contrast200, averageResponseStruct.LMS.Contrast200_SEM, lineProps)
+mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.LMS.Contrast200(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.LMS.Contrast200_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps)
 
 lineProps.col{1} = grayColorMap(1,:);
-mseb(resampledTimebase-1, averageResponseStruct.LMS.Contrast400, averageResponseStruct.LMS.Contrast400_SEM, lineProps)
+mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.LMS.Contrast400(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.LMS.Contrast400_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps)
 ylim([-0.8 0.1])
 xlim([0 17])
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
+legend(['100% Contrast, N = ' num2str(size(trialStruct.LMS.Contrast100,1))], ['200% Contrast, N = ' num2str(size(trialStruct.LMS.Contrast200,1))], ['400% Contrast, N = ' num2str(size(trialStruct.LMS.Contrast400,1))], 'Location', 'southeast')
+legend('boxoff')
+line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
 %saveas(plotFig, fullfile(analysisBasePath, 'LMS.pdf'), 'pdf');
 %close(plotFig)
 
 subplot(3,1,3)
 title('LightFlux')
 hold on
-line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5)
 
 lineProps.width = 1;
 lineProps.col{1} = [254/255, 235/255, 101/255];
-mseb(resampledTimebase-1, averageResponseStruct.LightFlux.Contrast100, averageResponseStruct.LightFlux.Contrast100_SEM, lineProps)
+mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.LightFlux.Contrast100(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.LightFlux.Contrast100_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps)
 
 lineProps.col{1} = [228/255, 82/255, 27/255];
-mseb(resampledTimebase-1, averageResponseStruct.LightFlux.Contrast200, averageResponseStruct.LightFlux.Contrast200_SEM, lineProps)
+mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.LightFlux.Contrast200(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.LightFlux.Contrast200_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps)
 
 lineProps.col{1} = [77/255, 52/255, 47/255];
-mseb(resampledTimebase-1, averageResponseStruct.LightFlux.Contrast400, averageResponseStruct.LightFlux.Contrast400_SEM, lineProps)
+mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.LightFlux.Contrast400(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.LightFlux.Contrast400_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps)
 ylim([-0.8 0.1])
 xlim([0 17])
 xlabel('Time (s)')
 ylabel('Pupil Area (% Change)')
+legend(['100% Contrast, N = ' num2str(size(trialStruct.LightFlux.Contrast100,1))], ['200% Contrast, N = ' num2str(size(trialStruct.LightFlux.Contrast200,1))], ['400% Contrast, N = ' num2str(size(trialStruct.LightFlux.Contrast400,1))], 'Location', 'southeast')
+legend('boxoff')
+line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
 print(plotFig, fullfile(analysisBasePath,'averageResponse'), '-dpdf', '-fillpage')
 close(plotFig)
 
