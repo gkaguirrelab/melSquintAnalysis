@@ -12,3 +12,7 @@
 % resulting from inability to pupil cut
 spotCheckVideo('MELA_0181', '2019-01-23_session_1', 1, 3, 'skipParamsAdjustment', true, 'processVideo', true);
 spotCheckVideo('MELA_0181', '2019-01-23_session_1', 1, 4, 'skipParamsAdjustment', true, 'processVideo', true);
+spotCheckVideo('MELA_0181', '2019-01-23_session_2', 1, 6, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0181', '2019-01-23_session_2', 1, 9, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0181', '2019-01-23_session_2', 1, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0175', '2019-01-29_session_1', 6, 4, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
