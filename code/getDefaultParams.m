@@ -46,7 +46,7 @@ if strcmp(p.Results.approach, 'Squint')
     fitParams.candidateThetas = 0:pi/16:2*pi;
     fitParams.minRadiusProportion = -0.5;
     fitParams.glintPatchRadius = 40;
-    fitParams.smallObjThresh = 5000;
+    fitParams.smallObjThresh = 3000;
     fitParams.candidateThetas = pi/2:pi/16:pi;
     fitParams.expandPupilRange = true;
     fitParams.extendBlinkWindow = [0 0];
