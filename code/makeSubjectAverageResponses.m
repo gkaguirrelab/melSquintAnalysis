@@ -220,22 +220,23 @@ for ss = 1:length(sessionIDs)
                         trialData.response.values(beginningOfBlinkFrame:endingOfBlinkFrame) = NaN;
                     end
                 end
-                blinkIndices = unique(blinkIndices);
+                controlFileBlinkIndices = unique(blinkIndices);
                 % identify frames that were NaN initially (prior to this
                 % routine assigning them as NaN) that were not assigned so
                 % because they were blinks (i.e. we couldn't find the pupil
                 % to begin with);
-                initialNaNFrames = setdiff(initialNaNFrames,blinkIndices);
+                initialNaNFrames = setdiff(initialNaNFrames,controlFileBlinkIndices);
                 
-                removePoints = [];
-                [iy, removePoints] = PupilAnalysisToolbox_SpikeRemover(trialData.response.values);
+                spikeRemoverBlinkIndices = [];
+                [iy, spikeRemoverBlinkIndices] = PupilAnalysisToolbox_SpikeRemover(trialData.response.values);
                 if p.Results.debugSpikeRemover
                     figure; hold on;
                     plot(trialData.response.values)
-                    plot(removePoints, trialData.response.values(removePoints), 'o', 'Color', 'r')
+                    plot(spikeRemoverBlinkIndices, trialData.response.values(spikeRemoverBlinkIndices), 'o', 'Color', 'r')
                 end
-                trialData.response.values(removePoints) = NaN;
-                blinkIndices = [blinkIndices, removePoints];
+                trialData.response.values(spikeRemoverBlinkIndices) = NaN;
+                spikeRemoverBlinkIndices = unique(spikeRemoverBlinkIndices);
+                blinkIndices = [controlFileBlinkIndices, spikeRemoverBlinkIndices];
                 blinkIndices = unique(blinkIndices);
                 
                 % identify poor ellipse fits
@@ -261,7 +262,7 @@ for ss = 1:length(sessionIDs)
                 
                 % interpolate across all NaN values
                 theNans = isnan(trialData.response.values);
-                if sum(~theNans) > 1
+                if sum(theNans) > 1
                     x = trialData.response.values;
                     x(theNans) = interp1(trialData.response.timebase(~theNans), trialData.response.values(~theNans), trialData.response.timebase(theNans)', 'linear');
                     trialData.response.values = x;
@@ -296,14 +297,39 @@ for ss = 1:length(sessionIDs)
                 
                 if p.Results.debugNumberOfNaNValuesPerTrial
                     close all;
-                    figure; plot(trialData.response.timebase, (trialData.pupilData.initial.ellipses.values(:,3)-baselineSize)./baselineSize); hold on; plot(resampledTimebase, resampledValues)
-
+                    figure; hold on;
+                    plot(trialData.response.timebase, (trialData.pupilData.initial.ellipses.values(:,3)-baselineSize)./baselineSize); hold on; plot(resampledTimebase, resampledValues)
                     
-                    fprintf('Session %d, Acquisition %d, Trial %d: %f\n', str2num(sessionNumber), aa, tt, percentageBadFrames);
-                    fprintf('\tBlink frames: %d\n', length(blinkIndices));
-                    fprintf('\tDuplicate frames: %d\n', length(duplicateFrameIndices));
-                    fprintf('\tPoor fit frames: %d\n', length(poorFitFrameIndices));
-                    fprintf('\tInitial NaN frames: %d\n', length(initialNaNFrames));
+                    if ~isempty(controlFileBlinkIndices)
+                        plot(trialData.response.timebase(controlFileBlinkIndices), trialData.response.values(controlFileBlinkIndices), 'o', 'Color', 'b')
+                    end
+                    if ~isempty(spikeRemoverBlinkIndices)
+                        
+                        plot(trialData.response.timebase(spikeRemoverBlinkIndices), trialData.response.values(spikeRemoverBlinkIndices), '+', 'Color', 'b')
+                    end
+                    if ~isempty(duplicateFrameIndices)
+                        
+                        plot(trialData.response.timebase(duplicateFrameIndices), trialData.response.values(duplicateFrameIndices),'o',  'Color', 'k')
+                    end
+                    if ~isempty(poorFitFrameIndices)
+                        
+                        plot(trialData.response.timebase(poorFitFrameIndices), trialData.response.values(poorFitFrameIndices), 'o', 'Color', 'g')
+                    end
+                    if ~isempty(initialNaNFrames)
+                        
+                        plot(trialData.response.timebase(initialNaNFrames), trialData.response.values(initialNaNFrames), 'o', 'Color', 'r')
+                    end
+                    
+                    string = sprintf('Session %d, Acquisition %d, Trial %d: %f\n\tBlink frames: %d (%d from CF, %d from SR)\n\tDuplicate frames: %d\n\tPoor fit frames: %d\n\tInitial NaN frames: %d', str2num(sessionNumber), aa, tt, percentageBadFrames, length(blinkIndices), length(controlFileBlinkIndices), length(spikeRemoverBlinkIndices), length(duplicateFrameIndices), length(poorFitFrameIndices), length(initialNaNFrames));
+                    ax = gca;
+                    ax.YLim(1) = ax.YLim(1) - 0.2;
+                    text(0.3, ax.YLim(1) + 0.1, string);
+                    
+%                     fprintf('Session %d, Acquisition %d, Trial %d: %f\n', str2num(sessionNumber), aa, tt, percentageBadFrames);
+%                     fprintf('\tBlink frames: %d (%d from CF, %d from SR)\n', length(blinkIndices), length(controlFileBlinkIndices), length(spikeRemoverBlinkIndices));
+%                     fprintf('\tDuplicate frames: %d\n', length(duplicateFrameIndices));
+%                     fprintf('\tPoor fit frames: %d\n', length(poorFitFrameIndices));
+%                     fprintf('\tInitial NaN frames: %d\n', length(initialNaNFrames));
 
                     
 
