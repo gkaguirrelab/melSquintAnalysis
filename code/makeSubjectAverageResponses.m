@@ -262,6 +262,7 @@ for ss = 1:length(sessionIDs)
                 
                 % interpolate across all NaN values
                 theNans = isnan(trialData.response.values);
+                if numberOfBadFrames ~= length(trialData.response.values)
                 if sum(theNans) > 1
                     x = trialData.response.values;
                     x(theNans) = interp1(trialData.response.timebase(~theNans), trialData.response.values(~theNans), trialData.response.timebase(theNans)', 'linear');
@@ -275,7 +276,10 @@ for ss = 1:length(sessionIDs)
                 trialData.responseResampled = [];
                 trialData.responseResampled.values = resampledValues;
                 trialData.responseResampled.timebase = resampledTimebase;
-                
+                else
+                    resampledValues = nan(1,length(resampledTimebase));
+                    trialData.responseResampled.values = resampledValues;
+                end
                 
                 
                 % stash the trial
@@ -297,7 +301,7 @@ for ss = 1:length(sessionIDs)
                 
                 if p.Results.debugNumberOfNaNValuesPerTrial
                     close all;
-                    figure; hold on;
+                    plotFig = figure; hold on;
                     plot(trialData.response.timebase, (trialData.pupilData.initial.ellipses.values(:,3)-baselineSize)./baselineSize); hold on; plot(resampledTimebase, resampledValues)
                     
                     if ~isempty(controlFileBlinkIndices)
@@ -333,7 +337,18 @@ for ss = 1:length(sessionIDs)
                     fprintf('\tDuplicate frames: %d\n', length(duplicateFrameIndices));
                     fprintf('\tPoor fit frames: %d\n', length(poorFitFrameIndices));
                     fprintf('\tInitial NaN frames: %d\n', length(initialNaNFrames));
+                    
+                    if ~exist(fullfile(analysisBasePath,'allTrials'))
+                        mkdir(fullfile(analysisBasePath,'allTrials'));
+                    end
+                    saveas(plotFig, fullfile(analysisBasePath,'allTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt), '.png']));
+                    if percentageBadFrames >= trialNaNThreshold
+                        if ~exist(fullfile(analysisBasePath,'allTrials', 'failedTrials'))
+                            mkdir(fullfile(analysisBasePath,'allTrials', 'failedTrials'));
+                        end
+                       saveas(plotFig, fullfile(analysisBasePath,'allTrials', 'failedTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt), '.png']));
 
+                    end
                     
 
                 end
