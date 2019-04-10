@@ -76,9 +76,11 @@ p.addParameter('frameRate', 60, @isnumeric);
 p.addParameter('trialNaNThreshold', 0.2, @isnumeric); % meaning 20%
 
 % Parameters that may vary between subjects
-p.addParameter('blinkBufferFrames', 0, @isnumeric);
+p.addParameter('blinkBufferFrames', [2 4], @isnumeric);
 p.addParameter('RMSEThreshold', 5, @isnumeric);
 p.addParameter('nTimePointsToSkipPlotting', 40, @isnumeric);
+p.addParameter('performSpikeRemoval', false, @islogical);
+
 
 
 p.parse(varargin{:});
@@ -138,6 +140,19 @@ if isempty(p.Results.sessions)
 else
     sessionIDs = p.Results.sessions;
     numberOfCompletedSessions = 1:length(sessionIDs);
+end
+
+% prep output debugging dir
+if ~exist(fullfile(analysisBasePath,'allTrials'))
+    mkdir(fullfile(analysisBasePath,'allTrials'));
+else
+    if ~exist(fullfile(analysisBasePath,'old'))
+        mkdir(fullfile(analysisBasePath,'old'));
+    end
+    system(['mv "', fullfile(analysisBasePath,'allTrials'), '" "', fullfile(analysisBasePath,'old'), '"']);
+    mkdir(fullfile(analysisBasePath,'allTrials'));
+    
+    
 end
 
 %% Load in the data for each session
@@ -205,15 +220,15 @@ for ss = 1:length(sessionIDs)
                 for ii = 1:length(controlFile)
                     if strcmp(controlFile(ii).type, 'blink')
                         blinkFrame = controlFile(ii).frame;
-                        if blinkFrame - blinkBufferFrames < 1
+                        if blinkFrame - blinkBufferFrames(1) < 1
                             beginningOfBlinkFrame = 1;
                         else
-                            beginningOfBlinkFrame = blinkFrame - blinkBufferFrames;
+                            beginningOfBlinkFrame = blinkFrame - blinkBufferFrames(1);
                         end
-                        if blinkFrame + blinkBufferFrames > length(trialData.response.values)
+                        if blinkFrame + blinkBufferFrames(2) > length(trialData.response.values)
                             endingOfBlinkFrame = length(trialData.response.values);
                         else
-                            endingOfBlinkFrame = blinkFrame + blinkBufferFrames;
+                            endingOfBlinkFrame = blinkFrame + blinkBufferFrames(2);
                         end
                         blinkIndices = [blinkIndices, beginningOfBlinkFrame:endingOfBlinkFrame];
 
@@ -228,14 +243,16 @@ for ss = 1:length(sessionIDs)
                 initialNaNFrames = setdiff(initialNaNFrames,controlFileBlinkIndices);
                 
                 spikeRemoverBlinkIndices = [];
-                [iy, spikeRemoverBlinkIndices] = PupilAnalysisToolbox_SpikeRemover(trialData.response.values);
-                if p.Results.debugSpikeRemover
-                    figure; hold on;
-                    plot(trialData.response.values)
-                    plot(spikeRemoverBlinkIndices, trialData.response.values(spikeRemoverBlinkIndices), 'o', 'Color', 'r')
+                if p.Results.performSpikeRemoval
+                    [iy, spikeRemoverBlinkIndices] = PupilAnalysisToolbox_SpikeRemover(trialData.response.values);
+                    if p.Results.debugSpikeRemover
+                        figure; hold on;
+                        plot(trialData.response.values)
+                        plot(spikeRemoverBlinkIndices, trialData.response.values(spikeRemoverBlinkIndices), 'o', 'Color', 'r')
+                    end
+                    trialData.response.values(spikeRemoverBlinkIndices) = NaN;
+                    spikeRemoverBlinkIndices = unique(spikeRemoverBlinkIndices);
                 end
-                trialData.response.values(spikeRemoverBlinkIndices) = NaN;
-                spikeRemoverBlinkIndices = unique(spikeRemoverBlinkIndices);
                 blinkIndices = [controlFileBlinkIndices, spikeRemoverBlinkIndices];
                 blinkIndices = unique(blinkIndices);
                 
@@ -263,19 +280,19 @@ for ss = 1:length(sessionIDs)
                 % interpolate across all NaN values
                 theNans = isnan(trialData.response.values);
                 if numberOfBadFrames ~= length(trialData.response.values)
-                if sum(theNans) > 1
-                    x = trialData.response.values;
-                    x(theNans) = interp1(trialData.response.timebase(~theNans), trialData.response.values(~theNans), trialData.response.timebase(theNans)', 'linear');
-                    trialData.response.values = x;
-                end
-                
-                % interpolate onto common timebase across trials
-                resampledValues = interp1(trialData.response.timebase,trialData.response.values,resampledTimebase,'linear');
-                
-                
-                trialData.responseResampled = [];
-                trialData.responseResampled.values = resampledValues;
-                trialData.responseResampled.timebase = resampledTimebase;
+                    if sum(theNans) > 1
+                        x = trialData.response.values;
+                        x(theNans) = interp1(trialData.response.timebase(~theNans), trialData.response.values(~theNans), trialData.response.timebase(theNans)', 'linear');
+                        trialData.response.values = x;
+                    end
+                    
+                    % interpolate onto common timebase across trials
+                    resampledValues = interp1(trialData.response.timebase,trialData.response.values,resampledTimebase,'linear');
+                    
+                    
+                    trialData.responseResampled = [];
+                    trialData.responseResampled.values = resampledValues;
+                    trialData.responseResampled.timebase = resampledTimebase;
                 else
                     resampledValues = nan(1,length(resampledTimebase));
                     trialData.responseResampled.values = resampledValues;
@@ -338,9 +355,7 @@ for ss = 1:length(sessionIDs)
                     fprintf('\tPoor fit frames: %d\n', length(poorFitFrameIndices));
                     fprintf('\tInitial NaN frames: %d\n', length(initialNaNFrames));
                     
-                    if ~exist(fullfile(analysisBasePath,'allTrials'))
-                        mkdir(fullfile(analysisBasePath,'allTrials'));
-                    end
+
                     saveas(plotFig, fullfile(analysisBasePath,'allTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt), '.png']));
                     if percentageBadFrames >= trialNaNThreshold
                         if ~exist(fullfile(analysisBasePath,'allTrials', 'failedTrials'))
