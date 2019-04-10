@@ -11,6 +11,15 @@ p.addParameter('openVideo', true, @islogical);
 
 p.parse(varargin{:})
 
+%% if sessionID is given out a number, figure out the appropriate string
+[ defaultFitParams, cameraParams, pathParams ] = getDefaultParams(varargin{:});
+pathParams.subject = subjectID;
+pathParams.protocol = p.Results.protocol;
+if isnumeric(sessionID)
+    sessionDir = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, ['2*session_', num2str(sessionID)]));
+    sessionID = sessionDir.name;
+end
+
 %% Load up the current params for this video
 acquisitionFolderName = sprintf('videoFiles_acquisition_%02d', acquisitionNumber);
 videoName = sprintf('trial_%03d.mp4', trialNumber);
@@ -20,9 +29,7 @@ if ~isnumeric(trialNumber)
 else
     runName = sprintf('trial_%03d', trialNumber);
 end
-[ defaultFitParams, cameraParams, pathParams ] = getDefaultParams(varargin{:});
-pathParams.subject = subjectID;
-pathParams.protocol = p.Results.protocol;
+
 pathParams.session = sessionID;
 % first look for a trial specific
 if exist((fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat'])))
@@ -397,5 +404,7 @@ if p.Results.processVideo
         'candidateThetas', fitParams.candidateThetas, ...
         'smallObjThresh', fitParams.smallObjThresh);
 end
+
+close all
 
 end
