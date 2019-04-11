@@ -118,7 +118,9 @@ if isempty(p.Results.sessions)
             end
         end
         if isequal(acquisitions, 1:6)
-            sessions = [sessions, ss];
+            sessionName = strsplit(potentialSessions(ss).name, 'session_');
+            sessionNumber = str2num(sessionName{2});
+            sessions = [sessions, sessionNumber];
         end
     end
     
@@ -136,6 +138,7 @@ if isempty(p.Results.sessions)
                 sessionIDs{ss} = potentialSessions(ii).name;
             end
         end
+        sessionIDs = sessionIDs(~cellfun('isempty',sessionIDs));
     end
 else
     sessionIDs = p.Results.sessions;
