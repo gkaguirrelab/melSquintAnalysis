@@ -34,3 +34,5 @@ spotCheckVideo('MELA_0175', '2019-01-31_session_4', 3, 5, 'skipParamsAdjustment'
 spotCheckVideo('MELA_0175', '2019-01-31_session_4', 3, 6, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
 spotCheckVideo('MELA_0175', '2019-01-31_session_4', 3, 7, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
 spotCheckVideo('MELA_0175', '2019-01-31_session_4', 3, 8, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0181', '2019-01-23_session_2', 2, 2, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0181', '2019-01-23_session_2', 3, 7, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);

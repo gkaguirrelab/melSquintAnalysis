@@ -46,7 +46,7 @@ if ~p.Results.resume
         
         grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfoldersList{tt}, runNamesList{tt});
         
-        [initialParams] = estimatePipelineParamsGUI(grayVideoName, 'SquintToPulse', 'pupilRangeContractor', 0.5, 'pupilRangeDilator', 1.25, 'pupilMaskDilationFactor', 2, varargin{:});
+        [initialParams] = estimatePipelineParamsGUI(grayVideoName, 'SquintToPulse', 'pupilRangeContractor', 0.5, 'pupilRangeDilator', 2, 'pupilMaskDilationFactor', 2, varargin{:});
         
         % incorporate new initialParams
         initialParamsFieldNames = fieldnames(initialParams);

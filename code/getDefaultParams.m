@@ -50,6 +50,7 @@ if strcmp(p.Results.approach, 'Squint')
     fitParams.candidateThetas = pi/2:pi/16:pi;
     fitParams.expandPupilRange = true;
     fitParams.extendBlinkWindow = [0 0];
+    fitParams.pickLargestCircle = false;
     
     cameraParams.intrinsicCameraMatrix =  [1347.76, 0, 658.90; ...
                                             0, 1345.48, 365.68; ...

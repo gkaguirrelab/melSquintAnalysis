@@ -90,7 +90,7 @@ if ~(p.Results.skipParamsAdjustment)
                 if strcmp(answer, 'true')
                     fitParams.(paramName) = true;
                 elseif strcmp(answer, 'false')
-                    fitParams(paramName) = false;
+                    fitParams.(paramName) = false;
                 end
             else
                 fitParams.(paramName) = str2num(answer);
@@ -212,6 +212,7 @@ if ~(p.Results.skipParamsAdjustment)
                 'pupilRange', fitParams.pupilRange, ...
                 'pupilCircleThresh', fitParams.pupilCircleThresh, ...
                 'maskBox', fitParams.maskBox, ...
+                'pickLargestCircle', fitParams.pickLargestCircle, ...
                 'smallObjThresh', fitParams.smallObjThresh);
             displayFrame=thisFrameDiagnostics;
             if ~isempty(perimeter.data{1}.Xp)
@@ -242,8 +243,9 @@ if ~(p.Results.skipParamsAdjustment)
                 fprintf('\t6. pupilCircleThresh: %g\n', fitParams.pupilCircleThresh);
                 fprintf('\t7. maskBox: %g %g\n', fitParams.maskBox(:));
                 fprintf('\t8. pupilRange: %g %g\n', fitParams.pupilRange(:));
-                fprintf('\t9. smallObjThresh: %g\n', fitParams.smallObjThresh);
-                fprintf('\t10. Choose new frames to test\n');
+                fprintf('\t9.pickLargestCircle: %g %g\n', fitParams.pickLargestCircle);
+                fprintf('\t10. smallObjThresh: %g\n', fitParams.smallObjThresh);
+                fprintf('\t11. Choose new frames to test\n');
                 
                 
                 choice = input('\nYour choice: ', 's');
@@ -271,8 +273,10 @@ if ~(p.Results.skipParamsAdjustment)
                     case '8'
                         fitParams.pupilRange = input('Enter new pupilRange:     ');
                     case '9'
-                        fitParams.smallObjThresh = input('Enter new smallObjThresh:       ');
+                        fitParams.pickLargestCircle = input('Enter new pickLargestCircle:       ');
                     case '10'
+                        fitParams.smallObjThresh = input('Enter new smallObjThresh:       ');
+                    case '11'
                         framesToCheck = GetWithDefault('Test on which frames: ', '');
                         framesToCheck = str2num(framesToCheck);
                 end
@@ -286,6 +290,7 @@ if ~(p.Results.skipParamsAdjustment)
                 fprintf('\tpupilCircleThresh: %g\n', fitParams.pupilCircleThresh);
                 fprintf('\tmaskBox: %g %g\n', fitParams.maskBox(:));
                 fprintf('\tpupilRange: %g %g\n', fitParams.pupilRange(:));
+                fprintf('\pickLargestCircle: %g %g\n', fitParams.pickLargestCircle);
                 fprintf('\tsmallObjThresh: %g\n', fitParams.smallObjThresh);
                 
                 
@@ -319,6 +324,7 @@ if ~(p.Results.skipParamsAdjustment)
                         'pupilRange', fitParams.pupilRange, ...
                         'pupilCircleThresh', fitParams.pupilCircleThresh, ...
                         'maskBox', fitParams.maskBox, ...
+                        'pickLargestCircle', fitParams.pickLargestCircle, ...
                         'smallObjThresh', fitParams.smallObjThresh);
                     displayFrame=thisFrameDiagnostics;
                     if ~isempty(perimeter.data{1}.Xp)
@@ -382,6 +388,9 @@ if p.Results.processVideo
     if ~isfield(fitParams, 'smallObjThresh')
         fitParams.smallObjThresh = defaultFitParams.smallObjThresh;
     end
+    if ~isfield(fitParams, 'pickLargestCircle')
+        fitParams.smallObjThresh = defaultFitParams.smallObjThresh;
+    end
     
     runVideoPipeline(pathParams,...
         'skipStageByNumber', fitParams.skipStageByNumber,...
@@ -402,6 +411,7 @@ if p.Results.processVideo
         'minRadiusProportion', fitParams.minRadiusProportion, ...
         'expandPupilRange', fitParams.expandPupilRange, ...
         'candidateThetas', fitParams.candidateThetas, ...
+        'pickLargestCircle', fitParams.pickLargestCircle, ...
         'smallObjThresh', fitParams.smallObjThresh);
 end
 
