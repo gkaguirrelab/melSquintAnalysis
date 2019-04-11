@@ -98,7 +98,7 @@ ax3 = mseb(resampledTimebase(1:end-nTimePointsToSkipPlotting)-1, nanmean(average
 ylim([-0.8 0.1])
 xlim([0 17])
 xlabel('Time (s)')
-ylabel('Pupil Area (% Change), +/- SEM')
+ylabel('Pupil Area (% Change, +/- SEM)')
 legend(['100% Contrast, N = ' num2str(size(averageResponseMatrix.Melanopsin.Contrast100,1))], ['200% Contrast, N = ' num2str(size(averageResponseMatrix.Melanopsin.Contrast200,1))], ['400% Contrast, N = ' num2str(size(averageResponseMatrix.Melanopsin.Contrast400,1))], 'Location', 'southeast')
 legend('boxoff')
 line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
@@ -123,7 +123,7 @@ ax1 = mseb(resampledTimebase(1:end-nTimePointsToSkipPlotting)-1, nanmean(average
 ylim([-0.8 0.1])
 xlim([0 17])
 xlabel('Time (s)')
-ylabel('Pupil Area (% Change), +/- SEM')
+ylabel('Pupil Area (% Change, +/- SEM)')
 legend(['100% Contrast, N = ' num2str(size(averageResponseMatrix.LMS.Contrast100,1))], ['200% Contrast, N = ' num2str(size(averageResponseMatrix.LMS.Contrast200,1))], ['400% Contrast, N = ' num2str(size(averageResponseMatrix.LMS.Contrast400,1))], 'Location', 'southeast')
 legend('boxoff')
 line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
