@@ -126,7 +126,7 @@ if isempty(p.Results.sessions)
     % get session IDs
     sessionIDs = [];
     for ss = completedSessions
-        potentialSessions = dir(fullfile(analysisBasePath, sprintf('*session_%d*', ss)));
+        potentialSessions = dir(fullfile(analysisBasePath, sprintf('2*session_%d*', ss)));
         % in the event of more than one entry for a given session (which would
         % happen if something weird happened with a session and it was
         % restarted on a different day), it'll grab the later dated session,
