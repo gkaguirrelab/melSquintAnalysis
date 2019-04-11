@@ -41,6 +41,9 @@ end
 if ~isfield(fitParams, 'smallObjThresh')
     fitParams.smallObjThresh = defaultFitParams.smallObjThresh;
 end
+if ~isfield(fitParams, 'pickLargestCircle')
+    fitParams.pickLargestCircle = defaultFitParams.pickLargestCircle;
+end
 
 
 
