@@ -80,6 +80,7 @@ p.addParameter('blinkBufferFrames', [2 4], @isnumeric);
 p.addParameter('RMSEThreshold', 5, @isnumeric);
 p.addParameter('nTimePointsToSkipPlotting', 40, @isnumeric);
 p.addParameter('performSpikeRemoval', false, @islogical);
+p.addParameter('performControlFileBlinkRemoval', true, @islogical);
 
 
 
@@ -219,23 +220,25 @@ for ss = 1:length(sessionIDs)
                 % remove blinks
                 controlFile = loadControlFile(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_controlFile.csv', tt)));
                 blinkIndices = [];
-                blinkBufferFrames = p.Results.blinkBufferFrames;
-                for ii = 1:length(controlFile)
-                    if strcmp(controlFile(ii).type, 'blink')
-                        blinkFrame = controlFile(ii).frame;
-                        if blinkFrame - blinkBufferFrames(1) < 1
-                            beginningOfBlinkFrame = 1;
-                        else
-                            beginningOfBlinkFrame = blinkFrame - blinkBufferFrames(1);
+                if p.Results.performControlFileBlinkRemoval
+                    blinkBufferFrames = p.Results.blinkBufferFrames;
+                    for ii = 1:length(controlFile)
+                        if strcmp(controlFile(ii).type, 'blink')
+                            blinkFrame = controlFile(ii).frame;
+                            if blinkFrame - blinkBufferFrames(1) < 1
+                                beginningOfBlinkFrame = 1;
+                            else
+                                beginningOfBlinkFrame = blinkFrame - blinkBufferFrames(1);
+                            end
+                            if blinkFrame + blinkBufferFrames(2) > length(trialData.response.values)
+                                endingOfBlinkFrame = length(trialData.response.values);
+                            else
+                                endingOfBlinkFrame = blinkFrame + blinkBufferFrames(2);
+                            end
+                            blinkIndices = [blinkIndices, beginningOfBlinkFrame:endingOfBlinkFrame];
+                            
+                            trialData.response.values(beginningOfBlinkFrame:endingOfBlinkFrame) = NaN;
                         end
-                        if blinkFrame + blinkBufferFrames(2) > length(trialData.response.values)
-                            endingOfBlinkFrame = length(trialData.response.values);
-                        else
-                            endingOfBlinkFrame = blinkFrame + blinkBufferFrames(2);
-                        end
-                        blinkIndices = [blinkIndices, beginningOfBlinkFrame:endingOfBlinkFrame];
-
-                        trialData.response.values(beginningOfBlinkFrame:endingOfBlinkFrame) = NaN;
                     end
                 end
                 controlFileBlinkIndices = unique(blinkIndices);
