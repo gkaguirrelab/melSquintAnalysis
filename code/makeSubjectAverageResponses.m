@@ -78,6 +78,7 @@ p.addParameter('trialNaNThreshold', 0.2, @isnumeric); % meaning 20%
 % Parameters that may vary between subjects
 p.addParameter('blinkBufferFrames', [2 4], @isnumeric);
 p.addParameter('RMSEThreshold', 5, @isnumeric);
+p.addParameter('blinkVelocityThreshold', 0.02, @isnumeric);
 p.addParameter('nTimePointsToSkipPlotting', 40, @isnumeric);
 p.addParameter('performSpikeRemoval', false, @islogical);
 p.addParameter('performControlFileBlinkRemoval', true, @islogical);
@@ -125,7 +126,7 @@ if isempty(p.Results.sessions)
         end
     end
     
-    completedSessions = sessions;
+    completedSessions = sort(sessions);
     % get session IDs
     sessionIDs = [];
     for ss = completedSessions
@@ -250,7 +251,7 @@ for ss = 1:length(sessionIDs)
                 
                 spikeRemoverBlinkIndices = [];
                 if p.Results.performSpikeRemoval
-                    [iy, spikeRemoverBlinkIndices] = PupilAnalysisToolbox_SpikeRemover(trialData.response.values);
+                    [iy, spikeRemoverBlinkIndices] = PupilAnalysisToolbox_SpikeRemover(trialData.response.values, p.Results.blinkVelocityThreshold);
                     if p.Results.debugSpikeRemover
                         figure; hold on;
                         plot(trialData.response.values)

@@ -1,11 +1,11 @@
-function [iy, removePoints] = PupilAnalysisToolbox_SpikeRemover(iy)
+function [iy, removePoints] = PupilAnalysisToolbox_SpikeRemover(iy, velocity)
 % [iy, removePoints] = SpikeRemover(iy, params);
 params.BadPercentChangeThreshold = 0.8;
 
 params.VelocitySmoothingParam = 5;
 params.VelocityMarginWindowSize = 5;
-params.VelocityOffsetThreshold = 0.02;
-params.VelocityOnsetThreshold = -0.02;
+params.VelocityOffsetThreshold = velocity;
+params.VelocityOnsetThreshold = -velocity;
 params.VelocitySearchWindowSize = 5;
 
 % Remove points exceeding the % percent change threshold
