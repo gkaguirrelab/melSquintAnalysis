@@ -46,7 +46,7 @@ for cc = 1:length(contrasts)
             clear trialStruct
                subjectID = subjectIDs{ss};
 
-            load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments', 'OLApproach_Squint', 'SquintToPulse', 'DataFiles', subjectID, 'trialStruct.mat'));
+            load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments', 'OLApproach_Squint', 'SquintToPulse', 'DataFiles', subjectID, 'trialStruct_allTrials.mat'));
             for tt = 1:length(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{cc})])(1,:))
                 averageResponse(tt) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{cc})])(:,tt));
                 STD(tt) = nanstd(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{cc})])(:,tt));
