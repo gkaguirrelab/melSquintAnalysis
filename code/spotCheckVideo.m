@@ -190,13 +190,13 @@ if ~(p.Results.skipParamsAdjustment)
         counter = 1;
         for ii = framesToCheck
             perimeter = [];
-            plotFig = figure;
-            hold on
-            
-            %subplot(2, round(nFrames/2), counter)
-            counter = counter + 1;
-            string = [];
-            string = (['Frame ', num2str(ii)]);
+%             plotFig = figure;
+%             hold on
+%             
+%             %subplot(2, round(nFrames/2), counter)
+%             counter = counter + 1;
+%             string = [];
+%             string = (['Frame ', num2str(ii)]);
             
             videoInObj.CurrentTime = (ii - 1)/(videoInObj.FrameRate);
             thisFrameDiagnostics = readFrame(videoInObj);
@@ -216,17 +216,17 @@ if ~(p.Results.skipParamsAdjustment)
                 'pupilCircleThresh', fitParams.pupilCircleThresh, ...
                 'maskBox', fitParams.maskBox, ...
                 'pickLargestCircle', fitParams.pickLargestCircle, ...
-                'smallObjThresh', fitParams.smallObjThresh);
-            displayFrame=thisFrameDiagnostics;
-            if ~isempty(perimeter.data{1}.Xp)
-                displayFrame(sub2ind(size(thisFrameDiagnostics),perimeter.data{1}.Yp,perimeter.data{1}.Xp))=255;
-            end
-            if isempty(perimeter.data{1}.Xp)
-                string = 'No pupil found';
-                text(350, 200, string);
-            end
-            imshow(displayFrame, 'Border', 'tight')
-            dText = text(1,10,string, 'FontSize', 16, 'BackgroundColor', 'white');
+                'smallObjThresh', fitParams.smallObjThresh, 'displayMode', true);
+%             displayFrame=thisFrameDiagnostics;
+%             if ~isempty(perimeter.data{1}.Xp)
+%                 displayFrame(sub2ind(size(thisFrameDiagnostics),perimeter.data{1}.Yp,perimeter.data{1}.Xp))=255;
+%             end
+%             if isempty(perimeter.data{1}.Xp)
+%                 string = 'No pupil found';
+%                 text(350, 200, string);
+%             end
+%             imshow(displayFrame, 'Border', 'tight')
+%             dText = text(1,10,string, 'FontSize', 16, 'BackgroundColor', 'white');
             delete('temp.mat')
         end
         
@@ -302,13 +302,13 @@ if ~(p.Results.skipParamsAdjustment)
                 counter = 1;
                 for ii = framesToCheck
                     perimeter = [];
-                    plotFig = figure;
-                    hold on
-                    
-                    %subplot(2, round(nFrames/2), counter)
-                    counter = counter + 1;
-                    string = [];
-                    string = (['Frame ', num2str(ii)]);
+%                     plotFig = figure;
+%                     hold on
+%                     
+%                     %subplot(2, round(nFrames/2), counter)
+%                     counter = counter + 1;
+%                     string = [];
+%                     string = (['Frame ', num2str(ii)]);
                     
                     videoInObj.CurrentTime = (ii - 1)/(videoInObj.FrameRate);
                     thisFrameDiagnostics = readFrame(videoInObj);
@@ -328,17 +328,17 @@ if ~(p.Results.skipParamsAdjustment)
                         'pupilCircleThresh', fitParams.pupilCircleThresh, ...
                         'maskBox', fitParams.maskBox, ...
                         'pickLargestCircle', fitParams.pickLargestCircle, ...
-                        'smallObjThresh', fitParams.smallObjThresh);
-                    displayFrame=thisFrameDiagnostics;
-                    if ~isempty(perimeter.data{1}.Xp)
-                        displayFrame(sub2ind(size(thisFrameDiagnostics),perimeter.data{1}.Yp,perimeter.data{1}.Xp))=255;
-                    end
-                    if isempty(perimeter.data{1}.Xp)
-                        string = 'No pupil found';
-                        text(350, 200, string);
-                    end
-                    imshow(displayFrame, 'Border', 'tight')
-                    dText = text(1,10,string, 'FontSize', 16, 'BackgroundColor', 'white');
+                        'smallObjThresh', fitParams.smallObjThresh, 'displayMode', true);
+%                     displayFrame=thisFrameDiagnostics;
+%                     if ~isempty(perimeter.data{1}.Xp)
+%                         displayFrame(sub2ind(size(thisFrameDiagnostics),perimeter.data{1}.Yp,perimeter.data{1}.Xp))=255;
+%                     end
+%                     if isempty(perimeter.data{1}.Xp)
+%                         string = 'No pupil found';
+%                         text(350, 200, string);
+%                     end
+%                     imshow(displayFrame, 'Border', 'tight')
+%                     dText = text(1,10,string, 'FontSize', 16, 'BackgroundColor', 'white');
                     delete('temp.mat')
                 end
                 adjustParamsChoice = GetWithDefault('>> Satisfied with these parameters? Enter ''y'' to proceed and exit, or ''n'' to manually adjust the parameters. [y/n]', 'y');
