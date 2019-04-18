@@ -82,6 +82,8 @@ p.addParameter('blinkVelocityThreshold', 0.02, @isnumeric);
 p.addParameter('nTimePointsToSkipPlotting', 40, @isnumeric);
 p.addParameter('performSpikeRemoval', false, @islogical);
 p.addParameter('performControlFileBlinkRemoval', true, @islogical);
+p.addParameter('interpolateThroughRuns', false, @islogical);
+p.addParameter('interpolationLimitInFrames', 30, @isnumeric);
 
 
 
@@ -273,8 +275,7 @@ for ss = 1:length(sessionIDs)
                 end
                 poorFitFrameIndices = setdiff(poorFitFrameIndices, blinkIndices);
                 
-                numberOfBadFrames = sum(isnan(trialData.response.values));
-                percentageBadFrames = numberOfBadFrames/(length(trialData.response.values));
+                
                 
                 % resample the timebase so we can put all trials on the same
                 % timebase
@@ -284,25 +285,62 @@ for ss = 1:length(sessionIDs)
                 resampledValues = [];
                 resampledRMSE = [];
                 
-                % interpolate across all NaN values
-                theNans = isnan(trialData.response.values);
-                if numberOfBadFrames ~= length(trialData.response.values)
-                    if sum(theNans) > 1
-                        x = trialData.response.values;
-                        x(theNans) = interp1(trialData.response.timebase(~theNans), trialData.response.values(~theNans), trialData.response.timebase(theNans)', 'linear');
-                        trialData.response.values = x;
+                if ~(p.Results.interpolateThroughRuns)
+                    numberOfBadFrames = sum(isnan(trialData.response.values));
+                    percentageBadFrames = numberOfBadFrames/(length(trialData.response.values));
+                    % interpolate across all NaN values
+                    theNans = isnan(trialData.response.values);
+                    if numberOfBadFrames ~= length(trialData.response.values)
+                        if sum(theNans) > 1
+                            x = trialData.response.values;
+                            x(theNans) = interp1(trialData.response.timebase(~theNans), trialData.response.values(~theNans), trialData.response.timebase(theNans)', 'linear');
+                            trialData.response.values = x;
+                        end
+                        
+                        % interpolate onto common timebase across trials
+                        resampledValues = interp1(trialData.response.timebase,trialData.response.values,resampledTimebase,'linear');
+                        
+                        
+                        trialData.responseResampled = [];
+                        trialData.responseResampled.values = resampledValues;
+                        trialData.responseResampled.timebase = resampledTimebase;
+                    else
+                        resampledValues = nan(1,length(resampledTimebase));
+                        trialData.responseResampled.values = resampledValues;
                     end
                     
-                    % interpolate onto common timebase across trials
+                else
+                    
+                    % interpolate through runs of duration shorter than
+                    % interpolationLimit
+                    TotalNaNIndices = find(isnan(trialData.response.values));
+                    
+                    NaNRunsCellArray = identifyRuns(TotalNaNIndices);
+                    interpolationLimitInFrames = p.Results.interpolationLimitInFrames;
+                    for rr = 1:length(NaNRunsCellArray)
+                        if length(NaNRunsCellArray{rr}) <= interpolationLimitInFrames
+                            theNans = zeros(1,length(trialData.response.values));
+                            theNans(NaNRunsCellArray{rr}) = 1;
+                            theNans = logical(theNans);
+                            x = trialData.response.values;
+                            x(theNans) = interp1(trialData.response.timebase(~theNans), trialData.response.values(~theNans), trialData.response.timebase(theNans)', 'linear');
+                            trialData.response.values = x;
+                        end
+                    end
+                    
+                    % tally up unrecoverable frames
+                    numberOfBadFrames = sum(isnan(trialData.response.values));
+                    percentageBadFrames = numberOfBadFrames/(length(trialData.response.values));
+                    
+                    % interpolate onto common timebase, but leave the NaNs
+                    % intact
                     resampledValues = interp1(trialData.response.timebase,trialData.response.values,resampledTimebase,'linear');
                     
                     
                     trialData.responseResampled = [];
                     trialData.responseResampled.values = resampledValues;
                     trialData.responseResampled.timebase = resampledTimebase;
-                else
-                    resampledValues = nan(1,length(resampledTimebase));
-                    trialData.responseResampled.values = resampledValues;
+                    
                 end
                 
                 
