@@ -35,7 +35,7 @@ sceneParams.UB = [-5; 2.5; -2; cameraDepthMean+2*cameraDepthSD; 1.25; 1.10];
 if strcmp(p.Results.protocol, 'Screening')
     trialsToEstimate = 2;
 elseif strcmp(p.Results.protocol, 'SquintToPulse')
-    trialsToEstimate = [2, 12, 22, 32, 42, 52, 61];
+    trialsToEstimate = [2+4, 12+4, 22+4, 32+4, 42+4, 52+4, 61];
 end
 
 if ~p.Results.resume
