@@ -20,6 +20,12 @@ for ss = 1:length(subjectDirs)
 end
 commandList = fliplr(commandList);
 for cc = 1:length(commandList)
+    subjectID = strsplit(commandList{cc}, 'MELA_');
+    subjectID = ['MELA_', subjectID{2}(1:4)];
+    sessionID = strsplit(commandList{cc}, ' ');
+    sessionID = sessionID{2};
+    sessionID = sessionID(2:end-2);
+    fprintf('\tProcessing %s, %s\n', subjectID, sessionID);
     eval(commandList{cc})
     splitCommand = strsplit(commandList{cc}, '''skipProcessing''');
     newCommand = [splitCommand{1}, '''resume'', true)'];
