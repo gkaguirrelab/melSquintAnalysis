@@ -1,9 +1,9 @@
-function [iy, removePoints] = PupilAnalysisToolbox_SpikeRemover(iy, velocity)
+function [iy, removePoints] = PupilAnalysisToolbox_SpikeRemover(iy, velocity, VelocityMarginWindowSize)
 % [iy, removePoints] = SpikeRemover(iy, params);
 params.BadPercentChangeThreshold = 0.8;
 
 params.VelocitySmoothingParam = 5;
-params.VelocityMarginWindowSize = 5;
+params.VelocityMarginWindowSize = VelocityMarginWindowSize;
 params.VelocityOffsetThreshold = velocity;
 params.VelocityOnsetThreshold = -velocity;
 params.VelocitySearchWindowSize = 5;

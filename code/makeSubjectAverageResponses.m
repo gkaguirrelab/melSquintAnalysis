@@ -1,4 +1,4 @@
-function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses_interpolateLast(subjectID, varargin)
+function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(subjectID, varargin)
 
 % Analyzes a single subject's pupillometry data from the OLApproach_Squint,
 % SquintToPulse Experiment
@@ -79,6 +79,7 @@ p.addParameter('trialNaNThreshold', 0.2, @isnumeric); % meaning 20%
 p.addParameter('blinkBufferFrames', [2 4], @isnumeric);
 p.addParameter('RMSEThreshold', 5, @isnumeric);
 p.addParameter('blinkVelocityThreshold', 0.02, @isnumeric);
+p.addParameter('spikeWindowLength', 5, @isnumeric);
 p.addParameter('nTimePointsToSkipPlotting', 40, @isnumeric);
 p.addParameter('performSpikeRemoval', false, @islogical);
 p.addParameter('performControlFileBlinkRemoval', true, @islogical);
@@ -253,7 +254,7 @@ for ss = 1:length(sessionIDs)
                 
                 spikeRemoverBlinkIndices = [];
                 if p.Results.performSpikeRemoval
-                    [iy, spikeRemoverBlinkIndices] = PupilAnalysisToolbox_SpikeRemover(trialData.response.values, p.Results.blinkVelocityThreshold);
+                    [iy, spikeRemoverBlinkIndices] = PupilAnalysisToolbox_SpikeRemover(trialData.response.values, p.Results.blinkVelocityThreshold, p.Results.spikeWindowLength);
                     if p.Results.debugSpikeRemover
                         figure; hold on;
                         plot(trialData.response.values)
