@@ -47,3 +47,16 @@
 % trackSubject('MELA_0191', '2019-04-09_session_3', 'resume', true)
 % trackSubject('MELA_0191', '2019-04-11_session_2', 'resume', true)
 % trackSubject('MELA_0191', '2019-04-11_session_1', 'resume', true)
+% trackSubject('MELA_0195', '2019-04-18_session_1', 'resume', true)
+% trackSubject('MELA_0195', '2019-04-18_session_2', 'resume', true)
+% trackSubject('MELA_0194', '2019-04-19_session_3', 'resume', true)
+% trackSubject('MELA_0194', '2019-04-19_session_4', 'resume', true)
+% trackSubject('MELA_0168', '2019-04-23_session_3', 'resume', true);
+% trackSubject('MELA_0203', '2019-04-22_session_1', 'Protocol', 'Screening', 'resume', true);
+% trackSubject('MELA_0168', '2019-04-23_session_4', 'resume', true)
+% trackSubject('MELA_0196', '2019-04-23_session_1', 'Protocol', 'Screening', 'resume', true);
+trackSubject('MELA_0198', '2019-04-24_session_1', 'Protocol', 'Screening', 'resume', true); 
+trackSubject('MELA_0196', '2019-04-23_session_1', 'Protocol', 'Screening', 'resume', true); 
+trackSubject('MELA_0203', '2019-04-22_session_1', 'Protocol', 'Screening', 'resume', true);
+trackSubject('MELA_0201', '2019-04-25_session_1', 'resume', true)
+trackSubject('MELA_0201', '2019-04-25_session_2', 'resume', true)
