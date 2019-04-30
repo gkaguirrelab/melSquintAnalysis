@@ -8,6 +8,7 @@ p.addParameter('protocol', 'SquintToPulse' ,@isstr);
 p.addParameter('skipParamsAdjustment', false, @islogical);
 p.addParameter('processVideo', false, @islogical);
 p.addParameter('openVideo', true, @islogical);
+p.addParameter('openPlot', false, @islogical);
 
 p.parse(varargin{:})
 
@@ -17,7 +18,7 @@ pathParams.subject = subjectID;
 pathParams.protocol = p.Results.protocol;
 if isnumeric(sessionID)
     sessionDir = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, ['2*session_', num2str(sessionID)]));
-    sessionID = sessionDir.name;
+    sessionID = sessionDir(end).name;
 end
 
 %% Load up the current params for this video
@@ -53,6 +54,11 @@ processedVideoName = strrep(processedVideoName, '.mp4', '_fitStage6.avi');
 
 if p.Results.openVideo
     [recordedErrorFlag, consoleOutput] = system(['open ''' processedVideoName '''']);
+end
+
+if p.Results.openPlot
+    plotFile = fullfile(pathParams.dataOutputDirBase, pathParams.subject, 'allTrials', [pathParams.session, '_a', num2str(acquisitionNumber), '_t', num2str(trialNumber), '.png']);
+    [recordedErrorFlag, consoleOutput] = system(['open ''' plotFile '''']);
 end
 
 if ~(p.Results.skipParamsAdjustment)
@@ -418,6 +424,15 @@ if p.Results.processVideo
         'smallObjThresh', fitParams.smallObjThresh);
 end
 
+
+if p.Results.openVideo
+    [recordedErrorFlag, consoleOutput] = system(['close ''' processedVideoName '''']);
+end
+
+if p.Results.openPlot
+    plotFile = fullfile(pathParams.dataOutputDirBase, pathParams.subject, 'allTrials', [pathParams.session, '_a', num2str(acquisitionNumber), '_t', num2str(trialNumber), '.png']);
+    [recordedErrorFlag, consoleOutput] = system(['close ''' plotFile '''']);
+end
 close all
 
 end
