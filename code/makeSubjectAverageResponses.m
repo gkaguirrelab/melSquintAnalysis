@@ -85,6 +85,8 @@ p.addParameter('performSpikeRemoval', false, @islogical);
 p.addParameter('performControlFileBlinkRemoval', true, @islogical);
 p.addParameter('interpolateThroughRuns', false, @islogical);
 p.addParameter('interpolationLimitInFrames', 30, @isnumeric);
+p.addParameter('extremePercentageChangeThreshold', 1, @isnumeric);
+p.addParameter('interpolate', true, @islogical);
 
 
 
@@ -281,6 +283,10 @@ for ss = 1:length(sessionIDs)
                 end
                 poorFitFrameIndices = setdiff(poorFitFrameIndices, blinkIndices);
                 
+                % identify extreme frames
+                extremeFrameIndices = find(abs(trialData.response.values) > p.Results.extremePercentageChangeThreshold);
+                trialData.response.values(extremeFrameIndices) = NaN;
+                
                 
                 
                 % resample the timebase so we can put all trials on the same
@@ -392,12 +398,12 @@ for ss = 1:length(sessionIDs)
                         plot(trialData.response.timebase(initialNaNFrames), trialData.response.values(initialNaNFrames), 'o', 'Color', 'r')
                     end
                     
-                    string = sprintf('Session %d, Acquisition %d, Trial %d: %f\n\tBlink frames: %d (%d from CF, %d from SR)\n\tDuplicate frames: %d\n\tPoor fit frames: %d\n\tInitial NaN frames: %d', str2num(sessionNumber), aa, tt, percentageBadFrames, length(blinkIndices), length(controlFileBlinkIndices), length(spikeRemoverBlinkIndices), length(duplicateFrameIndices), length(poorFitFrameIndices), length(initialNaNFrames));
+                    string = sprintf('Session %d, Acquisition %d, Trial %d: %f\n\tBlink frames: %d (%d from CF, %d from SR)\n\tDuplicate frames: %d\n\tPoor fit frames: %d\n\tInitial NaN frames: %d\n\tExtreme frames: %d', str2num(sessionNumber), aa, tt, percentageBadFrames, length(blinkIndices), length(controlFileBlinkIndices), length(spikeRemoverBlinkIndices), length(duplicateFrameIndices), length(poorFitFrameIndices), length(initialNaNFrames), length(extremeFrameIndices));
                     ax = gca;
                     axesRange = ax.YLim(2) - ax.YLim(1);
                     ogYLowerLimit = ax.YLim(1);
                     ax.YLim(1) = ogYLowerLimit - 0.25*axesRange;
-                    text(0.3, ogYLowerLimit - 0.125*axesRange, string);
+                    text(0.3, ogYLowerLimit - 0.1*axesRange, string);
 
                     
                     fprintf('Session %d, Acquisition %d, Trial %d: %f\n', str2num(sessionNumber), aa, tt, percentageBadFrames);
