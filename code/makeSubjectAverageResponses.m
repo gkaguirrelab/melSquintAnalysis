@@ -97,7 +97,7 @@ analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Ex
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 
 % figure out the number of completed sessions
-potentialSessions = dir(fullfile(analysisBasePath, '*session*'));
+potentialSessions = dir(fullfile(analysisBasePath, '2*session*'));
 potentialNumberOfSessions = length(potentialSessions);
 
 % initialize outputStruct
