@@ -38,3 +38,5 @@ for ss = 1:length(subjectIDs)
 end
 
 pooledMedianResponseStruct.subjects = subjectIDs;
+
+save(fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'pooledMedianResponseStruct.mat'), 'pooledMedianResponseStruct','-v7.3');
