@@ -60,3 +60,4 @@ trackSubject('MELA_0196', '2019-04-23_session_1', 'Protocol', 'Screening', 'resu
 trackSubject('MELA_0203', '2019-04-22_session_1', 'Protocol', 'Screening', 'resume', true);
 trackSubject('MELA_0201', '2019-04-25_session_1', 'resume', true)
 trackSubject('MELA_0201', '2019-04-25_session_2', 'resume', true)
+trackSubject('MELA_0201', '2019-05-02_session_4', 'resume', true)
