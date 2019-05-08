@@ -165,6 +165,7 @@ else
     
 end
 
+
 %% Load in the data for each session
 for ss = 1:length(sessionIDs)
     sessionNumber = strsplit(sessionIDs{ss}, 'session_');
@@ -232,7 +233,22 @@ for ss = 1:length(sessionIDs)
                 controlFile = loadControlFile(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_controlFile.csv', tt)));
                 blinkIndices = [];
                 if p.Results.performControlFileBlinkRemoval
-                    blinkBufferFrames = p.Results.blinkBufferFrames;
+                    % determine if blinkBufferFrames were used in original
+                    % processing
+                    controlFileName = fopen(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_controlFile.csv', tt)));
+                    controlFileContents = textscan(controlFileName,'%s', 'Delimiter',',');
+                    indices = strfind(controlFileContents{1}, 'extendBlinkWindow');
+                    blinkWindowIndex = find(~cellfun(@isempty,indices));
+                    blinkWindowFromControlFile = (controlFileContents{1}(blinkWindowIndex+1));
+                    blinkWindowFromControlFile = str2num(blinkWindowFromControlFile{1});
+                    
+                    if sum(blinkWindowFromControlFile == [0 0]) == 2 % if the control file processed this trial with blinkBufferFrames of [0 0], then apply the inputted range
+                        blinkBufferFrames = p.Results.blinkBufferFrames;
+                    else
+                        blinkBufferFrames = [0 0]; % otherwise, don't further extend the window
+                    end
+                    
+                    
                     for ii = 1:length(controlFile)
                         if strcmp(controlFile(ii).type, 'blink')
                             blinkFrame = controlFile(ii).frame;
@@ -447,8 +463,8 @@ for ss = 1:length(stimuli)
     end
 end
 
-fileName = 'trialStruct';
-save(fullfile(analysisBasePath, fileName), 'trialStruct', 'trialStruct', '-v7.3');
+fileName = 'trialStruct_postSpotcheck';
+save(fullfile(analysisBasePath, fileName), 'trialStruct', '-v7.3');
 
 
 
@@ -521,7 +537,13 @@ ylabel('Pupil Area (% Change)')
 legend(['100% Contrast, N = ' num2str(size(trialStruct.LightFlux.Contrast100,1))], ['200% Contrast, N = ' num2str(size(trialStruct.LightFlux.Contrast200,1))], ['400% Contrast, N = ' num2str(size(trialStruct.LightFlux.Contrast400,1))], 'Location', 'southeast')
 legend('boxoff')
 line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
-print(plotFig, fullfile(analysisBasePath,'averageResponse'), '-dpdf', '-fillpage')
+print(plotFig, fullfile(analysisBasePath,'averageResponse_postSpotCheck'), '-dpdf', '-fillpage')
+
+if ~exist(fullfile(analysisBasePath, '..', 'averageResponsePlots'), 'dir')
+    mkdir(fullfile(analysisBasePath, '..', 'averageResponsePlots'));
+end
+print(plotFig, fullfile(analysisBasePath, '..', 'averageResponsePlots', [subjectID, '_averageResponse_postSpotCheck']), '-dpdf', '-fillpage')
+
 close(plotFig)
 
 
