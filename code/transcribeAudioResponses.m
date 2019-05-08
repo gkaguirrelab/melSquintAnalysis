@@ -99,7 +99,7 @@ else
 end
 
 % figure out the number of completed sessions
-potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, '*session*'));
+potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, '2*session*'));
 potentialNumberOfSessions = length(potentialSessions);
 
 % initialize outputStruct
