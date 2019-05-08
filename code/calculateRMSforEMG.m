@@ -73,7 +73,7 @@ p.parse(varargin{:});
 analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 % figure out the number of completed sessions
-potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, '*session*'));
+potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, '2*session*'));
 potentialNumberOfSessions = length(potentialSessions);
 % initialize outputStruct
 stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
@@ -127,7 +127,20 @@ end
 for ss = numberOfCompletedSessions
     sessionNumber = strsplit(sessionIDs{ss}, 'session_');
     sessionNumber = sessionNumber{2};
-    for aa = 1:6
+     availableAcquisitions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, '*acquisition*_emg.mat'));
+    
+     acquisitions = [];
+    for aa = 1:length(availableAcquisitions)
+       acquisitionLongName = availableAcquisitions(aa).name;
+       acquisitionLongName = strsplit(acquisitionLongName, '_emg.mat');
+       acquisition = acquisitionLongName{1}(end-1:end);
+       acquisition = str2num(acquisition);
+       acquisitions = [acquisitions, acquisition];
+    end
+      
+    
+    for aa = acquisitions
+
         acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_emg.mat', str2num(sessionNumber),aa)));
         stimulusData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', str2num(sessionNumber),aa)));
         
