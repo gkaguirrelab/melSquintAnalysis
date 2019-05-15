@@ -19,18 +19,19 @@ for ss = 1:length(subjectIDs)
 end
 
 %% Do some summary plotting
-subjectListDirs = dir(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments', 'OLApproach_Squint', 'SquintToPulse', 'DataFiles', 'MELA*'));
+% subjectListDirs = dir(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments', 'OLApproach_Squint', 'SquintToPulse', 'DataFiles', 'MELA*'));
+% 
+% subjectIDs = [];
+% badSubjects = {'MELA_0127', 'MELA_0168'};
+% 
+% for ss = 1:length(subjectListDirs)
+%     
+%    subjectIDs{ss} = subjectListDirs(ss).name;
+%    
+% end
+% 
+% subjectIDs = setdiff(subjectIDs, badSubjects);
 
-subjectIDs = [];
-badSubjects = {'MELA_0127', 'MELA_0168'};
-
-for ss = 1:length(subjectListDirs)
-    
-   subjectIDs{ss} = subjectListDirs(ss).name;
-   
-end
-
-subjectIDs = setdiff(subjectIDs, badSubjects);
 contrasts = {'100', '200', '400'};
 stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
 
@@ -46,7 +47,7 @@ for cc = 1:length(contrasts)
             clear trialStruct
                subjectID = subjectIDs{ss};
 
-            load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments', 'OLApproach_Squint', 'SquintToPulse', 'DataFiles', subjectID, 'trialStruct_allTrials.mat'));
+            load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments', 'OLApproach_Squint', 'SquintToPulse', 'DataFiles', subjectID, 'trialStruct_postSpotcheck.mat'));
             for tt = 1:length(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{cc})])(1,:))
                 averageResponse(tt) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{cc})])(:,tt));
                 STD(tt) = nanstd(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{cc})])(:,tt));
@@ -151,7 +152,7 @@ legend(['100% Contrast, N = ' num2str(size(averageResponseMatrix.LightFlux.Contr
 legend('boxoff')
 line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
 
-print(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments', 'OLApproach_Squint', 'SquintToPulse', 'DataFiles','groupAverageResponse'), '-dpdf', '-fillpage')
+print(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments', 'OLApproach_Squint', 'SquintToPulse', 'DataFiles','averageResponsePlots', 'groupAverageResponse'), '-dpdf', '-fillpage')
 close(plotFig)
 
 
