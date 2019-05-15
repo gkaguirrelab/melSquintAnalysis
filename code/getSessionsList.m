@@ -79,8 +79,31 @@ if p.Results.makePlots
     xlabel('Date')
     ylabel('Total Number of Sessions')
     ylim([0 500]);
-    xlim([x1OG, x_new(410)]);
-    datetick('x', 29, 'keeplimits')
+    xlim([sortedDates(1) - 1, x_new(410)]);
+    xticks([datenum('2018-07-01', 'yyyy-mm-dd'), datenum('2018-10-01', 'yyyy-mm-dd'), datenum('2019-01-01', 'yyyy-mm-dd'), datenum('2019-04-01', 'yyyy-mm-dd'), datenum('2019-07-01', 'yyyy-mm-dd'), datenum('2019-10-01', 'yyyy-mm-dd')])
+
+    datetick('x', 29, 'keeplimits', 'keepticks')
+    
+    plotFig = figure;
+    hold on
+    plot(sortedDates(1:endingIndex), 1:endingIndex)
+    x = sortedDates(beginningIndex:endingIndex);
+    y = beginningIndex:endingIndex;
+    c = polyfit(x,y,1);
+    y_est = polyval(c,737331:(datenum('2020-01-01', 'yyyy-mm-dd')));
+    x_new = 737331:(datenum('2020-01-01', 'yyyy-mm-dd'));
+    plot(x_new, y_est, 'Color', 'b', 'LineStyle', '--')
+    axesInfo = gca;
+    x1 = axesInfo.XLim(1);
+    x2 = axesInfo.XLim(2);
+    line([x1, x2], [480 480], 'Color', 'r', 'LineStyle', '--')
+    xlabel('Date')
+    ylabel('Total Number of Sessions')
+    ylim([0 500]);
+    xlim([sortedDates(1) - 1, x_new(410)]);
+    xticks([datenum('2018-07-01', 'yyyy-mm-dd'), datenum('2018-10-01', 'yyyy-mm-dd'), datenum('2019-01-01', 'yyyy-mm-dd'), datenum('2019-04-01', 'yyyy-mm-dd'), datenum('2019-07-01', 'yyyy-mm-dd'), datenum('2019-10-01', 'yyyy-mm-dd')])
+
+    datetick('x', 29, 'keeplimits', 'keepticks')
 
 end
 
