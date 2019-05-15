@@ -319,10 +319,12 @@ for ss = 1:length(sessionIDs)
                     % interpolate across all NaN values
                     theNans = isnan(trialData.response.values);
                     if numberOfBadFrames ~= length(trialData.response.values)
-                        if sum(theNans) > 1
-                            x = trialData.response.values;
-                            x(theNans) = interp1(trialData.response.timebase(~theNans), trialData.response.values(~theNans), trialData.response.timebase(theNans)', 'linear');
-                            trialData.response.values = x;
+                        if p.Results.interpolate
+                            if sum(theNans) > 1
+                                x = trialData.response.values;
+                                x(theNans) = interp1(trialData.response.timebase(~theNans), trialData.response.values(~theNans), trialData.response.timebase(theNans)', 'linear');
+                                trialData.response.values = x;
+                            end
                         end
                         
                         % interpolate onto common timebase across trials
@@ -332,6 +334,7 @@ for ss = 1:length(sessionIDs)
                         trialData.responseResampled = [];
                         trialData.responseResampled.values = resampledValues;
                         trialData.responseResampled.timebase = resampledTimebase;
+
                     else
                         resampledValues = nan(1,length(resampledTimebase));
                         trialData.responseResampled.values = resampledValues;
