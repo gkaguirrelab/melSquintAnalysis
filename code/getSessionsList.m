@@ -18,7 +18,7 @@ counter = 1;
 for subjectIndex = 1:size(sessions,1)
     potentialSessionDates = dir(fullfile(directionObjectsBase, sessions(subjectIndex).name));
     for potentialDateIndex = 1:size(potentialSessionDates,1)
-        if strcmp(potentialSessionDates(potentialDateIndex).name(1), '2')
+        if strcmp(potentialSessionDates(potentialDateIndex).name(1), '2') || strcmp(potentialSessionDates(potentialDateIndex).name(1), 'x')
             % it's a real date
             sessionList.ID{counter} = sessions(subjectIndex).name;
             sessionList.date{counter} = potentialSessionDates(potentialDateIndex).name;
@@ -31,6 +31,9 @@ if p.Results.makePlots
     for dd = 1:length(sessionList.date)
         date = strsplit(sessionList.date{dd}, '_');
         date = date{1};
+        if strcmp(date(1), 'x')
+            date = date(2:end);
+        end
         dates(dd) = datenum(date, 'yyyy-mm-dd');
         sortedDates = sort(dates);
     end
@@ -61,8 +64,10 @@ if p.Results.makePlots
     plotFig = figure;
     hold on
     plot(sortedDates, 1:length(sortedDates))
-    x = sortedDates(53:end);
-    y = 53:length(sortedDates);
+    beginningIndex = 55;
+    endingIndex = 77;
+    x = sortedDates(beginningIndex:endingIndex);
+    y = beginningIndex:endingIndex;
     c = polyfit(x,y,1);
     y_est = polyval(c,737331:(datenum('2020-01-01', 'yyyy-mm-dd')));
     x_new = 737331:(datenum('2020-01-01', 'yyyy-mm-dd'));
