@@ -9,12 +9,12 @@ p.addOptional('processedVideoName', [], @(x)(isempty(x) || ischar(x)));
 p.addParameter('directions', {'center', 'up', 'down', 'left', 'right'}, @iscellstr);
 p.addParameter('directionTargets', {[0; 0], [0; 27.5/2], [0; -27.5/2], [-27.5/2; 0], [27.5/2; 0]}, @iscell);
 p.addParameter('saveName', [], @ischar);
-p.addParameter('load', false, @islogical);
+p.addParameter('loadEllipseArrayList', false, @islogical);
 
 % parse
 p.parse(processedVideoName, varargin{:})
 %% create ellipse array list
-if ~p.Results.load
+if ~p.Results.loadEllipseArrayList
     [recordedErrorFlag, consoleOutput] = system(['open ''' processedVideoName '''']);
     
     ellipseArrayList = [];

@@ -41,12 +41,12 @@ end
 
 %% create ellipse array list
 if p.Results.resume
-    load = true;
+    loadEllipseArrayList = true;
 else
-    load = false;
+    loadEllipseArrayList = false;
 end
 saveName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfoldersList{end}, 'ellipseArrayList.mat');
-[ellipseArrayList, fixationTargetArray] = pickFramesForSceneEstimation(processedVideoName, 'saveName', saveName, 'load', load);
+[ellipseArrayList, fixationTargetArray] = pickFramesForSceneEstimation(processedVideoName, 'saveName', saveName, 'loadEllipseArrayList', loadEllipseArrayList);
 %% create scene param boundaries
 
 cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', 'SquintToPulse', 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
