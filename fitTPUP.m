@@ -1,3 +1,5 @@
+load('/Users/harrisonmcadams/Dropbox (Aguirre-Brainard Lab)/MELA_processing/Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/groupAverageMatrix.mat');
+
 thePacket.response.values = nanmean(averageResponseMatrix.Melanopsin.Contrast400);
 thePacket.response.timebase = 0:1/60*1000:18.5*1000;
 
@@ -22,4 +24,9 @@ initialValues = [-200, 350, 5, -100, -100, -100];
     'vlb', vlb, 'vub',vub, ...
     'initialValues',initialValues);
 
-figure; plot(thePacket.response.timebase, thePacket.response.values); hold on; plot(modelResponseStruct.timebase, modelResponseStruct.values)
+plotPointsToSkip = 40;
+figure; plot(thePacket.response.timebase(1:end-plotPointsToSkip) - 1, thePacket.response.values(1:end-plotPointsToSkip)); hold on; plot(modelResponseStruct.timebase(1:end-plotPointsToSkip) -1, modelResponseStruct.values(1:end-plotPointsToSkip))
+ylim([-0.8 0.1])
+xlim([0 17*1000])
+xlabel('Time (s)')
+ylabel('Pupil Area (% Change)')
