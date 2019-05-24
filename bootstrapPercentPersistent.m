@@ -1,5 +1,17 @@
 function [ percentPersistentDistribution ] = bootstrapPercentPersistent(subjectList, varargin)
 
+%{
+Example:
+subjectList = generateSubjectList;
+pathToAverageResponseMatrix = pathToAverageResponseMatrix = '/Users/harrisonmcadams/Dropbox (Aguirre-Brainard Lab)/MELA_processing/Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/groupAverageMatrix.mat';
+saveName = '/Users/harrisonmcadams/Dropbox (Aguirre-Brainard Lab)/MELA_processing/Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/bootstrap';
+
+for ii = 20:40
+    [ percentPersistentDistribution ] = bootstrapPercentPersistent(subjectList, 'nSubjectsInBootstrapSample', ii, 'saveName', saveName);
+end
+
+%}
+
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('makePlots',true,@islogical);
 p.addParameter('saveName', [], @ischar);
@@ -118,8 +130,8 @@ if p.Results.makePlot
     
     if ~isempty(p.Results.saveName)
         set(plotFig, 'Renderer','painters');
-        print(plotFig, p.Results.saveName, '-dpdf');
-        save([p.Results.saveName, percentPersistentDistribution, '-v7.3');
+        print(plotFig, [p.Results.saveName, '_N', num2str(p.Results.nSubjectsInBootstrapSample)], '-dpdf');
+        save([p.Results.saveName, '_N', num2str(p.Results.nSubjectsInBootstrapSample)], percentPersistentDistribution, '-v7.3');
     end
 
 end
