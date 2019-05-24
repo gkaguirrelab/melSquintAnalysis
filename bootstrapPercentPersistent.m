@@ -3,7 +3,7 @@ function [ percentPersistentDistribution ] = bootstrapPercentPersistent(subjectL
 %{
 Example:
 subjectList = generateSubjectList;
-pathToAverageResponseMatrix = pathToAverageResponseMatrix = '/Users/harrisonmcadams/Dropbox (Aguirre-Brainard Lab)/MELA_processing/Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/groupAverageMatrix.mat';
+pathToAverageResponseMatrix = '/Users/harrisonmcadams/Dropbox (Aguirre-Brainard Lab)/MELA_processing/Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/groupAverageMatrix.mat';
 saveName = '/Users/harrisonmcadams/Dropbox (Aguirre-Brainard Lab)/MELA_processing/Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/bootstrap';
 
 for ii = 20:40
