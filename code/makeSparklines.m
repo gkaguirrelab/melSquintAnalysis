@@ -1,47 +1,12 @@
 function makeSparklines(varargin)
 
-%% load in list of sessions to run
-analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/');
-
-[~, ~, sessionTable] = xlsread(fullfile(analysisBasePath, 'whichSessions.xlsx'));
-
-%% loop over subjects
-averageResponseStructAccumulator = [];
-for ss = 2:size(sessionTable, 1)
-    subjectID = sessionTable{ss,1};
-    
-    numberOfGoodSessions = 1;
-    sessionID = [];
-    if ~isnan(sessionTable{ss,2})
-        sessionID{numberOfGoodSessions} = sessionTable{ss,2};
-        numberOfGoodSessions = numberOfGoodSessions + 1 ;
-    end
-    if ~isnan(sessionTable{ss,3})
-        sessionID{numberOfGoodSessions} = sessionTable{ss,3};
-        numberOfGoodSessions = numberOfGoodSessions + 1 ;
-    end
-    if ~isnan(sessionTable{ss,4})
-        sessionID{numberOfGoodSessions} = sessionTable{ss,4};
-        numberOfGoodSessions = numberOfGoodSessions + 1 ;
-    end
-    if ~isnan(sessionTable{ss,5})
-        sessionID{numberOfGoodSessions} = sessionTable{ss,5};
-        numberOfGoodSessions = numberOfGoodSessions + 1 ;
-    end
-    
-    if ~isempty(sessionID)
-        [averageResponseStruct, trialStruct] = makeSubjectAverageResponses_interpolateLast(subjectID, 'sessions', sessionID);
-        averageResponseStructAccumulator{end + 1} = averageResponseStruct;
-    end
-    
-    
-end
-
+load('/Users/harrisonmcadams/Dropbox (Aguirre-Brainard Lab)/MELA_processing/Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/groupAverageMatrix.mat')
+subjectList = generateSubjectList;
 %% make the sparkline plot
 % we are going to skip plotting the first and last seconds (they're
 % particularly noisy and uninformative)
 firstIndexToPlot = 61;
-lastIndexToPlot = 1081;
+lastIndexToPlot = 1061;
 
 % how much to horizontally shift responses of different stimulus types
 xoffset = 200;
@@ -62,34 +27,34 @@ colors.LightFlux{1} = [254/255, 235/255, 101/255];
 colors.LightFlux{2} = [228/255, 82/255, 27/255];
 colors.LightFlux{3} = [77/255, 52/255, 47/255];
 
-plotFig = figure;
-hold on
-%for ss = 1:length(averageResponseStructAccumulator)
-counter = 1;
-for ss = [5,3,4,6,7,8,10, 12, 19, 1, 2, 9, 11, 13:18]
-    for stimulus = 1:length(stimuli)
-        
-        x1 = (lastIndexToPlot - firstIndexToPlot)*(stimulus - 1) + xoffset*(stimulus - 1);
+
+
+%%
+nColumns = 3;
+nRows = ceil(length(subjectList)/nColumns);
+for stimulus = 1:length(stimuli)
+    plotFig = figure; hold on;
+    for ss = 1:length(subjectList)
+        [rowNumber, columnNumber] = ind2sub([nRows, nColumns], ss);
+        x1 = (lastIndexToPlot - firstIndexToPlot)*(columnNumber - 1) + xoffset*(columnNumber - 1);
         x = x1:x1+(lastIndexToPlot - firstIndexToPlot);
         
-        response100 = averageResponseStructAccumulator{ss}.(stimuli{stimulus}).Contrast100(firstIndexToPlot:lastIndexToPlot) - yoffset*(counter-1);
-        response200 = averageResponseStructAccumulator{ss}.(stimuli{stimulus}).Contrast200(firstIndexToPlot:lastIndexToPlot) - yoffset*(counter-1);
-        response400 = averageResponseStructAccumulator{ss}.(stimuli{stimulus}).Contrast400(firstIndexToPlot:lastIndexToPlot) - yoffset*(counter-1);
+        response100 = averageResponseMatrix.(stimuli{stimulus}).Contrast100(ss, firstIndexToPlot:lastIndexToPlot) - yoffset*(rowNumber-1);
+        response200 = averageResponseMatrix.(stimuli{stimulus}).Contrast200(ss, firstIndexToPlot:lastIndexToPlot) - yoffset*(rowNumber-1);
+        response400 = averageResponseMatrix.(stimuli{stimulus}).Contrast400(ss, firstIndexToPlot:lastIndexToPlot) - yoffset*(rowNumber-1);
         
         
         plot(x, response100, 'Color', colors.(stimuli{stimulus}){1}, 'LineWidth', 2);
         plot(x, response200, 'Color', colors.(stimuli{stimulus}){2}, 'LineWidth', 2);
         plot(x, response400, 'Color', colors.(stimuli{stimulus}){3}, 'LineWidth', 2);
         
-        
     end
-            counter = counter + 1;
-
+    
+    
+    axis off
+    set(gcf, 'Renderer', 'painters')
+    print(plotFig, fullfile('~/Desktop',['sparkline_', stimuli{stimulus}]), '-dpdf')
 end
-
-axis off
-set(gcf, 'Renderer', 'painters')
-print(plotFig, fullfile('~/Desktop','sparkline'), '-dpdf')
 
 
 
