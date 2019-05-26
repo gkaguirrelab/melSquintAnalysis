@@ -10,6 +10,18 @@ for ii = 20:40
     [ percentPersistentDistribution ] = bootstrapPercentPersistent(subjectList, 'nSubjectsInBootstrapSample', ii, 'saveName', saveName);
 end
 
+plotFig = figure;
+SEMBySampleSize = [];
+for ii = 20:40
+    load(fullfile('/Users/harrisonmcadams/Dropbox (Aguirre-Brainard Lab)/MELA_processing/Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/', ['bootstrap_N', num2str(ii), '.mat']));
+    SEMBySampleSize(end+1) = std(percentPersistentDistribution);
+    clear percentPersistentDistribution
+end
+plot(20:40, SEMBySampleSize, 'o');
+xlabel('Number of Subjects')
+ylabel('Standard Error')
+
+
 %}
 
 p = inputParser; p.KeepUnmatched = true;
