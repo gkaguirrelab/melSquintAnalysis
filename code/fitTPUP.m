@@ -68,7 +68,7 @@ if strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToGroupAverage')
     % set up initial parameters. This is how we're going to fix the
     % persistentGammaTau
     vlb = ...
-        [600, ...         % 'gammaTau',
+        [1, ...         % 'gammaTau',
         1, ...          % 'persistentGammaTau'
         -500, ...       % 'LMSDelay'
         1, ...          % 'LMSExponentialTau'
@@ -209,14 +209,12 @@ if strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToGroupAverage')
             persistentParams.paramMainMatrix(transientAmplitudeIndices) = 0;
             
             computedPersistentResponse = temporalFit.computeResponse(persistentParams, thePacket.stimulus, thePacket.kernel);
-            subplot(1,3,1); hold on;
-            legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
-            
+            subplot(1,3,1); hold on;            
             plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(1:length(computedPersistentResponse.values)/3));
-            subplot(1,3,2); hold on;
-            legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
-            
+            legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')            
+            subplot(1,3,2); hold on;            
             plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(length(computedPersistentResponse.values)/3+1:length(computedPersistentResponse.values)/3*2));
+            legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')            
             subplot(1,3,3); hold on;
             plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(length(computedPersistentResponse.values)/3*2+1:end));
             legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
@@ -472,14 +470,12 @@ if ~strcmp(subjectID, 'group')
             persistentParams.paramMainMatrix(transientAmplitudeIndices) = 0;
             
             computedPersistentResponse = temporalFit.computeResponse(persistentParams, thePacket.stimulus, thePacket.kernel);
-            subplot(1,3,1); hold on;
-            legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
-            
+            subplot(1,3,1); hold on;            
             plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(1:length(computedPersistentResponse.values)/3));
-            subplot(1,3,2); hold on;
             legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
-            
+            subplot(1,3,2); hold on;            
             plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(length(computedPersistentResponse.values)/3+1:length(computedPersistentResponse.values)/3*2));
+            legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
             subplot(1,3,3); hold on;
             plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(length(computedPersistentResponse.values)/3*2+1:end));
             legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
