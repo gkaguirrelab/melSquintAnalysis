@@ -13,6 +13,7 @@ p.addParameter('methodForDeterminingPersistentGammaTau','fitToGroupAverage');
 p.addParameter('numberOfResponseIndicesToExclude', 40, @isnumeric);
 p.addParameter('plotGroupAverageFits', false, @islogical);
 p.addParameter('plotFits', true, @islogical);
+p.addParameter('plotComponents', true, @islogical);
 p.addParameter('printParams', true, @islogical);
 
 
@@ -29,21 +30,21 @@ if strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToGroupAverage')
     % compute group average responses, including NaNing poor indices (at
     % the beginning and the end)
     
-    melanopsinResponse = nanmean(averageResponseMatrix.Melanopsin.Contrast400);
-    melanopsinResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
-    melanopsinResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
+    MelanopsinResponse = nanmean(averageResponseMatrix.Melanopsin.Contrast400);
+    MelanopsinResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
+    MelanopsinResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
     
     LMSResponse = nanmean(averageResponseMatrix.LMS.Contrast400);
     LMSResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
     LMSResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
     
-    lightFluxResponse = nanmean(averageResponseMatrix.LightFlux.Contrast400);
-    lightFluxResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
-    lightFluxResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
+    LightFluxResponse = nanmean(averageResponseMatrix.LightFlux.Contrast400);
+    LightFluxResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
+    LightFluxResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
     
     % assemble the responseStruct of the packet. To fix parameters,
     % we'll be concatenating these responses together.
-    thePacket.response.values = [LMSResponse, melanopsinResponse, lightFluxResponse];
+    thePacket.response.values = [LMSResponse, MelanopsinResponse, LightFluxResponse];
     thePacket.response.timebase = 0:1/60*1000:length(thePacket.response.values)*1/60 * 1000 - 1/60 * 1000;
     
     % assemble the stimuluStruct of the packet.
@@ -67,7 +68,7 @@ if strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToGroupAverage')
     % set up initial parameters. This is how we're going to fix the
     % persistentGammaTau
     vlb = ...
-        [1, ...         % 'gammaTau',
+        [600, ...         % 'gammaTau',
         1, ...          % 'persistentGammaTau'
         -500, ...       % 'LMSDelay'
         1, ...          % 'LMSExponentialTau'
@@ -105,7 +106,7 @@ if strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToGroupAverage')
         0];             % 'LightFluxPersistent'
     
     initialValues = ...
-        [200, ...       % 'gammaTau',
+        [600, ...       % 'gammaTau',
         200, ...       % 'persistentGammaTau'
         -200, ...      % 'LMSDelay'
         10, ...        % 'LMSExponentialTau'
@@ -136,8 +137,8 @@ if strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToGroupAverage')
     
     % summarizing the group average model fit
     LMSFit = modelResponseStruct.values(1:length(modelResponseStruct.values)/3);
-    melanopsinFit = modelResponseStruct.values(length(modelResponseStruct.values)/3+1:length(modelResponseStruct.values)/3*2);
-    lightFluxFit = modelResponseStruct.values(length(modelResponseStruct.values)/3*2+1:end);
+    MelanopsinFit = modelResponseStruct.values(length(modelResponseStruct.values)/3+1:length(modelResponseStruct.values)/3*2);
+    LightFluxFit = modelResponseStruct.values(length(modelResponseStruct.values)/3*2+1:end);
     
     if p.Results.plotGroupAverageFits || strcmp(subjectID, 'group')
         plotFig = figure;
@@ -150,16 +151,16 @@ if strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToGroupAverage')
         legend('Group average response', 'Model fit')
         
         ax2 = subplot(1,3,2); hold on;
-        plot(resampledStimulusTimebase/1000, melanopsinResponse, 'Color', 'k');
-        plot(resampledStimulusTimebase/1000, melanopsinFit, 'Color', 'r');
+        plot(resampledStimulusTimebase/1000, MelanopsinResponse, 'Color', 'k');
+        plot(resampledStimulusTimebase/1000, MelanopsinFit, 'Color', 'r');
         xlabel('Time (s)')
         ylabel('Pupil Area (% Change)');
         title('Melanopsin')
         legend('Group average response', 'Model fit')
         
         ax3 = subplot(1,3,3); hold on;
-        plot(resampledStimulusTimebase/1000, lightFluxResponse, 'Color', 'k');
-        plot(resampledStimulusTimebase/1000, lightFluxFit, 'Color', 'r');
+        plot(resampledStimulusTimebase/1000, LightFluxResponse, 'Color', 'k');
+        plot(resampledStimulusTimebase/1000, LightFluxFit, 'Color', 'r');
         xlabel('Time (s)')
         ylabel('Pupil Area (% Change)');
         title('Light Flux')
@@ -168,6 +169,59 @@ if strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToGroupAverage')
         linkaxes([ax1, ax2, ax3]);
         
         set(gcf, 'Position', [29 217 1661 761]);
+        
+        if p.Results.plotComponents
+            
+            persistentAmplitudeIndices = find(contains(paramsFit.paramNameCell,'Persistent'));
+            sustainedAmplitudeIndices = find(contains(paramsFit.paramNameCell,'Sustained'));
+            transientAmplitudeIndices = find(contains(paramsFit.paramNameCell,'Transient'));
+            
+            % plot the transient component
+            transientParams = paramsFit;
+            transientParams.paramMainMatrix(persistentAmplitudeIndices) = 0;
+            transientParams.paramMainMatrix(sustainedAmplitudeIndices) = 0;
+            
+            computedTransientResponse = temporalFit.computeResponse(transientParams, thePacket.stimulus, thePacket.kernel);
+            subplot(1,3,1); hold on;
+            plot(resampledStimulusTimebase/1000, computedTransientResponse.values(1:length(computedTransientResponse.values)/3));
+            subplot(1,3,2); hold on;
+            plot(resampledStimulusTimebase/1000, computedTransientResponse.values(length(computedTransientResponse.values)/3+1:length(computedTransientResponse.values)/3*2));
+            subplot(1,3,3); hold on;
+            plot(resampledStimulusTimebase/1000, computedTransientResponse.values(length(computedTransientResponse.values)/3*2+1:end));
+            
+            % plot the sustained component
+            sustainedParams = paramsFit;
+            sustainedParams.paramMainMatrix(persistentAmplitudeIndices) = 0;
+            sustainedParams.paramMainMatrix(transientAmplitudeIndices) = 0;
+            
+            computedSustainedResponse = temporalFit.computeResponse(sustainedParams, thePacket.stimulus, thePacket.kernel);
+            subplot(1,3,1); hold on;
+            plot(resampledStimulusTimebase/1000, computedSustainedResponse.values(1:length(computedSustainedResponse.values)/3));
+            subplot(1,3,2); hold on;
+            plot(resampledStimulusTimebase/1000, computedSustainedResponse.values(length(computedSustainedResponse.values)/3+1:length(computedSustainedResponse.values)/3*2));
+            subplot(1,3,3); hold on;
+            plot(resampledStimulusTimebase/1000, computedSustainedResponse.values(length(computedSustainedResponse.values)/3*2+1:end));
+            
+            
+            % plot the persistent component
+            persistentParams = paramsFit;
+            persistentParams.paramMainMatrix(sustainedAmplitudeIndices) = 0;
+            persistentParams.paramMainMatrix(transientAmplitudeIndices) = 0;
+            
+            computedPersistentResponse = temporalFit.computeResponse(persistentParams, thePacket.stimulus, thePacket.kernel);
+            subplot(1,3,1); hold on;
+            legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
+            
+            plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(1:length(computedPersistentResponse.values)/3));
+            subplot(1,3,2); hold on;
+            legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
+            
+            plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(length(computedPersistentResponse.values)/3+1:length(computedPersistentResponse.values)/3*2));
+            subplot(1,3,3); hold on;
+            plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(length(computedPersistentResponse.values)/3*2+1:end));
+            legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
+            
+        end
         
         fprintf(' <strong>Fitting group average response </strong>\n');
         temporalFit.paramPrint(paramsFit);
@@ -185,13 +239,13 @@ if strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToGroupAverage')
             modeledResponses.LMS.params.paramMainMatrix(ii) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.LMS.params.paramNameCell{ii}));
         end
         modeledResponses.Melanopsin.timebase = resampledStimulusTimebase;
-        modeledResponses.Melanopsin.values = melanopsinFit;
+        modeledResponses.Melanopsin.values = MelanopsinFit;
         modeledResponses.Melanopsin.params.paramNameCell = {'gammaTau', 'persistentGammaTau', 'MelanopsinExponentialTau', 'MelanopsinAmplitudeTransient', 'MelanopsinAmplitudeSustained', 'MelanopsinAmplitudePersistent'};
         for ii = 1:length(modeledResponses.Melanopsin.params.paramNameCell)
             modeledResponses.Melanopsin.params.paramMainMatrix(ii) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.Melanopsin.params.paramNameCell{ii}));
         end
         modeledResponses.LightFlux.timebase = resampledStimulusTimebase;
-        modeledResponses.LightFlux.values = lightFluxFit;
+        modeledResponses.LightFlux.values = LightFluxFit;
         modeledResponses.LightFlux.params.paramNameCell = {'gammaTau', 'persistentGammaTau', 'LightFluxExponentialTau', 'LightFluxAmplitudeTransient', 'LightFluxAmplitudeSustained', 'LightFluxAmplitudePersistent'};
         for ii = 1:length(modeledResponses.LightFlux.params.paramNameCell)
             modeledResponses.LightFlux.params.paramMainMatrix(ii) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.LightFlux.params.paramNameCell{ii}));
@@ -199,15 +253,15 @@ if strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToGroupAverage')
         
         
         averageResponses.LMS = LMSResponse;
-        averageResponses.Melanopsin = melanopsinResponse;
-        averageResponses.LightFlux = lightFluxResponse;
+        averageResponses.Melanopsin = MelanopsinResponse;
+        averageResponses.LightFlux = LightFluxResponse;
     end
     
     % explicitly stash persistentGammaTau, and corresponding bounds
     persistentGammaTau = groupAveragePersistentGammaTau;
     persistentGammaTauUB = groupAveragePersistentGammaTau;
     persistentGammaTauLB = groupAveragePersistentGammaTau;
-
+    
     
 elseif isnumeric(p.Results.methodForDeterminingPersistentGammaTau)
     
@@ -233,21 +287,21 @@ if ~strcmp(subjectID, 'group')
     % compute group average responses, including NaNing poor indices (at
     % the beginning and the end)
     
-    melanopsinResponse = nanmean(trialStruct.Melanopsin.Contrast400);
-    melanopsinResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
-    melanopsinResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
+    MelanopsinResponse = nanmean(trialStruct.Melanopsin.Contrast400);
+    MelanopsinResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
+    MelanopsinResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
     
     LMSResponse = nanmean(trialStruct.LMS.Contrast400);
     LMSResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
     LMSResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
     
-    lightFluxResponse = nanmean(trialStruct.LightFlux.Contrast400);
-    lightFluxResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
-    lightFluxResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
+    LightFluxResponse = nanmean(trialStruct.LightFlux.Contrast400);
+    LightFluxResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
+    LightFluxResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
     
     % assemble the responseStruct of the packet. To fix parameters,
     % we'll be concatenating these responses together.
-    thePacket.response.values = [LMSResponse, melanopsinResponse, lightFluxResponse];
+    thePacket.response.values = [LMSResponse, MelanopsinResponse, LightFluxResponse];
     thePacket.response.timebase = 0:1/60*1000:length(thePacket.response.values)*1/60 * 1000 - 1/60 * 1000;
     
     % assemble the stimuluStruct of the packet.
@@ -346,8 +400,8 @@ if ~strcmp(subjectID, 'group')
     
     % summarizing the group average model fit
     LMSFit = modelResponseStruct.values(1:length(modelResponseStruct.values)/3);
-    melanopsinFit = modelResponseStruct.values(length(modelResponseStruct.values)/3+1:length(modelResponseStruct.values)/3*2);
-    lightFluxFit = modelResponseStruct.values(length(modelResponseStruct.values)/3*2+1:end);
+    MelanopsinFit = modelResponseStruct.values(length(modelResponseStruct.values)/3+1:length(modelResponseStruct.values)/3*2);
+    LightFluxFit = modelResponseStruct.values(length(modelResponseStruct.values)/3*2+1:end);
     
     if p.Results.plotFits
         plotFig = figure;
@@ -360,16 +414,16 @@ if ~strcmp(subjectID, 'group')
         legend('Average response', 'Model fit')
         
         ax2 = subplot(1,3,2); hold on;
-        plot(resampledStimulusTimebase/1000, melanopsinResponse, 'Color', 'k');
-        plot(resampledStimulusTimebase/1000, melanopsinFit, 'Color', 'r');
+        plot(resampledStimulusTimebase/1000, MelanopsinResponse, 'Color', 'k');
+        plot(resampledStimulusTimebase/1000, MelanopsinFit, 'Color', 'r');
         xlabel('Time (s)')
         ylabel('Pupil Area (% Change)');
         title('Melanopsin')
         legend('Average response', 'Model fit')
         
         ax3 = subplot(1,3,3); hold on;
-        plot(resampledStimulusTimebase/1000, lightFluxResponse, 'Color', 'k');
-        plot(resampledStimulusTimebase/1000, lightFluxFit, 'Color', 'r');
+        plot(resampledStimulusTimebase/1000, LightFluxResponse, 'Color', 'k');
+        plot(resampledStimulusTimebase/1000, LightFluxFit, 'Color', 'r');
         xlabel('Time (s)')
         ylabel('Pupil Area (% Change)');
         title('Light Flux')
@@ -378,6 +432,59 @@ if ~strcmp(subjectID, 'group')
         linkaxes([ax1, ax2, ax3]);
         
         set(gcf, 'Position', [29 217 1661 761]);
+        
+        if p.Results.plotComponents
+            
+            persistentAmplitudeIndices = find(contains(paramsFit.paramNameCell,'Persistent'));
+            sustainedAmplitudeIndices = find(contains(paramsFit.paramNameCell,'Sustained'));
+            transientAmplitudeIndices = find(contains(paramsFit.paramNameCell,'Transient'));
+            
+            % plot the transient component
+            transientParams = paramsFit;
+            transientParams.paramMainMatrix(persistentAmplitudeIndices) = 0;
+            transientParams.paramMainMatrix(sustainedAmplitudeIndices) = 0;
+            
+            computedTransientResponse = temporalFit.computeResponse(transientParams, thePacket.stimulus, thePacket.kernel);
+            subplot(1,3,1); hold on;
+            plot(resampledStimulusTimebase/1000, computedTransientResponse.values(1:length(computedTransientResponse.values)/3));
+            subplot(1,3,2); hold on;
+            plot(resampledStimulusTimebase/1000, computedTransientResponse.values(length(computedTransientResponse.values)/3+1:length(computedTransientResponse.values)/3*2));
+            subplot(1,3,3); hold on;
+            plot(resampledStimulusTimebase/1000, computedTransientResponse.values(length(computedTransientResponse.values)/3*2+1:end));
+            
+            % plot the sustained component
+            sustainedParams = paramsFit;
+            sustainedParams.paramMainMatrix(persistentAmplitudeIndices) = 0;
+            sustainedParams.paramMainMatrix(transientAmplitudeIndices) = 0;
+            
+            computedSustainedResponse = temporalFit.computeResponse(sustainedParams, thePacket.stimulus, thePacket.kernel);
+            subplot(1,3,1); hold on;
+            plot(resampledStimulusTimebase/1000, computedSustainedResponse.values(1:length(computedSustainedResponse.values)/3));
+            subplot(1,3,2); hold on;
+            plot(resampledStimulusTimebase/1000, computedSustainedResponse.values(length(computedSustainedResponse.values)/3+1:length(computedSustainedResponse.values)/3*2));
+            subplot(1,3,3); hold on;
+            plot(resampledStimulusTimebase/1000, computedSustainedResponse.values(length(computedSustainedResponse.values)/3*2+1:end));
+            
+            
+            % plot the persistent component
+            persistentParams = paramsFit;
+            persistentParams.paramMainMatrix(sustainedAmplitudeIndices) = 0;
+            persistentParams.paramMainMatrix(transientAmplitudeIndices) = 0;
+            
+            computedPersistentResponse = temporalFit.computeResponse(persistentParams, thePacket.stimulus, thePacket.kernel);
+            subplot(1,3,1); hold on;
+            legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
+            
+            plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(1:length(computedPersistentResponse.values)/3));
+            subplot(1,3,2); hold on;
+            legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
+            
+            plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(length(computedPersistentResponse.values)/3+1:length(computedPersistentResponse.values)/3*2));
+            subplot(1,3,3); hold on;
+            plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(length(computedPersistentResponse.values)/3*2+1:end));
+            legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
+            
+        end
         
     end
     
@@ -389,21 +496,21 @@ if ~strcmp(subjectID, 'group')
         modeledResponses.LMS.params.paramMainMatrix(ii) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.LMS.params.paramNameCell{ii}));
     end
     modeledResponses.Melanopsin.timebase = resampledStimulusTimebase;
-    modeledResponses.Melanopsin.values = melanopsinFit;
+    modeledResponses.Melanopsin.values = MelanopsinFit;
     modeledResponses.Melanopsin.params.paramNameCell = {'gammaTau', 'persistentGammaTau', 'MelanopsinExponentialTau', 'MelanopsinAmplitudeTransient', 'MelanopsinAmplitudeSustained', 'MelanopsinAmplitudePersistent'};
     for ii = 1:length(modeledResponses.Melanopsin.params.paramNameCell)
         modeledResponses.Melanopsin.params.paramMainMatrix(ii) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.Melanopsin.params.paramNameCell{ii}));
     end
     modeledResponses.LightFlux.timebase = resampledStimulusTimebase;
-    modeledResponses.LightFlux.values = lightFluxFit;
+    modeledResponses.LightFlux.values = LightFluxFit;
     modeledResponses.LightFlux.params.paramNameCell = {'gammaTau', 'persistentGammaTau', 'LightFluxExponentialTau', 'LightFluxAmplitudeTransient', 'LightFluxAmplitudeSustained', 'LightFluxAmplitudePersistent'};
     for ii = 1:length(modeledResponses.LightFlux.params.paramNameCell)
         modeledResponses.LightFlux.params.paramMainMatrix(ii) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.LightFlux.params.paramNameCell{ii}));
     end
     
     averageResponses.LMS.values = LMSResponse;
-    averageResponses.Melanopsin.values = melanopsinResponse;
-    averageResponses.LightFlux.values = lightFluxResponse;
+    averageResponses.Melanopsin.values = MelanopsinResponse;
+    averageResponses.LightFlux.values = LightFluxResponse;
     
     
     
