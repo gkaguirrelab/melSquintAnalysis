@@ -10,7 +10,7 @@ for ss = 1:length(subjectDirs)
     if ~strcmp(subjectDirs(ss).name, 'MELA_0127')
         for session = 1:length(sessions)
             
-            if ~exist(fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectDirs(ss).name, sessions(session).name, 'pupilCalibration/fitParams.mat'));
+            if ~exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectDirs(ss).name, sessions(session).name, 'pupilCalibration/fitParams.mat'));
                 commandList{end+1} = ['trackSubject(''', subjectDirs(ss).name, ''', ''', sessions(session).name, ''', ''skipProcessing'', true)'];
             end
         end

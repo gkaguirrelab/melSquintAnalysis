@@ -70,7 +70,7 @@ p.addParameter('sessions', {}, @iscell);
 % Parse and check the parameters
 p.parse(varargin{:});
 %% Find the data
-analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
+analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 % figure out the number of completed sessions
 potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, '2*session*'));
@@ -331,7 +331,7 @@ if makePlots
     %ylim([0 4]);
     linkaxes([lightFluxAxis1, lightFluxAxis2]);
     
-    analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
+    analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
     print(plotFig, fullfile(analysisBasePath,'EMG_RMS'), '-dpdf', '-fillpage')
     %close(plotFig)
     

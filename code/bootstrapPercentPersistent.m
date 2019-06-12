@@ -51,7 +51,7 @@ if isempty(p.Results.pathToAverageResponseMatrix)
                 clear trialStruct
                 subjectID = subjectList{ss};
                 
-                load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments', 'OLApproach_Squint', 'SquintToPulse', 'DataFiles', subjectID, 'trialStruct_postSpotcheck.mat'));
+                load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments', 'OLApproach_Squint', 'SquintToPulse', 'DataFiles', subjectID, 'trialStruct_postSpotcheck.mat'));
                 for tt = 1:length(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{cc})])(1,:))
                     averageResponse(tt) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{cc})])(:,tt));
                     STD(tt) = nanstd(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{cc})])(:,tt));

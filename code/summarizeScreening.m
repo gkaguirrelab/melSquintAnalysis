@@ -1,6 +1,6 @@
 function [table] = summarizeScreening()
 
-analysisBasePath = getpref('melSquintAnalysis','melaAnalysisPath');
+analysisBasePath = getpref('melSquintAnalysis','melaProcessingPath');
 
 potentialSubjects = dir(fullfile(analysisBasePath, 'Experiments/OLApproach_Squint/Screening/DataFiles/MELA*'));
 

@@ -95,7 +95,7 @@ end
 
 %% Find the data
 subjectID = 'MELA_0119'; % an example subject that has completed all 4 sessions
-analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
+analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 % figure out filename of trialStruct
 

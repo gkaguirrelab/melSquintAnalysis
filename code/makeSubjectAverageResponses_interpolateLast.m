@@ -71,7 +71,7 @@ p.addParameter('sessions', {}, @iscell);
 p.parse(varargin{:});
 
 %% Find the data
-analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
+analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 
 % figure out the number of completed sessions

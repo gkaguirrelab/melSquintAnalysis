@@ -13,7 +13,7 @@ if strcmp(p.Results.approach, 'Squint')
     
     projectName = 'melSquintAnalysis';
     pathParams.dataBasePath =  getpref(projectName,'melaDataPath');
-    pathParams.analysisBasePath = getpref(projectName,'melaAnalysisPath');
+    pathParams.analysisBasePath = getpref(projectName,'melaProcessingPath');
     pathParams.verbose = true;
     pathParams.useParallel = true;
     pathParams.eyeLaterality = 'left';

@@ -6,7 +6,7 @@ subfolder = 'videoFiles_acquisition_01';
 pathParams.runName = 'trial_006';
     projectName = 'melSquintAnalysis';
     pathParams.dataBasePath =  getpref(projectName,'melaDataPath');
-    pathParams.analysisBasePath = getpref(projectName,'melaAnalysisPath');
+    pathParams.analysisBasePath = getpref(projectName,'melaProcessingPath');
     pathParams.dataSourceDirFull = fullfile(pathParams.dataBasePath,'Experiments','OLApproach_Squint','SquintToPulse','DataFiles');
 
 pathParams.dataOutputDirBase = fullfile(pathParams.analysisBasePath,'Experiments','OLApproach_Squint','SquintToPulse','DataFiles');

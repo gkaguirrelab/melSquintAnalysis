@@ -6,7 +6,7 @@
 % get data and analysis directory prefs
 projectName = 'melSquintAnalysis';
 pathParams.dataBasePath =  getpref(projectName,'melaDataPath');
-pathParams.analysisBasePath = getpref(projectName,'melaAnalysisPath');
+pathParams.analysisBasePath = getpref(projectName,'melaProcessingPath');
 
 
 

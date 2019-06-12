@@ -4,7 +4,7 @@ function [ passStatus, percentGoodFramesPerTrial ] = analyzeScreening(subjectID)
 threshold = 5;
 %% find the relevant DataFiles dir
 projectName = 'melSquintAnalysis';
-dataDirBase = fullfile(getpref(projectName, 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/Screening/DataFiles');
+dataDirBase = fullfile(getpref(projectName, 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Screening/DataFiles');
 
 % determine the session for this subject
 sessions = dir(fullfile(dataDirBase, subjectID));
