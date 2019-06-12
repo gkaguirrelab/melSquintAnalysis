@@ -15,6 +15,7 @@ p.addParameter('plotGroupAverageFits', false, @islogical);
 p.addParameter('plotFits', true, @islogical);
 p.addParameter('plotComponents', true, @islogical);
 p.addParameter('printParams', true, @islogical);
+p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP'), @ischar);
 
 
 p.parse(varargin{:});
@@ -23,7 +24,7 @@ p.parse(varargin{:});
 
 if strcmp(subjectID, 'group')
     % load average responses across all subjects
-    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/groupAverageMatrix.mat'));
+    load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/groupAverageMatrix.mat'));
     
     % compute group average responses, including NaNing poor indices (at
     % the beginning and the end)
@@ -40,7 +41,7 @@ if strcmp(subjectID, 'group')
     LightFluxResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
 else
     % load average responses across all subjects
-    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, 'trialStruct_postSpotcheck.mat'));
+    load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, 'trialStruct_postSpotcheck.mat'));
     
     % compute group average responses, including NaNing poor indices (at
     % the beginning and the end)
@@ -167,32 +168,40 @@ if strcmp(p.Results.method, 'HPUP')
         if p.Results.plotGroupAverageFits || strcmp(subjectID, 'group')
             plotFig = figure;
             ax1 = subplot(1,3,1); hold on;
-            plot(resampledStimulusTimebase/1000, LMSResponse, 'Color', 'k');
-            plot(resampledStimulusTimebase/1000, LMSFit, 'Color', 'r');
-            xlabel('Time (s)')
+            plot(resampledStimulusTimebase, LMSResponse, 'Color', 'k');
+            plot(resampledStimulusTimebase, LMSFit, 'Color', 'r');
+            xlabel('Time (ms)')
             ylabel('Pupil Area (% Change)');
             title('LMS')
             legend('Group average response', 'Model fit')
+            xlim([0 17*1000])
+            
             
             ax2 = subplot(1,3,2); hold on;
-            plot(resampledStimulusTimebase/1000, MelanopsinResponse, 'Color', 'k');
-            plot(resampledStimulusTimebase/1000, MelanopsinFit, 'Color', 'r');
-            xlabel('Time (s)')
+            plot(resampledStimulusTimebase, MelanopsinResponse, 'Color', 'k');
+            plot(resampledStimulusTimebase, MelanopsinFit, 'Color', 'r');
+            xlabel('Time (ms)')
             ylabel('Pupil Area (% Change)');
             title('Melanopsin')
             legend('Group average response', 'Model fit')
+            xlim([0 17*1000])
+            
             
             ax3 = subplot(1,3,3); hold on;
-            plot(resampledStimulusTimebase/1000, LightFluxResponse, 'Color', 'k');
-            plot(resampledStimulusTimebase/1000, LightFluxFit, 'Color', 'r');
-            xlabel('Time (s)')
+            plot(resampledStimulusTimebase, LightFluxResponse, 'Color', 'k');
+            plot(resampledStimulusTimebase, LightFluxFit, 'Color', 'r');
+            xlabel('Time (ms)')
             ylabel('Pupil Area (% Change)');
             title('Light Flux')
             legend('Group average response', 'Model fit')
+            xlim([0 17*1000])
+            
             
             linkaxes([ax1, ax2, ax3]);
             
             set(gcf, 'Position', [29 217 1661 761]);
+            legend('Average response', 'Model fit', 'Location', 'SouthEast')
+
             
             if p.Results.plotComponents
                 
@@ -207,11 +216,11 @@ if strcmp(p.Results.method, 'HPUP')
                 
                 computedTransientResponse = temporalFit.computeResponse(transientParams, thePacket.stimulus, thePacket.kernel);
                 subplot(1,3,1); hold on;
-                plot(resampledStimulusTimebase/1000, computedTransientResponse.values(1:length(computedTransientResponse.values)/3));
+                plot(resampledStimulusTimebase, computedTransientResponse.values(1:length(computedTransientResponse.values)/3));
                 subplot(1,3,2); hold on;
-                plot(resampledStimulusTimebase/1000, computedTransientResponse.values(length(computedTransientResponse.values)/3+1:length(computedTransientResponse.values)/3*2));
+                plot(resampledStimulusTimebase, computedTransientResponse.values(length(computedTransientResponse.values)/3+1:length(computedTransientResponse.values)/3*2));
                 subplot(1,3,3); hold on;
-                plot(resampledStimulusTimebase/1000, computedTransientResponse.values(length(computedTransientResponse.values)/3*2+1:end));
+                plot(resampledStimulusTimebase, computedTransientResponse.values(length(computedTransientResponse.values)/3*2+1:end));
                 
                 % plot the sustained component
                 sustainedParams = paramsFit;
@@ -220,11 +229,11 @@ if strcmp(p.Results.method, 'HPUP')
                 
                 computedSustainedResponse = temporalFit.computeResponse(sustainedParams, thePacket.stimulus, thePacket.kernel);
                 subplot(1,3,1); hold on;
-                plot(resampledStimulusTimebase/1000, computedSustainedResponse.values(1:length(computedSustainedResponse.values)/3));
+                plot(resampledStimulusTimebase, computedSustainedResponse.values(1:length(computedSustainedResponse.values)/3));
                 subplot(1,3,2); hold on;
-                plot(resampledStimulusTimebase/1000, computedSustainedResponse.values(length(computedSustainedResponse.values)/3+1:length(computedSustainedResponse.values)/3*2));
+                plot(resampledStimulusTimebase, computedSustainedResponse.values(length(computedSustainedResponse.values)/3+1:length(computedSustainedResponse.values)/3*2));
                 subplot(1,3,3); hold on;
-                plot(resampledStimulusTimebase/1000, computedSustainedResponse.values(length(computedSustainedResponse.values)/3*2+1:end));
+                plot(resampledStimulusTimebase, computedSustainedResponse.values(length(computedSustainedResponse.values)/3*2+1:end));
                 
                 
                 % plot the persistent component
@@ -234,15 +243,19 @@ if strcmp(p.Results.method, 'HPUP')
                 
                 computedPersistentResponse = temporalFit.computeResponse(persistentParams, thePacket.stimulus, thePacket.kernel);
                 subplot(1,3,1); hold on;
-                plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(1:length(computedPersistentResponse.values)/3));
-                legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
+                plot(resampledStimulusTimebase, computedPersistentResponse.values(1:length(computedPersistentResponse.values)/3));
+                legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component', 'Location', 'SouthEast')
                 subplot(1,3,2); hold on;
-                plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(length(computedPersistentResponse.values)/3+1:length(computedPersistentResponse.values)/3*2));
-                legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
+                plot(resampledStimulusTimebase, computedPersistentResponse.values(length(computedPersistentResponse.values)/3+1:length(computedPersistentResponse.values)/3*2));
+                legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component', 'Location', 'SouthEast')
                 subplot(1,3,3); hold on;
-                plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(length(computedPersistentResponse.values)/3*2+1:end));
-                legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
+                plot(resampledStimulusTimebase, computedPersistentResponse.values(length(computedPersistentResponse.values)/3*2+1:end));
+                legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component', 'Location', 'SouthEast')
                 
+            end
+            
+            if strcmp(subjectID, 'group')
+                saveas(plotFig, fullfile(p.Results.savePath, 'groupModelFits.png')), 
             end
             
             fprintf(' <strong>Fitting group average response </strong>\n');
@@ -367,7 +380,7 @@ if strcmp(p.Results.method, 'HPUP')
             0];             % 'LightFluxPersistent'
         
         initialValues = ...
-            [200, ...       % 'gammaTau',
+            [600, ...       % 'gammaTau',
             persistentGammaTau, ...       % 'persistentGammaTau'
             -200, ...      % 'LMSDelay'
             10, ...        % 'LMSExponentialTau'
@@ -410,28 +423,34 @@ if strcmp(p.Results.method, 'HPUP')
         if p.Results.plotFits
             plotFig = figure;
             ax1 = subplot(1,3,1); hold on;
-            plot(resampledStimulusTimebase/1000, LMSResponse, 'Color', 'k');
-            plot(resampledStimulusTimebase/1000, LMSFit, 'Color', 'r');
-            xlabel('Time (s)')
+            plot(resampledStimulusTimebase, LMSResponse, 'Color', 'k');
+            plot(resampledStimulusTimebase, LMSFit, 'Color', 'r');
+            xlabel('Time (ms)')
             ylabel('Pupil Area (% Change)');
             title('LMS')
             legend('Average response', 'Model fit')
+            xlim([0 17*1000])
+            
             
             ax2 = subplot(1,3,2); hold on;
-            plot(resampledStimulusTimebase/1000, MelanopsinResponse, 'Color', 'k');
-            plot(resampledStimulusTimebase/1000, MelanopsinFit, 'Color', 'r');
-            xlabel('Time (s)')
+            plot(resampledStimulusTimebase, MelanopsinResponse, 'Color', 'k');
+            plot(resampledStimulusTimebase, MelanopsinFit, 'Color', 'r');
+            xlabel('Time (ms)')
             ylabel('Pupil Area (% Change)');
             title('Melanopsin')
             legend('Average response', 'Model fit')
+            xlim([0 17*1000])
+            
             
             ax3 = subplot(1,3,3); hold on;
-            plot(resampledStimulusTimebase/1000, LightFluxResponse, 'Color', 'k');
-            plot(resampledStimulusTimebase/1000, LightFluxFit, 'Color', 'r');
-            xlabel('Time (s)')
+            plot(resampledStimulusTimebase, LightFluxResponse, 'Color', 'k');
+            plot(resampledStimulusTimebase, LightFluxFit, 'Color', 'r');
+            xlabel('Time (ms)')
             ylabel('Pupil Area (% Change)');
             title('Light Flux')
             legend('Average response', 'Model fit')
+            xlim([0 17*1000])
+            
             
             linkaxes([ax1, ax2, ax3]);
             
@@ -450,11 +469,11 @@ if strcmp(p.Results.method, 'HPUP')
                 
                 computedTransientResponse = temporalFit.computeResponse(transientParams, thePacket.stimulus, thePacket.kernel);
                 subplot(1,3,1); hold on;
-                plot(resampledStimulusTimebase/1000, computedTransientResponse.values(1:length(computedTransientResponse.values)/3));
+                plot(resampledStimulusTimebase, computedTransientResponse.values(1:length(computedTransientResponse.values)/3));
                 subplot(1,3,2); hold on;
-                plot(resampledStimulusTimebase/1000, computedTransientResponse.values(length(computedTransientResponse.values)/3+1:length(computedTransientResponse.values)/3*2));
+                plot(resampledStimulusTimebase, computedTransientResponse.values(length(computedTransientResponse.values)/3+1:length(computedTransientResponse.values)/3*2));
                 subplot(1,3,3); hold on;
-                plot(resampledStimulusTimebase/1000, computedTransientResponse.values(length(computedTransientResponse.values)/3*2+1:end));
+                plot(resampledStimulusTimebase, computedTransientResponse.values(length(computedTransientResponse.values)/3*2+1:end));
                 
                 % plot the sustained component
                 sustainedParams = paramsFit;
@@ -463,11 +482,11 @@ if strcmp(p.Results.method, 'HPUP')
                 
                 computedSustainedResponse = temporalFit.computeResponse(sustainedParams, thePacket.stimulus, thePacket.kernel);
                 subplot(1,3,1); hold on;
-                plot(resampledStimulusTimebase/1000, computedSustainedResponse.values(1:length(computedSustainedResponse.values)/3));
+                plot(resampledStimulusTimebase, computedSustainedResponse.values(1:length(computedSustainedResponse.values)/3));
                 subplot(1,3,2); hold on;
-                plot(resampledStimulusTimebase/1000, computedSustainedResponse.values(length(computedSustainedResponse.values)/3+1:length(computedSustainedResponse.values)/3*2));
+                plot(resampledStimulusTimebase, computedSustainedResponse.values(length(computedSustainedResponse.values)/3+1:length(computedSustainedResponse.values)/3*2));
                 subplot(1,3,3); hold on;
-                plot(resampledStimulusTimebase/1000, computedSustainedResponse.values(length(computedSustainedResponse.values)/3*2+1:end));
+                plot(resampledStimulusTimebase, computedSustainedResponse.values(length(computedSustainedResponse.values)/3*2+1:end));
                 
                 
                 % plot the persistent component
@@ -477,18 +496,23 @@ if strcmp(p.Results.method, 'HPUP')
                 
                 computedPersistentResponse = temporalFit.computeResponse(persistentParams, thePacket.stimulus, thePacket.kernel);
                 subplot(1,3,1); hold on;
-                plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(1:length(computedPersistentResponse.values)/3));
+                plot(resampledStimulusTimebase, computedPersistentResponse.values(1:length(computedPersistentResponse.values)/3));
                 legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
                 subplot(1,3,2); hold on;
-                plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(length(computedPersistentResponse.values)/3+1:length(computedPersistentResponse.values)/3*2));
+                plot(resampledStimulusTimebase, computedPersistentResponse.values(length(computedPersistentResponse.values)/3+1:length(computedPersistentResponse.values)/3*2));
                 legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
                 subplot(1,3,3); hold on;
-                plot(resampledStimulusTimebase/1000, computedPersistentResponse.values(length(computedPersistentResponse.values)/3*2+1:end));
+                plot(resampledStimulusTimebase, computedPersistentResponse.values(length(computedPersistentResponse.values)/3*2+1:end));
                 legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component')
                 
             end
             
         end
+        
+        % save out plot
+        saveas(plotFig, fullfile(p.Results.savePath, [subjectID, '.png'])),
+
+        
         
         % stash out results
         modeledResponses.LMS.timebase = resampledStimulusTimebase;
@@ -575,7 +599,7 @@ elseif strcmp(p.Results.method, 'TPUP')
             plot(thePacket.response.timebase, thePacket.response.values, 'Color', 'k')
             plot(modelResponseStruct.timebase, modelResponseStruct.values, 'Color', 'r')
             legend('Average response', 'Model fit',  'Location', 'SouthEast')
-
+            
             
             if p.Results.plotComponents
                 persistentAmplitudeIndices = find(contains(paramsFit.paramNameCell,'Persistent'));
@@ -583,36 +607,36 @@ elseif strcmp(p.Results.method, 'TPUP')
                 transientAmplitudeIndices = find(contains(paramsFit.paramNameCell,'Transient'));
                 
                 
-                 % plot the transient component
+                % plot the transient component
                 transientParams = paramsFit;
                 transientParams.paramMainMatrix(persistentAmplitudeIndices) = 0;
-                transientParams.paramMainMatrix(sustainedAmplitudeIndices) = 0;                
-                computedTransientResponse = temporalFit.computeResponse(transientParams, thePacket.stimulus, thePacket.kernel);                
+                transientParams.paramMainMatrix(sustainedAmplitudeIndices) = 0;
+                computedTransientResponse = temporalFit.computeResponse(transientParams, thePacket.stimulus, thePacket.kernel);
                 plot(thePacket.stimulus.timebase, computedTransientResponse.values);
-
+                
                 
                 % plot the sustained component
                 sustainedParams = paramsFit;
                 sustainedParams.paramMainMatrix(persistentAmplitudeIndices) = 0;
-                sustainedParams.paramMainMatrix(transientAmplitudeIndices) = 0;                
+                sustainedParams.paramMainMatrix(transientAmplitudeIndices) = 0;
                 computedSustainedResponse = temporalFit.computeResponse(sustainedParams, thePacket.stimulus, thePacket.kernel);
                 plot(thePacket.stimulus.timebase, computedSustainedResponse.values);
-         
+                
                 % plot the persistent component
                 persistentParams = paramsFit;
                 persistentParams.paramMainMatrix(sustainedAmplitudeIndices) = 0;
-                persistentParams.paramMainMatrix(transientAmplitudeIndices) = 0;                
+                persistentParams.paramMainMatrix(transientAmplitudeIndices) = 0;
                 computedPersistentResponse = temporalFit.computeResponse(persistentParams, thePacket.stimulus, thePacket.kernel);
                 plot(thePacket.stimulus.timebase, computedPersistentResponse.values);
                 legend('Average response', 'Model fit', 'Transient Component', 'Sustained Component', 'Persistent Component', 'Location', 'SouthEast')
-                xlabel('Time (s)')
+                xlabel('Time (ms)')
                 ylabel('Pupil Area (% Change)')
                 xlim([0 17*1000])
                 
                 
             end
             title(stimuli{ii});
-                
+            
             
         end
         
@@ -634,21 +658,21 @@ elseif strcmp(p.Results.method, 'TPUP')
     if p.Results.plotFits
         linkaxes([ax.ax1, ax.ax2, ax.ax3]);
         set(gcf, 'Position', [29 217 1661 761]);
-
+        
     end
     
-
+    
     
     
 end
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+close all
+
+
+
 end
