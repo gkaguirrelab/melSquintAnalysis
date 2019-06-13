@@ -15,7 +15,7 @@ p.addParameter('plotGroupAverageFits', false, @islogical);
 p.addParameter('plotFits', true, @islogical);
 p.addParameter('plotComponents', true, @islogical);
 p.addParameter('printParams', true, @islogical);
-p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP', 'nonYokedPersistentGamma'), @ischar);
+p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP', 'nonYokedPersistentGamma_300gammaLB'), @ischar);
 
 
 p.parse(varargin{:});
@@ -179,7 +179,7 @@ if strcmp(p.Results.method, 'HPUP')
         if p.Results.plotGroupAverageFits || strcmp(subjectID, 'group')
             plotFig = figure;
             ax1 = subplot(1,3,1); hold on;
-            plot(resampledStimulusTimebase, LMSResponse, 'Color', 'k');
+            plot(resampledStimulusTimebase, groupLMSResponse, 'Color', 'k');
             plot(resampledStimulusTimebase, LMSFit, 'Color', 'r');
             xlabel('Time (ms)')
             ylabel('Pupil Area (% Change)');
@@ -189,7 +189,7 @@ if strcmp(p.Results.method, 'HPUP')
             
             
             ax2 = subplot(1,3,2); hold on;
-            plot(resampledStimulusTimebase, MelanopsinResponse, 'Color', 'k');
+            plot(resampledStimulusTimebase, groupMelanopsinResponse, 'Color', 'k');
             plot(resampledStimulusTimebase, MelanopsinFit, 'Color', 'r');
             xlabel('Time (ms)')
             ylabel('Pupil Area (% Change)');
@@ -199,7 +199,7 @@ if strcmp(p.Results.method, 'HPUP')
             
             
             ax3 = subplot(1,3,3); hold on;
-            plot(resampledStimulusTimebase, LightFluxResponse, 'Color', 'k');
+            plot(resampledStimulusTimebase, groupLightFluxResponse, 'Color', 'k');
             plot(resampledStimulusTimebase, LightFluxFit, 'Color', 'r');
             xlabel('Time (ms)')
             ylabel('Pupil Area (% Change)');
@@ -376,7 +376,7 @@ if strcmp(p.Results.method, 'HPUP')
         % set up initial parameters. This is how we're going to fix the
         % persistentGammaTau
         vlb = ...
-            [400, ...         % 'gammaTau',
+            [300, ...         % 'gammaTau',
             LMSPersistentGammaTauLB, ...          % 'persistentGammaTau'
             -500, ...       % 'LMSDelay'
             1, ...          % 'LMSExponentialTau'
@@ -418,7 +418,7 @@ if strcmp(p.Results.method, 'HPUP')
             0];             % 'LightFluxPersistent'
         
         initialValues = ...
-            [600, ...       % 'gammaTau',
+            [900, ...       % 'gammaTau',
             LMSPersistentGammaTau, ...       % 'persistentGammaTau'
             -200, ...      % 'LMSDelay'
             10, ...        % 'LMSExponentialTau'
