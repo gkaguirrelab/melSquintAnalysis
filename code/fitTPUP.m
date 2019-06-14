@@ -15,7 +15,11 @@ p.addParameter('plotGroupAverageFits', false, @islogical);
 p.addParameter('plotFits', true, @islogical);
 p.addParameter('plotComponents', true, @islogical);
 p.addParameter('printParams', true, @islogical);
-p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP', 'nonYokedPersistentGamma_300gammaLB'), @ischar);
+p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP', 'nonYokedPersistentGamma_500gammaLB'));
+p.addParameter('LMSResponse',[]);
+p.addParameter('MelanopsinResponse',[]);
+p.addParameter('LightFluxResponse',[]);
+
 
 
 p.parse(varargin{:});
@@ -41,7 +45,20 @@ if strcmp(subjectID, 'group') || strcmp(p.Results.methodForDeterminingPersistent
     groupLightFluxResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
 end
 
-if ~strcmp(subjectID, 'group')
+if isempty(subjectID)
+    MelanopsinResponse = p.Results.MelanopsinResponse;
+    MelanopsinResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
+    MelanopsinResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
+    
+    LMSResponse = p.Results.LMSResponse;
+    LMSResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
+    LMSResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
+    
+    LightFluxResponse = p.Results.LightFluxResponse;
+    LightFluxResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
+    LightFluxResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
+
+elseif ~strcmp(subjectID, 'group')
     % load average responses across all subjects
     load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, 'trialStruct_postSpotcheck.mat'));
     
@@ -138,7 +155,7 @@ if strcmp(p.Results.method, 'HPUP')
         
         initialValues = ...
             [600, ...       % 'gammaTau',
-            106.494, ...       % 'LMSPersistentGammaTau'
+            200, ...       % 'LMSPersistentGammaTau'
             -200, ...      % 'LMSDelay'
             10, ...        % 'LMSExponentialTau'
             -1, ...        % 'LMSTransient'
@@ -358,7 +375,7 @@ if strcmp(p.Results.method, 'HPUP')
         % assemble the stimuluStruct of the packet.
         stimulusStruct = makeStimulusStruct;
         % resample stimulus to match response
-        resampledStimulusTimebase = 0:1/60*1000:1/60*length(nanmean(trialStruct.Melanopsin.Contrast400))*1000-1/60*1000;
+        resampledStimulusTimebase = 0:1/60*1000:1/60*length((MelanopsinResponse))*1000-1/60*1000;
         resampledStimulusProfile = interp1(stimulusStruct.timebase, stimulusStruct.values, resampledStimulusTimebase);
         thePacket.stimulus = [];
         thePacket.stimulus.timebase = thePacket.response.timebase;
@@ -376,7 +393,7 @@ if strcmp(p.Results.method, 'HPUP')
         % set up initial parameters. This is how we're going to fix the
         % persistentGammaTau
         vlb = ...
-            [300, ...         % 'gammaTau',
+            [500, ...         % 'gammaTau',
             LMSPersistentGammaTauLB, ...          % 'persistentGammaTau'
             -500, ...       % 'LMSDelay'
             1, ...          % 'LMSExponentialTau'
@@ -550,7 +567,9 @@ if strcmp(p.Results.method, 'HPUP')
         end
         
         % save out plot
-        saveas(plotFig, fullfile(p.Results.savePath, [subjectID, '.png'])),
+        if ~isempty(p.Results.savePath)
+            saveas(plotFig, fullfile(p.Results.savePath, [subjectID, '.png'])),
+        end
 
         
         
