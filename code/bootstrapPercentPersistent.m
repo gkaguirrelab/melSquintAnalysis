@@ -8,6 +8,7 @@ saveName = '/Users/harrisonmcadams/Dropbox (Aguirre-Brainard Lab)/MELA_processin
 
 for ii = 20:40
     [ percentPersistentDistribution ] = bootstrapPercentPersistent(subjectList, 'nSubjectsInBootstrapSample', ii, 'saveName', saveName, 'pathToAverageResponseMatrix', pathToAverageResponseMatrix, 'makePlots', true);
+    close all
 end
 
 plotFig = figure;
@@ -124,7 +125,7 @@ if p.Results.makePlots
     if ~isempty(p.Results.saveName)
         set(plotFig, 'Renderer','painters');
         print(plotFig, [p.Results.saveName, '_N', num2str(p.Results.nSubjectsInBootstrapSample)], '-dpdf');
-        save([p.Results.saveName, '_N', num2str(p.Results.nSubjectsInBootstrapSample)], percentPersistentDistribution, '-v7.3');
+        save([p.Results.saveName, '_N', num2str(p.Results.nSubjectsInBootstrapSample)], 'percentPersistentDistribution', '-v7.3');
     end
     
 %     % compute group mean model fit
@@ -188,4 +189,6 @@ if p.Results.makePlots
 %     ylabel('Pupil Area (% Change)')
 %     legend({'Mean Response', 'Minimum Detectable Increase in % Persistent'});
 %     
+end
+
 end
