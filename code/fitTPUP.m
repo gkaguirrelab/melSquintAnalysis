@@ -298,9 +298,9 @@ if strcmp(p.Results.method, 'HPUP')
             end
             
             
-            averageResponses.LMS = LMSResponse;
-            averageResponses.Melanopsin = MelanopsinResponse;
-            averageResponses.LightFlux = LightFluxResponse;
+            averageResponses.LMS = groupLMSResponse;
+            averageResponses.Melanopsin = groupMelanopsinResponse;
+            averageResponses.LightFlux = groupLightFluxResponse;
         end
         
         % explicitly stash persistentGammaTau, and corresponding bounds
