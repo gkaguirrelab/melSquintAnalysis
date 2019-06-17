@@ -49,7 +49,18 @@ switch userID
             MELA_processingBasePath = ['/Volumes/melchiorBayTwo/Dropbox (Aguirre-Brainard Lab)/MELA_processing/'];
             MELA_analysisBasePath = ['/Volumes/melchiorBayTwo/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
         end
-        
+        if exist('/Volumes/seeleExternalDrive', 'dir')
+            materialsBasePath = ['/Volumes/seeleExternalDrive/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+            MELA_dataBasePath = ['/Volumes/seeleExternalDrive/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+            MELA_processingBasePath = ['/Volumes/seeleExternalDrive/Dropbox (Aguirre-Brainard Lab)/MELA_processing/'];
+            MELA_analysisBasePath = ['/Volumes/seeleExternalDrive/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
+        end
+         if exist('/Volumes/balthasarExternalDrive', 'dir')
+            materialsBasePath = ['/Volumes/balthasarExternalDrive/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+            MELA_dataBasePath = ['/Volumes/balthasarExternalDrive/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+            MELA_processingBasePath = ['/Volumes/balthasarExternalDrive/Dropbox (Aguirre-Brainard Lab)/MELA_processing/'];
+            MELA_analysisBasePath = ['/Volumes/balthasarExternalDrive/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
+        end
     otherwise
         materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
         MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
