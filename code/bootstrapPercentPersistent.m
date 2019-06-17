@@ -3,8 +3,8 @@ function [ percentPersistentDistribution ] = bootstrapPercentPersistent(subjectL
 %{
 Example:
 subjectList = generateSubjectList;
-pathToAverageResponseMatrix = '/Users/harrisonmcadams/Dropbox (Aguirre-Brainard Lab)/MELA_processing/Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/groupAverageMatrix.mat';
-saveName = '/Users/harrisonmcadams/Dropbox (Aguirre-Brainard Lab)/MELA_processing/Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/bootstrap';
+pathToAverageResponseMatrix = fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/groupAverageMatrix.mat');
+saveName = fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/bootstrap');
 
 for ii = 20:40
     [ percentPersistentDistribution ] = bootstrapPercentPersistent(subjectList, 'nSubjectsInBootstrapSample', ii, 'saveName', saveName, 'pathToAverageResponseMatrix', pathToAverageResponseMatrix, 'makePlots', true);
@@ -91,7 +91,7 @@ for ii = 1:p.Results.nBootstrapIterations
 
     bootstrappedLightFluxResponse = nanmean(averageResponseMatrix.LightFlux.Contrast400(bootstrappedSubjectIndices, :));
 
-    [modelResponses, averageResponses] = fitTPUP([], 'LMSResponse', bootstrappedLMSResponse, 'MelanopsinResponse', bootstrappedMelanopsinResponse, 'LightFluxResponse', bootstrappedLightFluxResponse, 'savePath', []);
+    [modelResponses, averageResponses] = fitTPUP([], 'methodForDeterminingPersistentGammaTau', [213.888, 0, 0], 'LMSResponse', bootstrappedLMSResponse, 'MelanopsinResponse', bootstrappedMelanopsinResponse, 'LightFluxResponse', bootstrappedLightFluxResponse, 'savePath', []);
     close all
     % calculate percent persistent
     percentPersistent = modelResponses.Melanopsin.params.paramMainMatrix(6)/(modelResponses.Melanopsin.params.paramMainMatrix(4) + modelResponses.Melanopsin.params.paramMainMatrix(5) + modelResponses.Melanopsin.params.paramMainMatrix(6));
