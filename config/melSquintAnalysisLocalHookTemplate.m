@@ -42,7 +42,13 @@ switch userID
         MELA_dataBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
         MELA_processingBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_processing/'];
         MELA_analysisBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
-        
+    case {'eyetrackingworker'}
+        if exist('/Volumes/melchiorBayTwo', 'dir')
+            materialsBasePath = ['/Volumes/melchiorBayTwo/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
+            MELA_dataBasePath = ['/Volumes/melchiorBayTwo/Dropbox (Aguirre-Brainard Lab)/MELA_data/'];
+            MELA_processingBasePath = ['/Volumes/melchiorBayTwo/Dropbox (Aguirre-Brainard Lab)/MELA_processing/'];
+            MELA_analysisBasePath = ['/Volumes/melchiorBayTwo/Dropbox (Aguirre-Brainard Lab)/MELA_analysis/'];
+        end
         
     otherwise
         materialsBasePath = ['/Users/' userID '/Dropbox (Aguirre-Brainard Lab)/MELA_materials'];
