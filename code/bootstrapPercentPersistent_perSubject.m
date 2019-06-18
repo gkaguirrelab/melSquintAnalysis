@@ -92,3 +92,8 @@ standardDeviation = (sampleSize)^(1/2) * SEM;
 % percent persistent we'd likely be able to detect is 87.7%
 
 %% What these increases in percent persistent look like
+% for 20 subjects
+computeIncreasedPercentPersistentFromMean(0.93)
+
+% for 40 subjects:
+computeIncreasedPercentPersistentFromMean(0.877)
