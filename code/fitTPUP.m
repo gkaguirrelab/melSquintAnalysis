@@ -570,9 +570,9 @@ elseif strcmp(p.Results.method, 'TPUP')
     stimuli = {'LMS', 'Melanopsin', 'LightFlux'};
     
     % set some boundaries and initial conditions
-    vlb=[-500, 1, 1, -10, -10, -10, 1];
-    vub=[0, 1000, 20, -0, -0, -0, 900];
-    initialValues = [-200, 600, 5, -1, -1,0, 100];
+    vlb=[-500, 1, 1, 1, -10, -10, -10];
+    vub=[0, 1000, 900, 20, -0, -0, -0];
+    initialValues = [-200, 600, 200,  5, -1, -1,0];
     
     % instantiate the TPUP object
     temporalFit = tfeTPUP('verbosity','full');

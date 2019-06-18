@@ -151,23 +151,24 @@ if p.Results.makePlots
     
         % figure out the rest of the amplitudes
         transientToTransientPlusSustained = modeledResponses.Melanopsin.params.paramMainMatrix(5)/(modeledResponses.Melanopsin.params.paramMainMatrix(5) + modeledResponses.Melanopsin.params.paramMainMatrix(6));
-        newParams.paramMainMatrix(6) = newPersistentAmplitude;
-        newParams.paramMainMatrix(4) = (meanTotalAUC - newPersistentAmplitude) * transientToTransientPlusSustained;
-        newParams.paramMainMatrix(5) = (meanTotalAUC - newPersistentAmplitude) * (1-transientToTransientPlusSustained);
+        newParams.paramMainMatrix(7) = newPersistentAmplitude;
+        newParams.paramMainMatrix(5) = (meanTotalAUC - newPersistentAmplitude) * transientToTransientPlusSustained;
+        newParams.paramMainMatrix(6) = (meanTotalAUC - newPersistentAmplitude) * (1-transientToTransientPlusSustained);
     
         % fill out the rest of the parameters
         newParams.paramMainMatrix(1) = modeledResponses.Melanopsin.params.paramMainMatrix(1);
         newParams.paramMainMatrix(2) = modeledResponses.Melanopsin.params.paramMainMatrix(2);
-        newParams.paramMainMatrix(3) = modeledResponses.Melanopsin.params.paramMainMatrix(4);
-        newParams.paramMainMatrix(7) = modeledResponses.Melanopsin.params.paramMainMatrix(3);
+        newParams.paramMainMatrix(4) = modeledResponses.Melanopsin.params.paramMainMatrix(4);
+        newParams.paramMainMatrix(3) = modeledResponses.Melanopsin.params.paramMainMatrix(3);
         
         newParams.paramNameCell{1} = 'delay';
         newParams.paramNameCell{2} = 'gammaTau';
-        newParams.paramNameCell{3} = 'exponentialTau';
-        newParams.paramNameCell{4} = 'amplitudeTransient';
-        newParams.paramNameCell{5} = 'amplitudeSustained';
-        newParams.paramNameCell{6} = 'amplitudePersistent';
-        newParams.paramNameCell{7} = 'persistentGammaTau';
+        newParams.paramNameCell{3} = 'persistentGammaTau';
+
+        newParams.paramNameCell{4} = 'exponentialTau';
+        newParams.paramNameCell{5} = 'amplitudeTransient';
+        newParams.paramNameCell{6} = 'amplitudeSustained';
+        newParams.paramNameCell{7} = 'amplitudePersistent';
 
        
         
@@ -180,9 +181,9 @@ if p.Results.makePlots
         [ newModelResponseStruct ] = temporalFit.computeResponse(newParams, stimulusStruct, []);
         
         % verify new AUC
-        newAUC = (newParams.paramMainMatrix(4) + newParams.paramMainMatrix(5) + newParams.paramMainMatrix(6));
+        newAUC = (newParams.paramMainMatrix(5) + newParams.paramMainMatrix(6) + newParams.paramMainMatrix(7));
         % verify increase in percent persistent
-        newPercentPersistent = newParams.paramMainMatrix(6)./newAUC;
+        newPercentPersistent = newParams.paramMainMatrix(7)./newAUC;
         
         % plot
         plot(newModelResponseStruct.timebase, newModelResponseStruct.values);
@@ -197,23 +198,23 @@ if p.Results.makePlots
         
         % fill out the rest of the params, everything else unchanged
         % figure out the rest of the amplitudes
-        newParams.paramMainMatrix(6) = newPersistentAmplitude;
-        newParams.paramMainMatrix(4) = modeledResponses.Melanopsin.params.paramMainMatrix(5);
-        newParams.paramMainMatrix(5) = modeledResponses.Melanopsin.params.paramMainMatrix(6);
+        newParams.paramMainMatrix(7) = newPersistentAmplitude;
+        newParams.paramMainMatrix(5) = modeledResponses.Melanopsin.params.paramMainMatrix(5);
+        newParams.paramMainMatrix(6) = modeledResponses.Melanopsin.params.paramMainMatrix(6);
     
         % fill out the rest of the parameters
         newParams.paramMainMatrix(1) = modeledResponses.Melanopsin.params.paramMainMatrix(1);
         newParams.paramMainMatrix(2) = modeledResponses.Melanopsin.params.paramMainMatrix(2);
-        newParams.paramMainMatrix(3) = modeledResponses.Melanopsin.params.paramMainMatrix(4);
-        newParams.paramMainMatrix(7) = modeledResponses.Melanopsin.params.paramMainMatrix(3);
+        newParams.paramMainMatrix(3) = modeledResponses.Melanopsin.params.paramMainMatrix(3);
+        newParams.paramMainMatrix(4) = modeledResponses.Melanopsin.params.paramMainMatrix(4);
         
         newParams.paramNameCell{1} = 'delay';
         newParams.paramNameCell{2} = 'gammaTau';
-        newParams.paramNameCell{3} = 'exponentialTau';
-        newParams.paramNameCell{4} = 'amplitudeTransient';
-        newParams.paramNameCell{5} = 'amplitudeSustained';
-        newParams.paramNameCell{6} = 'amplitudePersistent';
-        newParams.paramNameCell{7} = 'persistentGammaTau';
+        newParams.paramNameCell{3} = 'persistentGammaTau';
+        newParams.paramNameCell{4} = 'exponentialTau';
+        newParams.paramNameCell{5} = 'amplitudeTransient';
+        newParams.paramNameCell{6} = 'amplitudeSustained';
+        newParams.paramNameCell{7} = 'amplitudePersistent';
         
            
         % make stimulus struct
@@ -225,9 +226,9 @@ if p.Results.makePlots
         [ newModelResponseStruct ] = temporalFit.computeResponse(newParams, stimulusStruct, []);
         
         % verify new AUC
-        newAUC = (newParams.paramMainMatrix(4) + newParams.paramMainMatrix(5) + newParams.paramMainMatrix(6));
+        newAUC = (newParams.paramMainMatrix(5) + newParams.paramMainMatrix(6) + newParams.paramMainMatrix(7));
         % verify increase in percent persistent
-        newPercentPersistent = newParams.paramMainMatrix(6)./newAUC;
+        newPercentPersistent = newParams.paramMainMatrix(7)./newAUC;
         
         % plot
         plot(newModelResponseStruct.timebase, newModelResponseStruct.values);
