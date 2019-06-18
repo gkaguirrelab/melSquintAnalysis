@@ -13,9 +13,10 @@ p.addParameter('methodForDeterminingPersistentGammaTau','fitToGroupAverage');
 p.addParameter('numberOfResponseIndicesToExclude', 40, @isnumeric);
 p.addParameter('plotGroupAverageFits', false, @islogical);
 p.addParameter('plotFits', true, @islogical);
+p.addParameter('closePlots', false, @islogical);
 p.addParameter('plotComponents', true, @islogical);
 p.addParameter('printParams', true, @islogical);
-p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP', 'nonYokedPersistentGamma_500gammaLB'));
+p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP'));
 p.addParameter('LMSResponse',[]);
 p.addParameter('MelanopsinResponse',[]);
 p.addParameter('LightFluxResponse',[]);
@@ -689,7 +690,9 @@ elseif strcmp(p.Results.method, 'TPUP')
     
 end
 
-
+if p.Results.closePlots
+    close plotFig
+end
 
 
 
