@@ -113,19 +113,17 @@ if strcmp(p.Results.method, 'HPUP')
         % persistentGammaTau
         vlb = ...
             [1, ...         % 'gammaTau',
-            1, ...          % 'LMSPersistentGammaTau'
+            1, ...          % 'persistentGammaTau'
             -500, ...       % 'LMSDelay'
             1, ...          % 'LMSExponentialTau'
             -10, ...        % 'LMSTransient'
             -10, ...        % 'LMSSustained'
             -10,...         % 'LMSPersistent'
-            1, ...          % 'MelanopsinPersistentGammaTau'
             -500, ...       % 'MelanopsinDelay'
             1, ...          % 'MelanopsinExponentialTau'
             -10, ...        % 'MelanopsinTransient'
             -10, ...        % 'MelanopsinSustained'
             -10,...         % 'MelanopsinPersistent'
-            1, ...          % 'LightFluxPersistentGammaTau'
             -500, ...       % 'LightFluxDelay'
             1, ...          % 'LightFluxExponentialTau'
             -10, ...        % 'LightFluxTransient'
@@ -134,19 +132,17 @@ if strcmp(p.Results.method, 'HPUP')
         
         vub = ...
             [1000, ...      % 'gammaTau',
-            1000, ...       % 'LMSPersistentGammaTau'
+            1000, ...       % 'persistentGammaTau'
             0, ...          % 'LMSDelay'
             20, ...         % 'LMSExponentialTau'
             0, ...          % 'LMSTransient'
             0, ...          % 'LMSSustained'
             0,...           % 'LMSPersistent'
-            1000, ...       % 'MelanopsinPersistentGammaTau'
             0, ...          % 'MelanopsinDelay'
             20, ...         % 'MelanopsinExponentialTau'
             0, ...          % 'MelanopsinTransient'
             0, ...          % 'MelanopsinSustained'
             0,...           % 'MelanopsinPersistent'
-            1000, ...       % 'LightFluxPersistentGammaTau'
             0, ...          % 'LightFluxDelay'
             20, ...         % 'LightFluxExponentialTau'
             0, ...          % 'LightFluxTransient'
@@ -155,19 +151,17 @@ if strcmp(p.Results.method, 'HPUP')
         
         initialValues = ...
             [600, ...       % 'gammaTau',
-            200, ...       % 'LMSPersistentGammaTau'
+            200, ...       % 'persistentGammaTau'
             -200, ...      % 'LMSDelay'
             10, ...        % 'LMSExponentialTau'
             -1, ...        % 'LMSTransient'
             -1, ...        % 'LMSSustained'
             -1,...         % 'LMSPersistent'
-            495.852, ...       % 'MelanopsinPersistentGammaTau'            
             -200, ...      % 'MelanopsinDelay'
             10, ...        % 'MelanopsinExponentialTau'
             -1, ...        % 'MelanopsinTransient'
             -1, ...        % 'MelanopsinSustained'
             -1,...         % 'MelanopsinPersistent'
-            173.53, ...       % 'LightFluxPersistentGammaTau'           
             -200, ...      % 'LightFluxDelay'
             1, ...         % 'LightFluxExponentialTau'
             -1, ...        % 'LightFluxTransient'
@@ -183,11 +177,8 @@ if strcmp(p.Results.method, 'HPUP')
         
         % extract the persistent gamma tau that best describes the combined group
         % response
-        groupAverageLMSPersistentGammaTau = paramsFit.paramMainMatrix(find(contains(paramsFit.paramNameCell,'LMSPersistentGammaTau')));
-        groupAverageMelanopsinPersistentGammaTau = paramsFit.paramMainMatrix(find(contains(paramsFit.paramNameCell,'MelanopsinPersistentGammaTau')));
-        groupAverageLightFluxPersistentGammaTau = paramsFit.paramMainMatrix(find(contains(paramsFit.paramNameCell,'LightFluxPersistentGammaTau')));
+        groupAveragePersistentGammaTau = paramsFit.paramMainMatrix(find(contains(paramsFit.paramNameCell,'persistentGammaTau')));
 
-        
         % summarizing the group average model fit
         LMSFit = modelResponseStruct.values(1:length(modelResponseStruct.values)/3);
         MelanopsinFit = modelResponseStruct.values(length(modelResponseStruct.values)/3+1:length(modelResponseStruct.values)/3*2);
@@ -297,19 +288,19 @@ if strcmp(p.Results.method, 'HPUP')
         if strcmp(subjectID, 'group')
             modeledResponses.LMS.timebase = resampledStimulusTimebase;
             modeledResponses.LMS.values = LMSFit;
-            modeledResponses.LMS.params.paramNameCell = {'gammaTau', 'LMSPersistentGammaTau', 'LMSExponentialTau', 'LMSAmplitudeTransient', 'LMSAmplitudeSustained', 'LMSAmplitudePersistent'};
+            modeledResponses.LMS.params.paramNameCell = {'LMSDelay', 'gammaTau', 'persistentGammaTau', 'LMSExponentialTau', 'LMSAmplitudeTransient', 'LMSAmplitudeSustained', 'LMSAmplitudePersistent'};
             for ii = 1:length(modeledResponses.LMS.params.paramNameCell)
                 modeledResponses.LMS.params.paramMainMatrix(ii) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.LMS.params.paramNameCell{ii}));
             end
             modeledResponses.Melanopsin.timebase = resampledStimulusTimebase;
             modeledResponses.Melanopsin.values = MelanopsinFit;
-            modeledResponses.Melanopsin.params.paramNameCell = {'gammaTau', 'MelanopsinPersistentGammaTau', 'MelanopsinExponentialTau', 'MelanopsinAmplitudeTransient', 'MelanopsinAmplitudeSustained', 'MelanopsinAmplitudePersistent'};
+            modeledResponses.Melanopsin.params.paramNameCell = {'MelanopsinDelay', 'gammaTau', 'persistentGammaTau', 'MelanopsinExponentialTau', 'MelanopsinAmplitudeTransient', 'MelanopsinAmplitudeSustained', 'MelanopsinAmplitudePersistent'};
             for ii = 1:length(modeledResponses.Melanopsin.params.paramNameCell)
                 modeledResponses.Melanopsin.params.paramMainMatrix(ii) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.Melanopsin.params.paramNameCell{ii}));
             end
             modeledResponses.LightFlux.timebase = resampledStimulusTimebase;
             modeledResponses.LightFlux.values = LightFluxFit;
-            modeledResponses.LightFlux.params.paramNameCell = {'gammaTau', 'LightFluxPersistentGammaTau', 'LightFluxExponentialTau', 'LightFluxAmplitudeTransient', 'LightFluxAmplitudeSustained', 'LightFluxAmplitudePersistent'};
+            modeledResponses.LightFlux.params.paramNameCell = {'LightFluxDelay', 'gammaTau', 'persistentGammaTau', 'LightFluxExponentialTau', 'LightFluxAmplitudeTransient', 'LightFluxAmplitudeSustained', 'LightFluxAmplitudePersistent'};
             for ii = 1:length(modeledResponses.LightFlux.params.paramNameCell)
                 modeledResponses.LightFlux.params.paramMainMatrix(ii) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.LightFlux.params.paramNameCell{ii}));
             end
@@ -321,46 +312,25 @@ if strcmp(p.Results.method, 'HPUP')
         end
         
         % explicitly stash persistentGammaTau, and corresponding bounds
-        LMSPersistentGammaTau = groupAverageLMSPersistentGammaTau;
-        LMSPersistentGammaTauUB = groupAverageLMSPersistentGammaTau;
-        LMSPersistentGammaTauLB = groupAverageLMSPersistentGammaTau;
+        persistentGammaTau = groupAveragePersistentGammaTau;
+        persistentGammaTauUB = groupAveragePersistentGammaTau;
+        persistentGammaTauLB = groupAveragePersistentGammaTau;
 
-        MelanopsinPersistentGammaTau = groupAverageMelanopsinPersistentGammaTau;
-        MelanopsinPersistentGammaTauUB = groupAverageMelanopsinPersistentGammaTau;
-        MelanopsinPersistentGammaTauLB = groupAverageMelanopsinPersistentGammaTau;
-
-        LightFluxPersistentGammaTau = groupAverageLightFluxPersistentGammaTau;
-        LightFluxPersistentGammaTauUB = groupAverageLightFluxPersistentGammaTau;
-        LightFluxPersistentGammaTauLB = groupAverageLightFluxPersistentGammaTau;
-        
         
     elseif isnumeric(p.Results.methodForDeterminingPersistentGammaTau)
         
-        LMSPersistentGammaTau = p.Results.methodForDeterminingPersistentGammaTau(1);
-        LMSPersistentGammaTauUB = p.Results.methodForDeterminingPersistentGammaTau(1);
-        LMSPersistentGammaTauLB = p.Results.methodForDeterminingPersistentGammaTau(1);
+        persistentGammaTau = p.Results.methodForDeterminingPersistentGammaTau(1);
+        persistentGammaTauUB = p.Results.methodForDeterminingPersistentGammaTau(1);
+        persistentGammaTauLB = p.Results.methodForDeterminingPersistentGammaTau(1);
 
-        MelanopsinPersistentGammaTau = p.Results.methodForDeterminingPersistentGammaTau(2);
-        MelanopsinPersistentGammaTauUB = p.Results.methodForDeterminingPersistentGammaTau(2);
-        MelanopsinPersistentGammaTauLB = p.Results.methodForDeterminingPersistentGammaTau(2);
 
-        LightFluxPersistentGammaTau = p.Results.methodForDeterminingPersistentGammaTau(3);
-        LightFluxPersistentGammaTauUB = p.Results.methodForDeterminingPersistentGammaTau(3);
-        LightFluxPersistentGammaTauLB = p.Results.methodForDeterminingPersistentGammaTau(3);
         
     elseif strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToIndividualSubject')
         
-        LMSPersistentGammaTau = 200;
-        LMSPersistentGammaTauUB = 1000;
-        LMSPersistentGammaTauLB = 1;
+        persistentGammaTau = 200;
+        persistentGammaTauUB = 1000;
+        persistentGammaTauLB = 1;
 
-        MelanopsinPersistentGammaTau = 200;
-        MelanopsinPersistentGammaTauUB = 1000;
-        MelanopsinPersistentGammaTauLB = 1;
-
-        LightFluxPersistentGammaTau = 200;
-        LightFluxPersistentGammaTauUB = 1000;
-        LightFluxPersistentGammaTauLB = 1;
     end
     
     %% perform the search the average responses for the individual subject
@@ -394,19 +364,17 @@ if strcmp(p.Results.method, 'HPUP')
         % persistentGammaTau
         vlb = ...
             [500, ...         % 'gammaTau',
-            LMSPersistentGammaTauLB, ...          % 'persistentGammaTau'
+            persistentGammaTauLB, ...          % 'persistentGammaTau'
             -500, ...       % 'LMSDelay'
             1, ...          % 'LMSExponentialTau'
             -10, ...        % 'LMSTransient'
             -10, ...        % 'LMSSustained'
             -10,...         % 'LMSPersistent'
-            MelanopsinPersistentGammaTauLB, ...          % 'persistentGammaTau'
             -500, ...       % 'MelanopsinDelay'
             1, ...          % 'MelanopsinExponentialTau'
             -10, ...        % 'MelanopsinTransient'
             -10, ...        % 'MelanopsinSustained'
             -10,...         % 'MelanopsinPersistent'
-            LightFluxPersistentGammaTauLB, ...          % 'persistentGammaTau'
             -500, ...       % 'LightFluxDelay'
             1, ...          % 'LightFluxExponentialTau'
             -10, ...        % 'LightFluxTransient'
@@ -415,19 +383,17 @@ if strcmp(p.Results.method, 'HPUP')
         
         vub = ...
             [1000, ...      % 'gammaTau',
-            LMSPersistentGammaTauUB, ...       % 'persistentGammaTau'
+            persistentGammaTauUB, ...       % 'persistentGammaTau'
             0, ...          % 'LMSDelay'
             20, ...         % 'LMSExponentialTau'
             0, ...          % 'LMSTransient'
             0, ...          % 'LMSSustained'
             0,...           % 'LMSPersistent'
-            MelanopsinPersistentGammaTauUB, ...       % 'persistentGammaTau'
             0, ...          % 'MelanopsinDelay'
             20, ...         % 'MelanopsinExponentialTau'
             0, ...          % 'MelanopsinTransient'
             0, ...          % 'MelanopsinSustained'
             0,...           % 'MelanopsinPersistent'
-            LightFluxPersistentGammaTauUB, ...       % 'persistentGammaTau'
             0, ...          % 'LightFluxDelay'
             20, ...         % 'LightFluxExponentialTau'
             0, ...          % 'LightFluxTransient'
@@ -436,19 +402,17 @@ if strcmp(p.Results.method, 'HPUP')
         
         initialValues = ...
             [900, ...       % 'gammaTau',
-            LMSPersistentGammaTau, ...       % 'persistentGammaTau'
+            persistentGammaTau, ...       % 'persistentGammaTau'
             -200, ...      % 'LMSDelay'
             10, ...        % 'LMSExponentialTau'
             -1, ...        % 'LMSTransient'
             -1, ...        % 'LMSSustained'
             -1,...         % 'LMSPersistent'
-            MelanopsinPersistentGammaTau, ...       % 'persistentGammaTau'
             -200, ...      % 'MelanopsinDelay'
             10, ...        % 'MelanopsinExponentialTau'
             -1, ...        % 'MelanopsinTransient'
             -1, ...        % 'MelanopsinSustained'
             -1,...         % 'MelanopsinPersistent'
-            LightFluxPersistentGammaTau, ...       % 'persistentGammaTau'
             -200, ...      % 'LightFluxDelay'
             1, ...         % 'LightFluxExponentialTau'
             -1, ...        % 'LightFluxTransient'
@@ -576,19 +540,19 @@ if strcmp(p.Results.method, 'HPUP')
         % stash out results
         modeledResponses.LMS.timebase = resampledStimulusTimebase;
         modeledResponses.LMS.values = LMSFit;
-        modeledResponses.LMS.params.paramNameCell = {'gammaTau', 'LMSPersistentGammaTau', 'LMSExponentialTau', 'LMSAmplitudeTransient', 'LMSAmplitudeSustained', 'LMSAmplitudePersistent'};
+        modeledResponses.LMS.params.paramNameCell = {'LMSDelay', 'gammaTau', 'persistentGammaTau', 'LMSExponentialTau', 'LMSAmplitudeTransient', 'LMSAmplitudeSustained', 'LMSAmplitudePersistent'};
         for ii = 1:length(modeledResponses.LMS.params.paramNameCell)
             modeledResponses.LMS.params.paramMainMatrix(ii) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.LMS.params.paramNameCell{ii}));
         end
         modeledResponses.Melanopsin.timebase = resampledStimulusTimebase;
         modeledResponses.Melanopsin.values = MelanopsinFit;
-        modeledResponses.Melanopsin.params.paramNameCell = {'gammaTau', 'MelanopsinPersistentGammaTau', 'MelanopsinExponentialTau', 'MelanopsinAmplitudeTransient', 'MelanopsinAmplitudeSustained', 'MelanopsinAmplitudePersistent'};
+        modeledResponses.Melanopsin.params.paramNameCell = {'MelanopsinDelay', 'gammaTau', 'persistentGammaTau', 'MelanopsinExponentialTau', 'MelanopsinAmplitudeTransient', 'MelanopsinAmplitudeSustained', 'MelanopsinAmplitudePersistent'};
         for ii = 1:length(modeledResponses.Melanopsin.params.paramNameCell)
             modeledResponses.Melanopsin.params.paramMainMatrix(ii) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.Melanopsin.params.paramNameCell{ii}));
         end
         modeledResponses.LightFlux.timebase = resampledStimulusTimebase;
         modeledResponses.LightFlux.values = LightFluxFit;
-        modeledResponses.LightFlux.params.paramNameCell = {'gammaTau', 'LightFluxPersistentGammaTau', 'LightFluxExponentialTau', 'LightFluxAmplitudeTransient', 'LightFluxAmplitudeSustained', 'LightFluxAmplitudePersistent'};
+        modeledResponses.LightFlux.params.paramNameCell = {'LightFluxDelay', 'gammaTau', 'persistentGammaTau', 'LightFluxExponentialTau', 'LightFluxAmplitudeTransient', 'LightFluxAmplitudeSustained', 'LightFluxAmplitudePersistent'};
         for ii = 1:length(modeledResponses.LightFlux.params.paramNameCell)
             modeledResponses.LightFlux.params.paramMainMatrix(ii) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.LightFlux.params.paramNameCell{ii}));
         end
@@ -702,7 +666,7 @@ elseif strcmp(p.Results.method, 'TPUP')
         % stash out results
         modeledResponses.(stimuli{ii}).timebase = modelResponseStruct.timebase;
         modeledResponses.(stimuli{ii}).values = modelResponseStruct.values;
-        modeledResponses.(stimuli{ii}).params.paramNameCell = {'gammaTau', 'persistentGammaTau', 'exponentialTau', 'amplitudeTransient', 'amplitudeSustained', 'amplitudePersistent'};
+        modeledResponses.(stimuli{ii}).params.paramNameCell = {'delay', 'gammaTau', 'persistentGammaTau', 'exponentialTau', 'amplitudeTransient', 'amplitudeSustained', 'amplitudePersistent'};
         for nn = 1:length(modeledResponses.(stimuli{ii}).params.paramNameCell)
             modeledResponses.(stimuli{ii}).params.paramMainMatrix(nn) =  paramsFit.paramMainMatrix(:,strcmp(paramsFit.paramNameCell,modeledResponses.(stimuli{ii}).params.paramNameCell{nn}));
         end
