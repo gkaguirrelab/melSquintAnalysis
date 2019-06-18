@@ -31,6 +31,7 @@ p.addParameter('saveName', [], @ischar);
 p.addParameter('nBootstrapIterations', 1000, @isnumeric);
 p.addParameter('nSubjectsInBootstrapSample', 20, @isnumeric);
 p.addParameter('pathToAverageResponseMatrix', [], @ischar);
+p.addParameter('methodToIncreasePercentPersistent', 'sameAUC', @ischar);
 p.addParameter('responseTimebase', 0:1/60:18.5, @isnumeric);
 p.addParameter('debugBootstrapPlots', false, @islogical);
 p.parse(varargin{:});
@@ -88,9 +89,9 @@ for ii = 1:p.Results.nBootstrapIterations
     bootstrappedMelanopsinResponse = nanmean(averageResponseMatrix.Melanopsin.Contrast400(bootstrappedSubjectIndices, :));
     
     bootstrappedLMSResponse = nanmean(averageResponseMatrix.LMS.Contrast400(bootstrappedSubjectIndices, :));
-
+    
     bootstrappedLightFluxResponse = nanmean(averageResponseMatrix.LightFlux.Contrast400(bootstrappedSubjectIndices, :));
-
+    
     [modelResponses, averageResponses] = fitTPUP([], 'methodForDeterminingPersistentGammaTau', [213.888, 0, 0], 'LMSResponse', bootstrappedLMSResponse, 'MelanopsinResponse', bootstrappedMelanopsinResponse, 'LightFluxResponse', bootstrappedLightFluxResponse, 'savePath', []);
     close all
     % calculate percent persistent
@@ -128,67 +129,92 @@ if p.Results.makePlots
         save([p.Results.saveName, '_N', num2str(p.Results.nSubjectsInBootstrapSample)], 'percentPersistentDistribution', '-v7.3');
     end
     
-%     % compute group mean model fit
-%     
-%     % set up the TPUP fit
-%     thePacket.response.timebase = 0:1/60*1000:18.5*1000;
-%     
-%     stimulusStruct = makeStimulusStruct;
-%     thePacket.stimulus = stimulusStruct;
-%     
-%     thePacket.kernel = [];
-%     thePacket.metaData = [];
-%     
-%     defaultParamsInfo.nInstances = 1;
-%     
-%     % Construct the model object
-%     temporalFit = tfeTPUP('verbosity','full');
-%     
-%     vlb=[-500, 150, 1, -1000, -1000, -1000]; % these boundaries are necessary to specify until we change how the delay parameter is implemented in the forward model (negative delay currently means push curve to the right). also the range of the amplitude parameters is probably much larger than we need
-%     vub=[0, 400, 20, -0, -0, -0];
-%     initialValues = [-200, 350, 5, -100, -100, -100];
-%     
-%     averageResponse = nanmean(averageResponseMatrix.Melanopsin.Contrast400);
-%     
-%     thePacket.response.values = averageResponse;
-%     [paramsFit,fVal,modelResponseStruct] = ...
-%         temporalFit.fitResponse(thePacket, ...
-%         'defaultParamsInfo', defaultParamsInfo, ...
-%         'vlb', vlb, 'vub',vub, ...
-%         'initialValues',initialValues);
-%     
-%     plotFig = figure; hold on;
-%     responseTimebase = 0:1/60:18.5;
-%     plot(responseTimebase(1:end-40)-1, modelResponseStruct.values(1:end-40));
-%     percentPersistent = paramsFit.paramMainMatrix(6)/(paramsFit.paramMainMatrix(4) + paramsFit.paramMainMatrix(5) + paramsFit.paramMainMatrix(6));
-%     minimumDetectableIncreasedPercentPersistent = prctile(percentPersistentDistribution, 95);
-%     meanTotalAUC = (paramsFit.paramMainMatrix(4) + paramsFit.paramMainMatrix(5) + paramsFit.paramMainMatrix(6));
-%     newPersistentAmplitude = minimumDetectableIncreasedPercentPersistent * meanTotalAUC;
-%     
-%     transientToTransientPlusSustained = paramsFit.paramMainMatrix(4)/(paramsFit.paramMainMatrix(4) + paramsFit.paramMainMatrix(5));
-%         newParams.paramMainMatrix(6) = newPersistentAmplitude;
-%     newParams.paramMainMatrix(4) = (meanTotalAUC - newPersistentAmplitude) * transientToTransientPlusSustained;
-%     newParams.paramMainMatrix(5) = (meanTotalAUC - newPersistentAmplitude) * (1-transientToTransientPlusSustained);
-%     
-%     
-% %     scalarForTransientAndSustainedComponents = (meanTotalAUC - paramsFit.paramMainMatrix(6))/meanTotalAUC;
-% %     newParams = paramsFit;
-% %     newParams.paramMainMatrix(6) = newPersistentAmplitude;
-% %     newParams.paramMainMatrix(4) = paramsFit.paramMainMatrix(4)*(scalarForTransientAndSustainedComponents);
-% %     newParams.paramMainMatrix(5) = paramsFit.paramMainMatrix(5)*(scalarForTransientAndSustainedComponents);
-%     
-%     %     newPersistentAmplitude = (minimumDetectableIncreasedPercentPersistent*paramsFit.paramMainMatrix(4) + paramsFit.paramMainMatrix(5)*minimumDetectableIncreasedPercentPersistent)/(1 - minimumDetectableIncreasedPercentPersistent);
-%     %     newParams = paramsFit;
-%     %     newParams.paramMainMatrix(6) = newPersistentAmplitude;
-%     
-%     [ newModelResponseStruct ] = temporalFit.computeResponse(newParams, thePacket.stimulus, thePacket.kernel);
-%     plot((newModelResponseStruct.timebase(1:end-40)-1000)./1000, newModelResponseStruct.values(1:end-40));
-%     ylim([-0.8 0.1])
-%     xlim([0 17])
-%     xlabel('Time (s)')
-%     ylabel('Pupil Area (% Change)')
-%     legend({'Mean Response', 'Minimum Detectable Increase in % Persistent'});
-%     
+    % compute group mean model fit
+    [modeledResponses] = fitTPUP('group');
+    plotFig = figure; hold on
+    plot(modeledResponses.Melanopsin.timebase, modeledResponses.Melanopsin.values);
+    xlabel('Time (ms)');
+    ylabel('Pupil area (% change from baseline');
+    
+    percentPersistent = modeledResponses.Melanopsin.params.paramMainMatrix(7)/(modeledResponses.Melanopsin.params.paramMainMatrix(7) + modeledResponses.Melanopsin.params.paramMainMatrix(5) + modeledResponses.Melanopsin.params.paramMainMatrix(6));
+    minimumDetectableIncreasedPercentPersistent = prctile(percentPersistentDistribution, 95);
+    
+    if strcmp(p.Results.methodToIncreasePercentPersistent, 'sameAUC')
+        % determine total area under the curve for the group mean model
+        % fit, which we will fix as the AUC for the model fit for the
+        % increased percent persistent
+        meanTotalAUC = (modeledResponses.Melanopsin.params.paramMainMatrix(5) + modeledResponses.Melanopsin.params.paramMainMatrix(6) + modeledResponses.Melanopsin.params.paramMainMatrix(7));
+        % based on AUC, determine the amplitude of the persistent component
+        % for the increased percentPersistent response
+        newPersistentAmplitude = minimumDetectableIncreasedPercentPersistent * meanTotalAUC;
+    
+        % figure out the rest of the amplitudes
+        transientToTransientPlusSustained = modeledResponses.Melanopsin.params.paramMainMatrix(5)/(modeledResponses.Melanopsin.params.paramMainMatrix(5) + modeledResponses.Melanopsin.params.paramMainMatrix(6));
+        newParams.paramMainMatrix(6) = newPersistentAmplitude;
+        newParams.paramMainMatrix(4) = (meanTotalAUC - newPersistentAmplitude) * transientToTransientPlusSustained;
+        newParams.paramMainMatrix(5) = (meanTotalAUC - newPersistentAmplitude) * (1-transientToTransientPlusSustained);
+    
+        % fill out the rest of the parameters
+        newParams.paramMainMatrix(1) = modeledResponses.Melanopsin.params.paramMainMatrix(1);
+        newParams.paramMainMatrix(2) = modeledResponses.Melanopsin.params.paramMainMatrix(2);
+        newParams.paramMainMatrix(3) = modeledResponses.Melanopsin.params.paramMainMatrix(4);
+        newParams.paramMainMatrix(7) = modeledResponses.Melanopsin.params.paramMainMatrix(3);
+        
+        newParams.paramNameCell{1} = 'delay';
+        newParams.paramNameCell{2} = 'gammaTau';
+        newParams.paramNameCell{3} = 'exponentialTau';
+        newParams.paramNameCell{4} = 'amplitudeTransient';
+        newParams.paramNameCell{5} = 'amplitudeSustained';
+        newParams.paramNameCell{6} = 'amplitudePersistent';
+        newParams.paramNameCell{7} = 'persistentGammaTau';
+
+       
+        
+        % make stimulus struct
+        stimulusStruct = makeStimulusStruct;
+        
+        % compute new modeled response with increased percent persistent
+        % instantiate the TPUP object
+        temporalFit = tfeTPUP('verbosity','full');
+        [ newModelResponseStruct ] = temporalFit.computeResponse(newParams, stimulusStruct, []);
+        
+        % verify new AUC
+        newAUC = (newParams.paramMainMatrix(4) + newParams.paramMainMatrix(5) + newParams.paramMainMatrix(6));
+        % verify increase in percent persistent
+        newPercentPersistent = newParams.paramMainMatrix(6)./newAUC;
+        
+        % plot
+        plot(newModelResponseStruct.timebase, newModelResponseStruct.values);
+        
+        legend('Mean Model Fit', 'Increased Percent Persistent')
+       
+    elseif strcmp(p.Results.methodToIncreasePercentPersistent, 'increasePersistentComponentOnly')
+        % for this method, only increase the amplitude of the persistent
+        % component, leaving the amplitudes of the transient and sustained
+        % unchanged to make our new model fit
+        
+        
+    end
+        
+    %
+    % %     scalarForTransientAndSustainedComponents = (meanTotalAUC - paramsFit.paramMainMatrix(6))/meanTotalAUC;
+    % %     newParams = paramsFit;
+    % %     newParams.paramMainMatrix(6) = newPersistentAmplitude;
+    % %     newParams.paramMainMatrix(4) = paramsFit.paramMainMatrix(4)*(scalarForTransientAndSustainedComponents);
+    % %     newParams.paramMainMatrix(5) = paramsFit.paramMainMatrix(5)*(scalarForTransientAndSustainedComponents);
+    %
+    %     %     newPersistentAmplitude = (minimumDetectableIncreasedPercentPersistent*paramsFit.paramMainMatrix(4) + paramsFit.paramMainMatrix(5)*minimumDetectableIncreasedPercentPersistent)/(1 - minimumDetectableIncreasedPercentPersistent);
+    %     %     newParams = paramsFit;
+    %     %     newParams.paramMainMatrix(6) = newPersistentAmplitude;
+    %
+    [ newModelResponseStruct ] = temporalFit.computeResponse(newParams, thePacket.stimulus, thePacket.kernel);
+    %     plot((newModelResponseStruct.timebase(1:end-40)-1000)./1000, newModelResponseStruct.values(1:end-40));
+    %     ylim([-0.8 0.1])
+    %     xlim([0 17])
+    %     xlabel('Time (s)')
+    %     ylabel('Pupil Area (% Change)')
+    %     legend({'Mean Response', 'Minimum Detectable Increase in % Persistent'});
+    %
 end
 
 end
