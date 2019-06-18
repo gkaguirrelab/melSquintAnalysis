@@ -128,6 +128,7 @@ if p.Results.makePlots
         print(plotFig, [p.Results.saveName, '_N', num2str(p.Results.nSubjectsInBootstrapSample)], '-dpdf');
         save([p.Results.saveName, '_N', num2str(p.Results.nSubjectsInBootstrapSample)], 'percentPersistentDistribution', '-v7.3');
     end
+    close plotFig
     
     % compute group mean model fit
     [modeledResponses] = fitTPUP('group');
@@ -192,29 +193,55 @@ if p.Results.makePlots
         % for this method, only increase the amplitude of the persistent
         % component, leaving the amplitudes of the transient and sustained
         % unchanged to make our new model fit
+        newPersistentAmplitude = (minimumDetectableIncreasedPercentPersistent*(modeledResponses.Melanopsin.params.paramMainMatrix(5) + modeledResponses.Melanopsin.params.paramMainMatrix(6)))/(1 - minimumDetectableIncreasedPercentPersistent);
         
+        % fill out the rest of the params, everything else unchanged
+        % figure out the rest of the amplitudes
+        newParams.paramMainMatrix(6) = newPersistentAmplitude;
+        newParams.paramMainMatrix(4) = modeledResponses.Melanopsin.params.paramMainMatrix(5);
+        newParams.paramMainMatrix(5) = modeledResponses.Melanopsin.params.paramMainMatrix(6);
+    
+        % fill out the rest of the parameters
+        newParams.paramMainMatrix(1) = modeledResponses.Melanopsin.params.paramMainMatrix(1);
+        newParams.paramMainMatrix(2) = modeledResponses.Melanopsin.params.paramMainMatrix(2);
+        newParams.paramMainMatrix(3) = modeledResponses.Melanopsin.params.paramMainMatrix(4);
+        newParams.paramMainMatrix(7) = modeledResponses.Melanopsin.params.paramMainMatrix(3);
+        
+        newParams.paramNameCell{1} = 'delay';
+        newParams.paramNameCell{2} = 'gammaTau';
+        newParams.paramNameCell{3} = 'exponentialTau';
+        newParams.paramNameCell{4} = 'amplitudeTransient';
+        newParams.paramNameCell{5} = 'amplitudeSustained';
+        newParams.paramNameCell{6} = 'amplitudePersistent';
+        newParams.paramNameCell{7} = 'persistentGammaTau';
+        
+           
+        % make stimulus struct
+        stimulusStruct = makeStimulusStruct;
+        
+        % compute new modeled response with increased percent persistent
+        % instantiate the TPUP object
+        temporalFit = tfeTPUP('verbosity','full');
+        [ newModelResponseStruct ] = temporalFit.computeResponse(newParams, stimulusStruct, []);
+        
+        % verify new AUC
+        newAUC = (newParams.paramMainMatrix(4) + newParams.paramMainMatrix(5) + newParams.paramMainMatrix(6));
+        % verify increase in percent persistent
+        newPercentPersistent = newParams.paramMainMatrix(6)./newAUC;
+        
+        % plot
+        plot(newModelResponseStruct.timebase, newModelResponseStruct.values);
+        
+        legend('Mean Model Fit', 'Increased Percent Persistent')
         
     end
-        
-    %
-    % %     scalarForTransientAndSustainedComponents = (meanTotalAUC - paramsFit.paramMainMatrix(6))/meanTotalAUC;
-    % %     newParams = paramsFit;
-    % %     newParams.paramMainMatrix(6) = newPersistentAmplitude;
-    % %     newParams.paramMainMatrix(4) = paramsFit.paramMainMatrix(4)*(scalarForTransientAndSustainedComponents);
-    % %     newParams.paramMainMatrix(5) = paramsFit.paramMainMatrix(5)*(scalarForTransientAndSustainedComponents);
-    %
-    %     %     newPersistentAmplitude = (minimumDetectableIncreasedPercentPersistent*paramsFit.paramMainMatrix(4) + paramsFit.paramMainMatrix(5)*minimumDetectableIncreasedPercentPersistent)/(1 - minimumDetectableIncreasedPercentPersistent);
-    %     %     newParams = paramsFit;
-    %     %     newParams.paramMainMatrix(6) = newPersistentAmplitude;
-    %
-    [ newModelResponseStruct ] = temporalFit.computeResponse(newParams, thePacket.stimulus, thePacket.kernel);
-    %     plot((newModelResponseStruct.timebase(1:end-40)-1000)./1000, newModelResponseStruct.values(1:end-40));
-    %     ylim([-0.8 0.1])
-    %     xlim([0 17])
-    %     xlabel('Time (s)')
-    %     ylabel('Pupil Area (% Change)')
-    %     legend({'Mean Response', 'Minimum Detectable Increase in % Persistent'});
-    %
+    
+    if ~isempty(p.Results.saveName)
+        set(plotFig, 'Renderer','painters');
+        print(plotFig, [p.Results.saveName, '_N', num2str(p.Results.nSubjectsInBootstrapSample), '_increasedPercentPersistent'], '-dpdf');
+    end
+    
+  
 end
 
 end
