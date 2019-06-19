@@ -1,4 +1,4 @@
-function bootstrapDistribution = bootstrapPercentPersistent_perSubject(subjectList, varargin)
+function bootstrapPPDistribution = bootstrapPercentPersistent_perSubject(subjectList, varargin)
 
 %{
 Example:
@@ -38,13 +38,19 @@ p.parse(varargin{:});
 if ~p.Results.loadFits
     subjectList = generateSubjectList;
     percentPersistentDistribution = [];
+    amplitudeDistribution = [];
     for ii = 1:length(subjectList)
         [modeledResponses] = fitTPUP(subjectList{ii}, 'methodForDeterminingPersistentGammaTau', 213.888);
         percentPersistentDistribution = [percentPersistentDistribution, modeledResponses.Melanopsin.params.paramMainMatrix(7)/(modeledResponses.Melanopsin.params.paramMainMatrix(7) + modeledResponses.Melanopsin.params.paramMainMatrix(5) + modeledResponses.Melanopsin.params.paramMainMatrix(6))];
+        amplitudeDistribution = [amplitudeDistribution, (modeledResponses.Melanopsin.params.paramMainMatrix(7) + modeledResponses.Melanopsin.params.paramMainMatrix(5) + modeledResponses.Melanopsin.params.paramMainMatrix(6))];
     end
     save(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP', 'percentPersistentDistribution.mat'), 'percentPersistentDistribution');
+    save(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP', 'amplitudeDistribution.mat'), 'amplitudeDistribution');
+
 else
     load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP', 'percentPersistentDistribution.mat'));
+    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP', 'amplitudeDistribution.mat'));
+
 end
 %% Do the bootstrapping
 
@@ -53,15 +59,17 @@ nBootstrapIterations = p.Results.nBootstrapIterations;
 
 for bootstrapSampleSize = rangeOfBootstrapSampleSizes
     
-    bootstrapDistribution{bootstrapSampleSize} = [];
+    bootstrapPPDistribution{bootstrapSampleSize} = [];
+    bootstrapAmplitudeDistribution{bootstrapSampleSize} = [];
     
     for ii = 1:nBootstrapIterations
         bootstrapSubjectIndices = datasample(1:length(percentPersistentDistribution), bootstrapSampleSize);
         
         meanPercentPersistent = mean(percentPersistentDistribution(bootstrapSubjectIndices));
+        meanAmplitude = mean(amplitudeDistribution(bootstrapSubjectIndices));
         
-        bootstrapDistribution{bootstrapSampleSize} = [bootstrapDistribution{bootstrapSampleSize}, meanPercentPersistent];
-        
+        bootstrapPPDistribution{bootstrapSampleSize} = [bootstrapPPDistribution{bootstrapSampleSize}, meanPercentPersistent];
+        bootstrapAmplitudeDistribution{bootstrapSampleSize} = [ bootstrapAmplitudeDistribution{bootstrapSampleSize}, meanAmplitude];
     end
 end
 
@@ -70,7 +78,7 @@ end
 
 sampleSize = 20;
 % For a given bootstrap sample size, fit it to a Gaussian
-pd = fitdist(bootstrapDistribution{sampleSize}','Normal');
+pd = fitdist(bootstrapPPDistribution{sampleSize}','Normal');
 % obtain the SEM of the bootstrap distribution mean, which corresponds to the
 % standard deviation of the bootstrap sample distribution
 SEM = pd.std;
@@ -82,7 +90,7 @@ standardDeviation = (sampleSize)^(1/2) * SEM;
 
 sampleSize = 40;
 % For a given bootstrap sample size, fit it to a Gaussian
-pd = fitdist(bootstrapDistribution{sampleSize}','Normal');
+pd = fitdist(bootstrapPPDistribution{sampleSize}','Normal');
 % obtain the SEM of the bootstrap distribution mean, which corresponds to the
 % standard deviation of the bootstrap sample distribution
 SEM = pd.std;
@@ -90,6 +98,28 @@ SEM = pd.std;
 standardDeviation = (sampleSize)^(1/2) * SEM;
 % the website says for a sample of 20 subjects, the minimum increase in
 % percent persistent we'd likely be able to detect is 87.7%
+
+% we can also get these values from MATLAB:
+minimumDetectableIncreasedPercentPersistent = 0.934;
+sampleSize = sampsizepwr('t2', [mean(bootstrapPPDistribution{40}), (std(bootstrapPPDistribution{40}*sqrt(40)))], minimumDetectableIncreasedPercentPersistent, 0.8,[], 'tail', 'right')
+
+minimumDetectableIncreasedPercentPersistent = 0.878;
+sampleSize = sampsizepwr('t2', [mean(bootstrapPPDistribution{40}), (std(bootstrapPPDistribution{40}*sqrt(40)))], minimumDetectableIncreasedPercentPersistent, 0.8,[], 'tail', 'right')
+% note that these values are independent of the bootstrap sample size -- I
+% believe, however, that larger bootstrap sample sizes allow for a better
+% estimate of the mean and STD
+
+%% Looking at minimum changes in amplitude
+% we can also get these values from MATLAB:
+minimumDetectableIncreasedAmplitude = -4.7;
+sampleSize = sampsizepwr('t2', [mean(bootstrapAmplitudeDistribution{40}), (std(bootstrapAmplitudeDistribution{40}*sqrt(40)))], minimumDetectableIncreasedAmplitude, 0.8,[], 'tail', 'left')
+
+minimumDetectableIncreasedAmplitude = -4.28;
+sampleSize = sampsizepwr('t2', [mean(bootstrapAmplitudeDistribution{40}), (std(bootstrapAmplitudeDistribution{40}*sqrt(40)))], minimumDetectableIncreasedAmplitude, 0.8,[], 'tail', 'left')
+% note that these values are independent of the bootstrap sample size -- I
+% believe, however, that larger bootstrap sample sizes allow for a better
+% estimate of the mean and STD
+
 
 %% What these increases in percent persistent look like
 % for 20 subjects
