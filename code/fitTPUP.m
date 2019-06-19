@@ -691,7 +691,7 @@ elseif strcmp(p.Results.method, 'TPUP')
 end
 
 if p.Results.closePlots
-    close plotFig
+    close gcf
 end
 
 
