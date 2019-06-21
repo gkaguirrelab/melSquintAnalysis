@@ -4,8 +4,8 @@ function [ significance ] = evaluateSignificanceOfMedianDifference(sampleOne, sa
 % actual median difference or greater, in units of %
 %% Parse input
 p = inputParser; p.KeepUnmatched = true;
-p.addParameter('makePlot',true,@islogical);
-p.addParameter('nSimulations',100000,@isnumeric);
+p.addParameter('makePlot',false,@islogical);
+p.addParameter('nSimulations',10000,@isnumeric);
 p.addParameter('outDir','permutationTesting',@isnchar);
 
 p.parse(varargin{:});
