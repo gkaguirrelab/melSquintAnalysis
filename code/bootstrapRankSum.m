@@ -43,3 +43,7 @@ ylabel('Power')
 xlabel('Effect Size (Patients = Controls + Effect Size)')
 hold on;
 line([0 0.25], [0.8, 0.8], 'Color', 'r', 'LineStyle', '-')
+
+indicesInWhichPowerSurpassesThreshold = find(powerDistribution>0.8);
+minimumDetectableEffectSize = (effectSizeScalarRange(indicesInWhichPowerSurpassesThreshold(1)) + effectSizeScalarRange(indicesInWhichPowerSurpassesThreshold(1)-1))/2;
+minimumDetectableEffectSize
