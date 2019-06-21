@@ -5,8 +5,9 @@ alpha = 0.05;
 %effectSizeScalarRange = 1.01:0.01:1.5;
 effectSizeScalarRange = 0:0.001:0.25;
 nBootstrapIterations = 1000;
-%hypothesis = 't-test';
-hypothesis = 'rankSum';
+%hypothesisTest = 't-test';
+%hypothesisTest = 'rankSum';
+hypothesisTest = 'labelPermutation';
 
 powerDistribution = [];
 for effectSizeScalar = effectSizeScalarRange
@@ -23,10 +24,12 @@ for effectSizeScalar = effectSizeScalarRange
         % enforce max percentPersistent of 100%
         percentPersistentPatients(percentPersistentPatients>1) = 1;
         
-        if strcmp(hypothesis, 'rankSum')
+        if strcmp(hypothesisTest, 'rankSum')
             probability = ranksum(percentPersistentControls, percentPersistentPatients, 'tail', 'left');
-        elseif strcmp(hypothesis, 't-test')
+        elseif strcmp(hypothesisTest, 't-test')
             [~, probability] = ttest2(percentPersistentControls, percentPersistentPatients, 'tail', 'left');
+        elseif strcmp(hypothesisTest, 'labelPermutation')
+            [probability] = evaluateSignificanceOfMedianDifference(percentPersistentPatients, percentPersistentControls);
         end
 
         probabilityDistribution = [probabilityDistribution, probability];
@@ -38,7 +41,7 @@ end
 
 figure;
 plot(effectSizeScalarRange, powerDistribution)
-title(['N = ', num2str(sampleSize), ', ', hypothesis]);
+title(['N = ', num2str(sampleSize), ', ', hypothesisTest]);
 ylabel('Power')
 xlabel('Effect Size (Patients = Controls + Effect Size)')
 hold on;
