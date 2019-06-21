@@ -89,11 +89,18 @@ end
 %% Show what detectable changes to this percent persistent would look like
 % For 20 subjects
 computeIncreasedPercentPersistentFromMean(median(percentPersistentDistribution)+0.5*dValue(find(rangeOfBootstrapSampleSizes == 20)), 'whichMeanResponse','fromParametesAcrossSubjects', 'centralTendencyForParams', 'median') 
-title('20 Subjects')
+title('20 Subjects, Same AUC')
 
 % For 40 subjects
 computeIncreasedPercentPersistentFromMean(median(percentPersistentDistribution)+0.5*dValue(find(rangeOfBootstrapSampleSizes == 40)), 'whichMeanResponse','fromParametesAcrossSubjects', 'centralTendencyForParams', 'median') 
-title('40 Subjects')
+title('40 Subjects, Same AUC')
+
+computeIncreasedPercentPersistentFromMean(median(percentPersistentDistribution)+0.5*dValue(find(rangeOfBootstrapSampleSizes == 20)), 'whichMeanResponse','fromParametesAcrossSubjects', 'centralTendencyForParams', 'median', 'methodToIncreasePercentPersistent', 'increasePersistentComponentOnly') 
+title('20 Subjects, Increased Persistent Component Only')
+
+% For 40 subjects
+computeIncreasedPercentPersistentFromMean(median(percentPersistentDistribution)+0.5*dValue(find(rangeOfBootstrapSampleSizes == 40)), 'whichMeanResponse','fromParametesAcrossSubjects', 'centralTendencyForParams', 'median', 'methodToIncreasePercentPersistent', 'increasePersistentComponentOnly') 
+title('40 Subjects, Increased Persistent Component Only')
 
 end
 
