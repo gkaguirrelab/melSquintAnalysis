@@ -1,9 +1,10 @@
-sampleSize = 40;
+sampleSize = 20;
 alpha = 0.05;
 
 
 %effectSizeScalarRange = 1.01:0.01:1.5;
 effectSizeScalarRange = 0:0.001:0.25;
+%effectSizeScalarRange = 0.07:0.001:0.075;
 nBootstrapIterations = 1000;
 %hypothesisTest = 't-test';
 %hypothesisTest = 'rankSum';
@@ -18,12 +19,14 @@ for effectSizeScalar = effectSizeScalarRange
         bootstrapIndicesControls = datasample(1:length(percentPersistentDistribution), sampleSize);
         bootstrapIndicesPatients = datasample(1:length(percentPersistentDistribution), sampleSize);
 
-        percentPersistentControls = percentPersistentDistribution(bootstrapIndicesControls);
-        percentPersistentPatients = percentPersistentDistribution(bootstrapIndicesPatients)+effectSizeScalar;
+        percentPersistentControls = percentPersistentDistribution(bootstrapIndicesControls)-effectSizeScalar/2;
+        percentPersistentPatients = percentPersistentDistribution(bootstrapIndicesPatients)+effectSizeScalar/2;
         
         % enforce max percentPersistent of 100%
         percentPersistentPatients(percentPersistentPatients>1) = 1;
-        
+        percentPersistentControls(percentPersistentControls<0) = 0;
+
+
         if strcmp(hypothesisTest, 'rankSum')
             probability = ranksum(percentPersistentControls, percentPersistentPatients, 'tail', 'left');
         elseif strcmp(hypothesisTest, 't-test')
