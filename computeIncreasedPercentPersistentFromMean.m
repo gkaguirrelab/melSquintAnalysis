@@ -1,4 +1,4 @@
-function computeIncreasedPercentPersistentFromMean(newPercentPersistent, varargin)
+function [newModelResponseStruct, centralTendencyResponse] = computeIncreasedPercentPersistentFromMean(newPercentPersistent, varargin)
 
 %% Input parser
 p = inputParser; p.KeepUnmatched = true;
@@ -69,7 +69,7 @@ elseif strcmp(p.Results.whichMeanResponse, 'fromParametesAcrossSubjects')
   
     percentPersistent =  newParams.paramMainMatrix(7)/( newParams.paramMainMatrix(5) +  newParams.paramMainMatrix(6) +  newParams.paramMainMatrix(7));
 
-
+    centralTendencyResponse = newModelResponseStruct;
 end
 plotFig = figure; hold on
 plot(timebase, groupResponse);
