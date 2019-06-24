@@ -18,18 +18,39 @@ nSimulations = p.Results.nSimulations;
 %% run the permutation testing
 result = [];
 
+if ~isrow(sampleOne)
+    sampleOne = sampleOne';
+end
+if ~isrow(sampleTwo)
+    sampleTwo = sampleTwo';
+end
+combinedSample = [sampleOne; sampleTwo];
+
+
 for nn = 1:nSimulations
-    for ss = 1:length(sampleOne)
-        shouldWeFlipLabel = round(rand);
-        
-        if shouldWeFlipLabel == 1 % then flip the label for that subject
-            firstGroup(ss) = sampleOne(ss);
-            secondGroup(ss) = sampleTwo(ss);
-        elseif shouldWeFlipLabel == 0
-            secondGroup(ss) = sampleOne(ss);
-            firstGroup(ss) = sampleTwo(ss);
+        for ss = 1:length(sampleOne)
+            shouldWeFlipLabel = round(rand);
+    
+            if shouldWeFlipLabel == 1 % then flip the label for that subject
+                firstGroup(ss) = sampleOne(ss);
+                secondGroup(ss) = sampleTwo(ss);
+            elseif shouldWeFlipLabel == 0
+                secondGroup(ss) = sampleOne(ss);
+                firstGroup(ss) = sampleTwo(ss);
+            end
         end
-    end
+    
+    % randomly flip labels
+%     A=cell2mat(arrayfun(@(x) randperm(2,2),(1:length(sampleOne))','un',0));
+%     
+%     % apply label flipping to the data
+%     flippedData = combinedSample(A');
+    
+    
+    
+    
+        %result = [result, median(flippedData(1,:)) - median(flippedData(2,:))];
+
     result = [result, median(firstGroup) - median(secondGroup)];
 end
 
@@ -54,7 +75,7 @@ if p.Results.makePlot
     ypos = 0.9*ylims(2);
     xpos = xlims(1)-0.1*xlims(1);
     text(xpos, ypos, string)
-
+    
 end
 
 end % end function
