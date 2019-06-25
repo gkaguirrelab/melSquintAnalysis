@@ -6,6 +6,8 @@ p = inputParser; p.KeepUnmatched = true;
 p.addParameter('whichMeanResponse','fromParametesAcrossSubjects', @ischar)
 p.addParameter('methodToIncreasePercentPersistent', 'sameAUC', @ischar);
 p.addParameter('centralTendencyForParams', 'median', @ischar);
+p.addParameter('newExponentialTau', []);
+
 
 p.parse(varargin{:});
 
@@ -85,6 +87,9 @@ percentPersistent = newParams.paramMainMatrix(7)/(newParams.paramMainMatrix(7) +
 
 minimumDetectableIncreasedPercentPersistent = newPercentPersistent;
 
+fprintf('Percent persistent of mean: %4.2f\n', percentPersistent);
+fprintf('AUC of mean: %4.2f\n', meanTotalAUC);
+
 %% Compute the increased percent persistent
 if strcmp(p.Results.methodToIncreasePercentPersistent, 'sameAUC')
    % based on AUC, determine the amplitude of the persistent component
@@ -131,6 +136,9 @@ if strcmp(p.Results.methodToIncreasePercentPersistent, 'sameAUC')
     plot(newModelResponseStruct.timebase, newModelResponseStruct.values);
     
     legend('Mean Model Fit', 'Increased Percent Persistent')
+
+    fprintf('Percent persistent of change: %4.2f\n', newPercentPersistent);
+    fprintf('AUC of change: %4.2f\n', newAUC);
     
 elseif strcmp(p.Results.methodToIncreasePercentPersistent, 'increasePersistentComponentOnly')
     % for this method, only increase the amplitude of the persistent
@@ -176,5 +184,104 @@ elseif strcmp(p.Results.methodToIncreasePercentPersistent, 'increasePersistentCo
     plot(newModelResponseStruct.timebase, newModelResponseStruct.values);
     
     legend('Mean Model Fit', 'Increased Percent Persistent')
+    fprintf('Percent persistent of change: %4.2f\n', newPercentPersistent);
+    fprintf('AUC of change: %4.2f\n', newAUC);
+
+elseif strcmp(p.Results.methodToIncreasePercentPersistent, 'sameAUCDecreaseSustained')
+
+
+    changeToSustained = newPercentPersistent *  newParams.paramMainMatrix(7) + newPercentPersistent *  newParams.paramMainMatrix(6) + newPercentPersistent *  newParams.paramMainMatrix(5) - newParams.paramMainMatrix(7);
+    newPersistentAmplitude = newParams.paramMainMatrix(7) + changeToSustained;
+    newSustainedAmplitude = newParams.paramMainMatrix(6) - changeToSustained;
+
+    newPercentPersistent = newPersistentAmplitude/(newPersistentAmplitude + newSustainedAmplitude + newParams.paramMainMatrix(5));
+    newAUC = (newPersistentAmplitude + newSustainedAmplitude + newParams.paramMainMatrix(5));
+
+
+  % fill out the rest of the params, everything else unchanged
+    % figure out the rest of the amplitudes
+    newParams.paramMainMatrix(7) = newPersistentAmplitude;
+    newParams.paramMainMatrix(5) = newParams.paramMainMatrix(5);
+    newParams.paramMainMatrix(6) = newSustainedAmplitude;
+    
+    % fill out the rest of the parameters
+    newParams.paramMainMatrix(1) = newParams.paramMainMatrix(1);
+    newParams.paramMainMatrix(2) = newParams.paramMainMatrix(2);
+    newParams.paramMainMatrix(3) = newParams.paramMainMatrix(3);
+    newParams.paramMainMatrix(4) = newParams.paramMainMatrix(4);
+    
+    newParams.paramNameCell{1} = 'delay';
+    newParams.paramNameCell{2} = 'gammaTau';
+    newParams.paramNameCell{3} = 'persistentGammaTau';
+    newParams.paramNameCell{4} = 'exponentialTau';
+    newParams.paramNameCell{5} = 'amplitudeTransient';
+    newParams.paramNameCell{6} = 'amplitudeSustained';
+    newParams.paramNameCell{7} = 'amplitudePersistent';
+    
+    
+    % make stimulus struct
+    stimulusStruct = makeStimulusStruct;
+    
+    % compute new modeled response with increased percent persistent
+    % instantiate the TPUP object
+    temporalFit = tfeTPUP('verbosity','full');
+    [ newModelResponseStruct ] = temporalFit.computeResponse(newParams, stimulusStruct, []);
+    
+    % plot
+    plot(newModelResponseStruct.timebase, newModelResponseStruct.values);
+    
+    legend('Mean Model Fit', 'Increased Percent Persistent')
+
+    fprintf('Percent persistent of change: %4.2f\n', newPercentPersistent);
+    fprintf('AUC of change: %4.2f\n', newAUC);
+
+elseif strcmp(p.Results.methodToIncreasePercentPersistent, 'alsoChangeExponentialTau')
+
+ % for this method, only increase the amplitude of the persistent
+    % component, leaving the amplitudes of the transient and sustained
+    % unchanged to make our new model fit
+    newPersistentAmplitude = (minimumDetectableIncreasedPercentPersistent*(newParams.paramMainMatrix(5) + newParams.paramMainMatrix(6)))/(1 - minimumDetectableIncreasedPercentPersistent);
+    
+    % fill out the rest of the params, everything else unchanged
+    % figure out the rest of the amplitudes
+    newParams.paramMainMatrix(7) = newPersistentAmplitude;
+    newParams.paramMainMatrix(5) = newParams.paramMainMatrix(5);
+    newParams.paramMainMatrix(6) = newParams.paramMainMatrix(6);
+    
+    % fill out the rest of the parameters
+    newParams.paramMainMatrix(1) = newParams.paramMainMatrix(1);
+    newParams.paramMainMatrix(2) = newParams.paramMainMatrix(2);
+    newParams.paramMainMatrix(3) = newParams.paramMainMatrix(3);
+    newParams.paramMainMatrix(4) = p.Results.newExponentialTau;
+    
+    newParams.paramNameCell{1} = 'delay';
+    newParams.paramNameCell{2} = 'gammaTau';
+    newParams.paramNameCell{3} = 'persistentGammaTau';
+    newParams.paramNameCell{4} = 'exponentialTau';
+    newParams.paramNameCell{5} = 'amplitudeTransient';
+    newParams.paramNameCell{6} = 'amplitudeSustained';
+    newParams.paramNameCell{7} = 'amplitudePersistent';
+    
+    
+    % make stimulus struct
+    stimulusStruct = makeStimulusStruct;
+    
+    % compute new modeled response with increased percent persistent
+    % instantiate the TPUP object
+    temporalFit = tfeTPUP('verbosity','full');
+    [ newModelResponseStruct ] = temporalFit.computeResponse(newParams, stimulusStruct, []);
+    
+    % verify new AUC
+    newAUC = (newParams.paramMainMatrix(5) + newParams.paramMainMatrix(6) + newParams.paramMainMatrix(7));
+    % verify increase in percent persistent
+    newPercentPersistent = newParams.paramMainMatrix(7)./newAUC;
+    
+    % plot
+    plot(newModelResponseStruct.timebase, newModelResponseStruct.values);
+    
+    legend('Mean Model Fit', 'Increased Percent Persistent')
+
+    fprintf('Percent persistent of change: %4.2f\n', newPercentPersistent);
+    fprintf('AUC of change: %4.2f\n', newAUC);
     
 end
