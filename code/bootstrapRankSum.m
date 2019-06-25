@@ -1,10 +1,16 @@
 sampleSize = 20;
 alpha = 0.05;
+statistic = 'exponentialTau';
 
+if strcmp(statistic, 'percentPersistent')
+    %effectSizeScalarRange = 1.01:0.01:1.5;
+    effectSizeScalarRange = 0:0.001:0.25;
+    %effectSizeScalarRange = 0.07:0.001:0.075;
+end
 
-%effectSizeScalarRange = 1.01:0.01:1.5;
-effectSizeScalarRange = 0:0.001:0.25;
-%effectSizeScalarRange = 0.07:0.001:0.075;
+if strcmp(statistic, 'exponentialTau')
+    effectSizeScalarRange = 0:0.1:10;
+end
 nBootstrapIterations = 1000;
 %hypothesisTest = 't-test';
 %hypothesisTest = 'rankSum';
@@ -18,21 +24,33 @@ for effectSizeScalar = effectSizeScalarRange
         
         bootstrapIndicesControls = datasample(1:length(percentPersistentDistribution), sampleSize);
         bootstrapIndicesPatients = datasample(1:length(percentPersistentDistribution), sampleSize);
-
-        percentPersistentControls = percentPersistentDistribution(bootstrapIndicesControls)-effectSizeScalar/2;
-        percentPersistentPatients = percentPersistentDistribution(bootstrapIndicesPatients)+effectSizeScalar/2;
         
-        % enforce max percentPersistent of 100%
-        percentPersistentPatients(percentPersistentPatients>1) = 1;
-        percentPersistentControls(percentPersistentControls<0) = 0;
+        if strcmp(statistic, 'percentPersistent')
+            statisticControls = percentPersistentDistribution(bootstrapIndicesControls)-effectSizeScalar/2;
+            statisticPatients = percentPersistentDistribution(bootstrapIndicesPatients)+effectSizeScalar/2;
+            
+            % enforce max percentPersistent of 100%
+            statisticPatients(statisticPatients>1) = 1;
+            statisticControls(statisticControls<0) = 0;
+        end
+        
+        if strcmp(statistic, 'exponentialTau')
+            statisticControls = exponentialTauDistribution(bootstrapIndicesControls) - effectSizeScalar/2;
+            statisticPatients = exponentialTauDistribution(bootstrapIndicesPatients) + effectSizeScalar/2;
+            
+            % enforce our modeling bounds
+            statisticPatients(statisticPatients>20) = 20;
+            statisticControls(statisticControls<1) = 1;
+        end
+        
 
 
         if strcmp(hypothesisTest, 'rankSum')
-            probability = ranksum(percentPersistentControls, percentPersistentPatients, 'tail', 'left');
+            probability = ranksum(statisticControls, statisticPatients, 'tail', 'left');
         elseif strcmp(hypothesisTest, 't-test')
-            [~, probability] = ttest2(percentPersistentControls, percentPersistentPatients, 'tail', 'left');
+            [~, probability] = ttest2(statisticControls, statisticPatients, 'tail', 'left');
         elseif strcmp(hypothesisTest, 'labelPermutation')
-            [probability] = evaluateSignificanceOfMedianDifference(percentPersistentPatients, percentPersistentControls);
+            [probability] = evaluateSignificanceOfMedianDifference(statisticPatients, statisticControls);
         end
 
         probabilityDistribution = [probabilityDistribution, probability];
