@@ -58,7 +58,45 @@ end
 %% Display results
 combineMigraineurs = true;
 
-contrastsOfInterest = {400};
+contrastsOfInterest = {100, 200, 400};
+
+if combineMigraineurs
+    plotFig = figure;
+    
+    for stimulus = 1:length(stimuli)
+        ax.(['ax', num2str(stimulus)]) = subplot(1,length(stimuli), stimulus);
+        data = nan(2*length(contrastsOfInterest), max(length([mwoaRMS.Melanopsin.Contrast400, mwaRMS.Melanopsin.Contrast400]), length(controlRMS.Melanopsin.Contrast400)));
+        
+        fprintf('<strong>Stimulus type: %s</strong>\n', stimuli{stimulus});
+        for contrast = 1:length(contrastsOfInterest)
+            data(contrast*2,1:length([mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})]),mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})])]')) = [mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})]),mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})])]';
+            data(contrast*2-1,1:length(controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})])')) = controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})])';
+            
+            fprintf('\tContrast: %s%%\n', num2str(contrastsOfInterest{contrast}));
+            medianMigraineDiscomfort = nanmedian([mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})]),mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})])]);
+            mediancontrolRMS = nanmedian(controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})]));
+            
+            
+            fprintf('\t\tMedian discomfort rating for all migraineurs: %4.2f\n', medianMigraineDiscomfort);
+            fprintf('\t\tMedian discomfort rating for controls: %4.2f\n', mediancontrolRMS);
+            
+        end
+        categoryIdx = repmat([0,1], max(length([mwoaRMS.Melanopsin.Contrast400, mwaRMS.Melanopsin.Contrast400]), length(controlRMS.Melanopsin.Contrast400)), size(data,1)/2);
+        plotSpread(data', 'categoryIdx', categoryIdx(:), 'xValues', [0.8 1.2 1.8 2.2 2.8 3.2], 'categoryColors', {'k', 'r'}, 'showMM', 3, 'categoryLabels', {'Controls', 'Migraineurs'})
+        xticks([1:3])
+        xticklabels({'100%', '200%', '400%'})
+        xlabel('Contrast')
+        ylabel('Discomfort Rating')
+        title(stimuli{stimulus})
+    end
+    linkaxes([ax.ax1, ax.ax2, ax.ax3]);
+    
+end
+
+
+
+
+
 
 if combineMigraineurs
     for stimulus = 1:length(stimuli)
