@@ -6,7 +6,7 @@ potentialSubjects =  dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/S
 for ss = 1:length(potentialSubjects)
         subjectIDs{end+1} = potentialSubjects(ss).name;
 end
-badSubjects = {'MELA_0127', 'MELA_0198'};
+badSubjects = {'MELA_0127', 'MELA_0215'};
 subjectIDs = setdiff(subjectIDs, badSubjects);
 
 stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
@@ -23,7 +23,18 @@ end
 
 
 for ss = 1:length(subjectIDs)
+    
+    try
    [ medianResponseStruct, ~ ] = calculateRMSforEMG(subjectIDs{ss}, 'normalize', false);
+   saveDir = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'EMG', subjectIDs{ss});
+   if ~exist(saveDir, 'dir')
+       mkdir(saveDir)
+   end
+   save(fullfile(saveDir, 'EMGMedianResponseStruct.mat'), 'medianResponseStruct','-v7.3');
+
+    catch
+        warning('Bad subject: %s', subjectIDs{ss})
+    end
    close all
    stimuli = fieldnames(medianResponseStruct);
    for stimulus = 1:length(stimuli)
