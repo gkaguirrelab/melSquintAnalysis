@@ -6,6 +6,12 @@ potentialSubjects =  dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/S
 for ss = 1:length(potentialSubjects)
     subjectIDs{end+1} = potentialSubjects(ss).name;
 end
+% rationale for exlcuded subjects:
+% MELA_0127: only completed 1 session
+% MELA_0215: TEMPORARY -- the subject completed screening, at which time I
+% accidentally saved the initial pupil calibration as RunPulseSquintTrials
+% rather than ScreenPulseSquintTrials
+% MELA_0195, MELA_0144, MELA_0162: poor pupillometry
 badSubjects = {'MELA_0127', 'MELA_0215', 'MELA_0195', 'MELA_0144', 'MELA_0162'};
 subjectIDs = setdiff(subjectIDs, badSubjects);
 
