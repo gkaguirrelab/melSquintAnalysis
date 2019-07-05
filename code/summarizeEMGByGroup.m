@@ -6,7 +6,7 @@ potentialSubjects =  dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/S
 for ss = 1:length(potentialSubjects)
     subjectIDs{end+1} = potentialSubjects(ss).name;
 end
-badSubjects = {'MELA_0127', 'MELA_0215'};
+badSubjects = {'MELA_0127', 'MELA_0215', 'MELA_0195', 'MELA_0144', 'MELA_0162'};
 subjectIDs = setdiff(subjectIDs, badSubjects);
 
 %% Pool results
@@ -25,6 +25,10 @@ for stimulus = 1:length(stimuli)
     end
 end
 
+controlSubjects = [];
+mwaSubjects = [];
+mwoaSubjects = [];
+
 
 for ss = 1:length(subjectIDs)
     
@@ -38,14 +42,15 @@ for ss = 1:length(subjectIDs)
             if strcmp(group, 'c')
                 load(fullfile(resultsDir, 'EMGMedianResponseStruct.mat'));
                 controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmean([medianResponseStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).left, medianResponseStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).right]);
+                controlSubjects{end+1} = subjectIDs{ss};
             elseif strcmp(group, 'mwa')
                 load(fullfile(resultsDir, 'EMGMedianResponseStruct.mat'));
                 mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmean([medianResponseStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).left, medianResponseStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).right]);
-                
+                mwaSubjects{end+1} = subjectIDs{ss};
             elseif strcmp(group, 'mwoa')
                 load(fullfile(resultsDir, 'EMGMedianResponseStruct.mat'));
                 mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmean([medianResponseStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).left, medianResponseStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).right]);
-                
+                mwoaSubjects{end+1} = subjectIDs{ss};
             else
                 fprintf('Subject %s has group %s\n', subjectIDs{ss}, group);
             end
@@ -54,6 +59,9 @@ for ss = 1:length(subjectIDs)
     
 end
 
+mwaSubjects = unique(mwaSubjects);
+mwoaSubjects = unique(mwoaSubjects);
+controlSubjects = unique(controlSubjects);
 
 %% Display results
 combineMigraineurs = true;

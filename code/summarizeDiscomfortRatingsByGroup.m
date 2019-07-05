@@ -6,7 +6,7 @@ potentialSubjects =  dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/S
 for ss = 1:length(potentialSubjects)
     subjectIDs{end+1} = potentialSubjects(ss).name;
 end
-badSubjects = {'MELA_0127', 'MELA_0215'};
+badSubjects = {'MELA_0127', 'MELA_0215', 'MELA_0195', 'MELA_0144', 'MELA_0162'};
 subjectIDs = setdiff(subjectIDs, badSubjects);
 
 %% Pool results
