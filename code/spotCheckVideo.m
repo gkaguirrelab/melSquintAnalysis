@@ -390,6 +390,7 @@ if p.Results.processVideo
     [extension, runName] = fileparts(grayVideoName);
     pathParams.runName = runName;
     
+    
     if ~isfield(fitParams, 'expandPupilRange')
         fitParams.expandPupilRange = defaultFitParams.expandPupilRange;
     end
@@ -399,8 +400,14 @@ if p.Results.processVideo
     if ~isfield(fitParams, 'smallObjThresh')
         fitParams.smallObjThresh = defaultFitParams.smallObjThresh;
     end
+    if ~isfield(fitParams, 'extendBlinkWindow')
+        fitParams.extendBlinkWindow = defaultFitParams.extendBlinkWindow;
+    end
     if ~isfield(fitParams, 'pickLargestCircle')
-        fitParams.smallObjThresh = defaultFitParams.smallObjThresh;
+        fitParams.pickLargestCircle = defaultFitParams.pickLargestCircle;
+    end
+    if ~isfield(fitParams, 'threshold')
+        fitParams.threshold = defaultFitParams.threshold;
     end
     
     runVideoPipeline(pathParams,...
@@ -423,7 +430,11 @@ if p.Results.processVideo
         'expandPupilRange', fitParams.expandPupilRange, ...
         'candidateThetas', fitParams.candidateThetas, ...
         'pickLargestCircle', fitParams.pickLargestCircle, ...
-        'smallObjThresh', fitParams.smallObjThresh);
+        'smallObjThresh', fitParams.smallObjThresh, ...
+        'pickLargestCircle', fitParams.pickLargestCircle, ...
+        'extendBlinkWindow', fitParams.extendBlinkWindow, ...
+        'glintsMainDirection', 'both', 'threshold', fitParams.threshold, 'removeIsolatedGlints', true, 'glintFileName', fullfile(pathParams.dataOutputDirFull, [pathParams.runName '_glint.mat']));
+
 end
 
 
