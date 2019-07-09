@@ -106,6 +106,9 @@ for rr = firstRunIndex:length(pathParams.runNames)
     if ~isfield(fitParams, 'pickLargestCircle')
         fitParams.pickLargestCircle = defaultFitParams.pickLargestCircle;
     end
+    if ~isfield(fitParams, 'threshold')
+        fitParams.threshold = defaultFitParams.threshold;
+    end
     
     
     runVideoPipeline(pathParams,...
@@ -130,6 +133,6 @@ for rr = firstRunIndex:length(pathParams.runNames)
         'smallObjThresh', fitParams.smallObjThresh, ...
         'pickLargestCircle', fitParams.pickLargestCircle, ...
         'extendBlinkWindow', fitParams.extendBlinkWindow, ...
-        'glintsMainDirection', 'both', 'threshold', 0.10, 'removeIsolatedGlints', true, 'glintFileName', fullfile(pathParams.dataOutputDirFull, [pathParams.runName '_glint.mat']));
+        'glintsMainDirection', 'both', 'threshold', fitParams.threshold, 'removeIsolatedGlints', true, 'glintFileName', fullfile(pathParams.dataOutputDirFull, [pathParams.runName '_glint.mat']));
     
 end
