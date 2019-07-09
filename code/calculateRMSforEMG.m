@@ -124,7 +124,8 @@ else
     numberOfCompletedSessions = 1:length(sessionIDs);
 end
 %% Load in the data for each session
-for ss = numberOfCompletedSessions
+sessionIDs = sessionIDs(~cellfun('isempty',sessionIDs));
+for ss = 1:length(sessionIDs)
     sessionNumber = strsplit(sessionIDs{ss}, 'session_');
     sessionNumber = sessionNumber{2};
      availableAcquisitions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, '*acquisition*_emg.mat'));

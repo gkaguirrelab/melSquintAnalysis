@@ -89,7 +89,7 @@ p.parse(varargin{:});
 
 
 %% Find the data
-analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
+analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 % figure out filename of trialStruct
 if (p.Results.repeat)
@@ -137,7 +137,6 @@ if isempty(p.Results.sessions)
     end
     
     completedSessions = sessions;
-    nSessions = length(completedSessions);
     % get session IDs
     sessionIDs = [];
     for ss = completedSessions
@@ -152,13 +151,22 @@ if isempty(p.Results.sessions)
             end
         end
     end
+    sessionIDs = sessionIDs(~cellfun('isempty',sessionIDs));
+
+    nSessions = length(sessionIDs);
 else
     sessionIDs = p.Results.sessions;
     nSessions = length(sessionIDs);
 end
 
-%% perform a safety check to make sure we don't overwrite our existing data
+fprintf('Processing:\n');
+for ii = 1:(nSessions)
+    fprintf('\t%s\n', sessionIDs{ii});
+end
+
+% perform a safety check to make sure we don't overwrite our existing data
 resumeStatus = p.Results.resume;
+
 if ~(resumeStatus) % if resume is false
     if exist(fullfile(analysisBasePath, fileName), 'file')
         resumeCheck = GetWithDefault('>> It looks like this analysis has already begun for this subject. Would you like to resume this analysis instead?', 'y');
@@ -196,9 +204,16 @@ for ii = 1:totalTrials
     
     [tt, aa, ss] = ind2sub([10;6;nSessions], ii);
     
+    % determine which session we're in. Note this doesn't always correspond
+    % to the ss variable obtained above, in the case that we're missing a
+    % middle session.
+    sessionID = sessionIDs{ceil((ii/totalTrials*nSessions))};
+    sessionNumber = strsplit(sessionIDs{ss}, 'session_');
+    sessionNumber = sessionNumber{2};
+    sessionNumber = str2num(sessionNumber);
     
     
-    acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', ss,aa)));
+    acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', sessionNumber,aa)));
     
     
     
@@ -243,12 +258,15 @@ for ii = startingIndex:totalTrials
     
     [tt, aa, ss] = ind2sub([10;6;nSessions], ii);
     
-    
+        sessionID = sessionIDs{ceil((ii/totalTrials*nSessions))};
+    sessionNumber = strsplit(sessionIDs{ss}, 'session_');
+    sessionNumber = sessionNumber{2};
+    sessionNumber = str2num(sessionNumber);
     
     %acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', ss,aa)));
     
     
-    fprintf('Session %d, Acquisition %d, Trial %d\n', ss, aa, tt);
+    fprintf('Session %d, Acquisition %d, Trial %d\n', sessionNumber, aa, tt);
     
     trialData.response.values = trialAccumulator(ii).audio;
     
