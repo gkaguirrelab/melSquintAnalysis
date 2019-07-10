@@ -225,17 +225,14 @@ if ~(p.Results.skipParamsAdjustment)
                 'maskBox', fitParams.maskBox, ...
                 'pickLargestCircle', fitParams.pickLargestCircle, ...
                 'smallObjThresh', fitParams.smallObjThresh, 'displayMode', true);
-%             displayFrame=thisFrameDiagnostics;
-%             if ~isempty(perimeter.data{1}.Xp)
-%                 displayFrame(sub2ind(size(thisFrameDiagnostics),perimeter.data{1}.Yp,perimeter.data{1}.Xp))=255;
-%             end
-%             if isempty(perimeter.data{1}.Xp)
-%                 string = 'No pupil found';
-%                 text(350, 200, string);
-%             end
-%             imshow(displayFrame, 'Border', 'tight')
-%             dText = text(1,10,string, 'FontSize', 16, 'BackgroundColor', 'white');
-            delete('temp.mat')
+
+ % top horizontal line
+
+line([0, size(thisFrameDiagnostics, 2)], [fitParams.glintFrameMask(1), fitParams.glintFrameMask(1)], 'Color', 'r')
+line([0, size(thisFrameDiagnostics, 2)], [(size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3)), (size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3))], 'Color', 'r')
+line([fitParams.glintFrameMask(4), fitParams.glintFrameMask(4)], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
+line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(4)), (size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(4))], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
+
         end
         
         %% allow the user to adjust certain parameters, then test finding the pupil perimeter again
@@ -337,17 +334,11 @@ if ~(p.Results.skipParamsAdjustment)
                         'maskBox', fitParams.maskBox, ...
                         'pickLargestCircle', fitParams.pickLargestCircle, ...
                         'smallObjThresh', fitParams.smallObjThresh, 'displayMode', true);
-%                     displayFrame=thisFrameDiagnostics;
-%                     if ~isempty(perimeter.data{1}.Xp)
-%                         displayFrame(sub2ind(size(thisFrameDiagnostics),perimeter.data{1}.Yp,perimeter.data{1}.Xp))=255;
-%                     end
-%                     if isempty(perimeter.data{1}.Xp)
-%                         string = 'No pupil found';
-%                         text(350, 200, string);
-%                     end
-%                     imshow(displayFrame, 'Border', 'tight')
-%                     dText = text(1,10,string, 'FontSize', 16, 'BackgroundColor', 'white');
-                    delete('temp.mat')
+line([0, size(thisFrameDiagnostics, 2)], [fitParams.glintFrameMask(1), fitParams.glintFrameMask(1)], 'Color', 'r')
+line([0, size(thisFrameDiagnostics, 2)], [(size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3)), (size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3))], 'Color', 'r')
+line([fitParams.glintFrameMask(4), fitParams.glintFrameMask(4)], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
+line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(4)), (size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(4))], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
+
                 end
                 adjustParamsChoice = GetWithDefault('>> Satisfied with these parameters? Enter ''y'' to proceed and exit, or ''n'' to manually adjust the parameters. [y/n]', 'y');
                 switch adjustParamsChoice
