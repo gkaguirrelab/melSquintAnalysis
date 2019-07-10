@@ -18,6 +18,7 @@ if strcmp(p.Results.approach, 'Squint')
     pathParams.useParallel = true;
     pathParams.eyeLaterality = 'left';
     pathParams.resume = false;
+    pathParams.protocol = p.Results.protocol;
 
     
     pathParams.dataSourceDirFull = fullfile(pathParams.dataBasePath,'Experiments','OLApproach_Squint',p.Results.protocol,'DataFiles');
