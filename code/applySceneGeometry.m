@@ -31,9 +31,9 @@ fitPupilPerimeter(perimeterFileName, pupilFileName, 'sceneGeometryFileName', sce
 
 %% Perform smoothing
 
-smoothPupilRadius(perimeterFileName, pupilFileName, sceneGeometryName, 'verbose', true);
+smoothPupilRadius(perimeterFileName, pupilFileName, sceneGeometryFileName, 'verbose', true);
 
 %% Make fit video
-makeFitVideo(grayVideoName, outVideoName, 'pupilFileName', pupilFileName, 'sceneGeometryFileName', sceneGeometryName, 'glintFileName', glintFileName, 'perimeterFileName', perimeterFileName, 'controlFileName', controlFileName)
+makeFitVideo(grayFileName, outVideoName, 'pupilFileName', pupilFileName, 'sceneGeometryFileName', sceneGeometryFileName, 'glintFileName', glintFileName, 'perimeterFileName', perimeterFileName, 'controlFileName', controlFileName)
 
 end
