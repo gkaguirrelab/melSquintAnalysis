@@ -57,10 +57,10 @@ grayFileName = fullfile(pathParams.dataSourceDirFull, subjectID, session, subfol
 perimeterFileName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfoldersList{end}, [pathParams.runNames{end}(1:end-4), '_correctedPerimeter.mat']);
 
 
-[ ~, candidateSceneGeometry] = ...
+[ ~, sceneGeometry] = ...
     estimateSceneParamsGUI(sceneGeometryFileName,'ellipseArrayList',ellipseArrayList,'grayVideoName',grayFileName,'perimeterFileName',perimeterFileName,'videoSuffix', '.mp4');
 
 % save adjusted scene geometry file
-save(sceneGeometryFileName, 'candidateSceneGeometry');
+save(sceneGeometryFileName, 'sceneGeometry');
 
 end
