@@ -3,36 +3,53 @@ function makeSceneGeometry(subjectID, session, varargin)
 %% Get some params
 [ ~, cameraParams, pathParams ] = getDefaultParams('approach', 'Squint','protocol', 'SquintToPulse');
 
-[pathParams.runNames, subfoldersList] = getTrialList(pathParams);
+pathParams.subject = subjectID;
 if isnumeric(session)
     sessionDir = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, ['2*session_', num2str(session)]));
     session = sessionDir(end).name;
 end
-
-pathParams.subject = subjectID;
 pathParams.session = session;
 pathParams.protocol = 'SquintToPulse';
 
+[pathParams.runNames, subfoldersList] = getTrialList(pathParams);
+
+
+
+
 %% Make default scene geometry file
-sceneGeometry = createSceneGeometry('intrinsicCameraMatrix', cameraParams.intrinsicCameraMatrix, ...
+
+% determine spherical ametropia
+sphericalAmetropia = getSphericalAmetropia(subjectID);
+
+% load measured distance away from camera
+cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', 'SquintToPulse', 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
+
+
+if isempty(sphericalAmetropia)
+    sceneGeometry = createSceneGeometry('intrinsicCameraMatrix', cameraParams.intrinsicCameraMatrix, ...
         'radialDistortionVector', cameraParams.radialDistortionVector, ...
         'sensorResolution', cameraParams.sensorResolution, ...
-        'cameraTranslation', [0; 0; 30], ...
+        'cameraTranslation', [0; 0; cameraDepthMean.distanceFromCornealApexToIRLens]);
+else
+    
+    sceneGeometry = createSceneGeometry('intrinsicCameraMatrix', cameraParams.intrinsicCameraMatrix, ...
+        'radialDistortionVector', cameraParams.radialDistortionVector, ...
+        'sensorResolution', cameraParams.sensorResolution, ...
+        'cameraTranslation', [0; 0; cameraDepthMean.distanceFromCornealApexToIRLens], ...
         'sphericalAmetropia', sphericalAmetropia);
+end
 
 % save scene geometry file, even though this version just serves as a
 % template
 sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, session, 'pupilCalibration', 'sceneGeometry.mat');
-save(sceneGeometryFileName, sceneGeometry);
+save(sceneGeometryFileName, 'sceneGeometry');
 
 %% Make ellipseArrayList
-if p.Results.resume
-    loadEllipseArrayList = true;
-else
-    loadEllipseArrayList = false;
-end
+
+processedVideoName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfoldersList{end}, [pathParams.runNames{end}(1:end-4), '_fitStage6.avi']);
 elliseArrayListFileName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfoldersList{end}, 'ellipseArrayList.mat');
-[ellipseArrayList, fixationTargetArray] = pickFramesForSceneEstimation(processedVideoName, 'saveName', elliseArrayListFileName, 'loadEllipseArrayList', loadEllipseArrayList);
+
+[ellipseArrayList, fixationTargetArray] = pickFramesForSceneEstimation(processedVideoName, 'saveName', elliseArrayListFileName, 'loadEllipseArrayList', false);
 
 %% Use GUI to adjust scene geometry file
 % specify where to find additional files
@@ -44,6 +61,6 @@ perimeterFileName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, p
     estimateSceneParamsGUI(sceneGeometryFileName,'ellipseArrayList',ellipseArrayList,'grayVideoName',grayFileName,'perimeterFileName',perimeterFileName,'videoSuffix', '.mp4');
 
 % save adjusted scene geometry file
-save(sceneGeometryFileName, candidateSceneGeometry);
+save(sceneGeometryFileName, 'candidateSceneGeometry');
 
 end
