@@ -310,6 +310,18 @@ for ss = 1:length(sessionIDs)
                 extremeFrameIndices = find(abs(trialData.response.values) > p.Results.extremePercentageChangeThreshold);
                 trialData.response.values(extremeFrameIndices) = NaN;
                 
+                % undo, then re-do mean-centering. this is because
+                % sometimes a blink occurs in the original baseline window,
+                % which leads to improper estimation of the baseline size.
+                % after these poor frames have been dealt with, we can
+                % revert to the original units of pupil size, then re-mean
+                % center
+                % undo mean-centering
+                trialData.response.values = (trialData.response.values*baselineSize)+baselineSize;
+                
+                baselineSizePartTwo = nanmean(trialData.response.values(baselineWindowOnsetIndex:baselineWindowOffsetIndex));
+                trialData.response.values = (trialData.response.values - baselineSizePartTwo)./baselineSizePartTwo;
+                
                 
                 
                 % resample the timebase so we can put all trials on the same
