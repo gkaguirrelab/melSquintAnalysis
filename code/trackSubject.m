@@ -10,7 +10,7 @@ p.addParameter('skipProcessing', false, @islogical);
 
 p.parse(varargin{:})
 
-[ ~, cameraParams, pathParams ] = getDefaultParams('approach', 'Squint','protocol', 'SquintToPulse');
+[ defaultFitParams, cameraParams, pathParams ] = getDefaultParams('approach', 'Squint','protocol', 'SquintToPulse');
 
 if isnumeric(sessionID)
     sessionDir = dir(fullfile(pathParams.dataSourceDirFull, subjectID, ['2*session_', num2str(sessionID)]));
