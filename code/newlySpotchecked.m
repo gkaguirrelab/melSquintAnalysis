@@ -663,3 +663,4 @@ spotCheckVideo('MELA_0196', '2019-06-03_session_3', 3, 7, 'skipParamsAdjustment'
 spotCheckVideo('MELA_0196', '2019-06-03_session_3', 3, 9, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
 spotCheckVideo('MELA_0196', '2019-06-03_session_3', 3, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
 spotCheckVideo('MELA_0196', '2019-06-03_session_3', 2, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0144', '2018-09-13_session_1', 2, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
