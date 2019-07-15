@@ -185,7 +185,14 @@ for ss = 1:length(sessionIDs)
                 trialData = load(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)));
                 
                 % gather into memory the pupil area, RMSE, and timebase
-                trialData.response.values = trialData.pupilData.initial.ellipses.values(:,3);
+                if isfield(trialData.pupilData, 'radiusSmoothed')
+                    trialData.response.values = ((trialData.pupilData.radiusSmoothed.eyePoses.values(:,4)).^2)*pi;
+                    initialResponse = ((trialData.pupilData.radiusSmoothed.eyePoses.values(:,4)).^2)*pi;
+                else
+                    
+                    trialData.response.values = trialData.pupilData.initial.ellipses.values(:,3);
+                    initialResponse = trialData.pupilData.initial.ellipses.values(:,3);
+                end
                 trialData.response.timebase = acquisitionData.responseStruct.data(tt).pupil.timebase;
                 trialData.response.RMSE = trialData.pupilData.initial.ellipses.RMSE;
                 
@@ -395,7 +402,7 @@ for ss = 1:length(sessionIDs)
                 if p.Results.debugNumberOfNaNValuesPerTrial
                     close all;
                     plotFig = figure; hold on;
-                    plot(trialData.response.timebase, (trialData.pupilData.initial.ellipses.values(:,3)-baselineSize)./baselineSize); hold on; plot(resampledTimebase, resampledValues)
+                    plot(trialData.response.timebase, (initialResponse-baselineSize)./baselineSize); hold on; plot(resampledTimebase, resampledValues)
                     
                     if ~isempty(controlFileBlinkIndices)
                         plot(trialData.response.timebase(controlFileBlinkIndices), trialData.response.values(controlFileBlinkIndices), 'o', 'Color', 'b')
