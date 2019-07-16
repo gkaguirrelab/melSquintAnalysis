@@ -17,7 +17,7 @@ pathParams.protocol = 'SquintToPulse';
 [pathParams.runNames, subfolders] = getTrialList(pathParams);
 
 %% Load params for this trial
-if acquisitionNumber ~= 7 && strcmp(acquisitionNumber, 'pupilCalibration')
+if acquisitionNumber ~= 7 && ~strcmp(acquisitionNumber, 'pupilCalibration')
     acquisitionFolderName = sprintf('videoFiles_acquisition_%02d', acquisitionNumber);
 else
     acquisitionFolderName = 'pupilCalibration';
@@ -35,9 +35,9 @@ end
 
 pathParams.session = sessionID;
 % first look for a trial specific
-if exist((fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat'])))
+if exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']))
     load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']));
-elseif exist((fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat'])))
+elseif exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']))
     load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']));
 else
     load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, ['fitParams.mat']));
