@@ -32,8 +32,7 @@ end
 
 if isempty(p.Results.trialNumber)
     fitParamsSaveName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']);
-    if exist(fitParamsSaveName)
-    else
+    if ~exist(fitParamsSaveName)   
         warning('FitParams not saved for acquisition. Loading fitParams for the session.')
         fitParamsSaveName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, ['fitParams.mat']);
     end
