@@ -31,20 +31,27 @@ else
 end
 
 if isempty(p.Results.trialNumber)
-    fitParamsSaveName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']);
-    if ~exist(fitParamsSaveName)   
+    fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']);
+    if ~exist(fitParamsLoadName)   
         warning('FitParams not saved for acquisition. Loading fitParams for the session.')
-        fitParamsSaveName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, ['fitParams.mat']);
+        fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, ['fitParams.mat']);
     end
+    fitParamsSaveName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']);
 else
     if acquisitionNumber ~= 7 && ~strcmp(acquisitionNumber, 'pupilCalibration')
-        runName = sprintf('trial_%03d', trialNumber);
+        runName = sprintf('trial_%03d', p.Results.trialNumber);
     else
         runName = pathParams.runNames{end};
     end
+    fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']);
+    if ~exist(fitParamsLoadName)
+        warning('FitParams not saved for that trial. Loading fitParams for the acquisition, but will still save for the trial')
+        fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']);
+    end
     fitParamsSaveName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']);
+
 end
-load(fitParamsSaveName);
+load(fitParamsLoadName);
 
 %% Allow user to adjust params
 if isempty(p.Results.paramName)
