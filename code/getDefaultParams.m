@@ -34,7 +34,7 @@ if strcmp(p.Results.approach, 'Squint')
     fitParams.pupilCircleThresh = 0.05;
     fitParams.pupilGammaCorrection = 0.7;
     fitParams.maskBox = [1 1];
-    fitParams.cutErrorThreshold = 4;
+    fitParams.cutErrorThreshold = 2;
     fitParams.badFrameErrorThreshold = 6;
     fitParams.glintPatchRadius = 35;
     fitParams.ellipseTransparentUB = [1280, 720, 90000, 0.6, pi];
