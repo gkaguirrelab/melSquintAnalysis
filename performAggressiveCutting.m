@@ -9,7 +9,7 @@ p.parse(varargin{:});
 
 %% adjust the fitParams
 if ~isempty(p.Results.cutErrorThreshold)
-    editFitParams(subjectID, sessionID, acquisitionNumber, 'paramName', 'cutErrorThreshold', 'paramValue', p.Results.cutErrorThreshold)
+    editFitParams(subjectID, sessionID, acquisitionNumber, 'trialNumber', trialNumber, 'paramName', 'cutErrorThreshold', 'paramValue', p.Results.cutErrorThreshold)
 end
 
 %% Redo the cutting
