@@ -1,5 +1,11 @@
 function makeSceneGeometry(subjectID, session, varargin)
+%% collect some inputs
+p = inputParser; p.KeepUnmatched = true;
 
+p.addParameter('pickVideo',[],@isnumeric);
+
+% Parse and check the parameters
+p.parse(varargin{:});
 %% Get some params
 [ ~, cameraParams, pathParams ] = getDefaultParams('approach', 'Squint','protocol', 'SquintToPulse');
 
@@ -13,7 +19,22 @@ pathParams.protocol = 'SquintToPulse';
 
 [pathParams.runNames, subfoldersList] = getTrialList(pathParams);
 
+if ~isempty(p.Results.pickVideo)
+    acquisitionNumber = p.Results.pickVideo(1);
+    trialNumber = p.Results.pickVideo(2);
+    
+    acquisitionFolderName = sprintf('videoFiles_acquisition_%02d', acquisitionNumber);
+    runName = sprintf('trial_%03d', trialNumber);
+end
 
+if isempty(p.Results.pickVideo)
+    grayFileName = fullfile(pathParams.dataSourceDirFull, subjectID, session, subfoldersList{end}, pathParams.runNames{end});
+    perimeterFileName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfoldersList{end}, [pathParams.runNames{end}(1:end-4), '_correctedPerimeter.mat']);
+else
+    grayFileName = fullfile(pathParams.dataSourceDirFull, subjectID, session, acquisitionFolderName, [runName, '.mp4']);
+    perimeterFileName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, [runName, '_correctedPerimeter.mat']);
+    
+end
 
 
 %% Make default scene geometry file
@@ -41,24 +62,41 @@ end
 
 % save scene geometry file, even though this version just serves as a
 % template
-sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, session, 'pupilCalibration', 'sceneGeometry.mat');
+if isempty(p.Results.pickVideo)
+    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, session, 'pupilCalibration', 'sceneGeometry.mat');
+else
+    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, session, acquisitionFolderName, [runName, '_sceneGeometry.mat']);
+end
 save(sceneGeometryFileName, 'sceneGeometry');
 
 %% Make ellipseArrayList
 
-
-processedVideoName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfoldersList{end}, [pathParams.runNames{end}(1:end-4), '_fitStage6.avi']);
-elliseArrayListFileName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfoldersList{end}, 'ellipseArrayList.mat');
-if ~exist(elliseArrayListFileName)
+if isempty(p.Results.pickVideo)
+    processedVideoName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfoldersList{end}, [pathParams.runNames{end}(1:end-4), '_fitStage6.avi']);
+    elliseArrayListFileName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfoldersList{end}, 'ellipseArrayList.mat');
     
-    [ellipseArrayList, fixationTargetArray] = pickFramesForSceneEstimation(processedVideoName, 'saveName', elliseArrayListFileName, 'loadEllipseArrayList', false);
+    
+    if ~exist(elliseArrayListFileName)
+        
+        [ellipseArrayList, fixationTargetArray] = pickFramesForSceneEstimation(processedVideoName, 'saveName', elliseArrayListFileName, 'loadEllipseArrayList', false);
+    else
+        load(elliseArrayListFileName);
+    end
 else
-    load(elliseArrayListFileName);
+    ellipseArrayList = [1:100:1000];
+    load(perimeterFileName)
+    badIndices = [];
+    for ii = 1:length(ellipseArrayList)
+        if isempty(perimeter.data{ellipseArrayList(ii)}.Xp)
+            badIndices(end+1) = ellipseArrayList(ii);
+        end
+    end
+    
+    ellipseArrayList = setdiff(ellipseArrayList, badIndices);
+    
 end
 %% Use GUI to adjust scene geometry file
 % specify where to find additional files
-grayFileName = fullfile(pathParams.dataSourceDirFull, subjectID, session, subfoldersList{end}, pathParams.runNames{end});
-perimeterFileName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfoldersList{end}, [pathParams.runNames{end}(1:end-4), '_correctedPerimeter.mat']);
 
 
 [ ~, sceneGeometry] = ...
