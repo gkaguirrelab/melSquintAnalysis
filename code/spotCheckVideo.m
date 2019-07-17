@@ -231,7 +231,7 @@ if ~(p.Results.skipParamsAdjustment)
 line([0, size(thisFrameDiagnostics, 2)], [fitParams.glintFrameMask(1), fitParams.glintFrameMask(1)], 'Color', 'r')
 line([0, size(thisFrameDiagnostics, 2)], [(size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3)), (size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3))], 'Color', 'r')
 line([fitParams.glintFrameMask(4), fitParams.glintFrameMask(4)], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
-line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(4)), (size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(4))], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
+line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2))], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
 
         end
         
@@ -337,7 +337,7 @@ line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(4)), (size(thisF
 line([0, size(thisFrameDiagnostics, 2)], [fitParams.glintFrameMask(1), fitParams.glintFrameMask(1)], 'Color', 'r')
 line([0, size(thisFrameDiagnostics, 2)], [(size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3)), (size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3))], 'Color', 'r')
 line([fitParams.glintFrameMask(4), fitParams.glintFrameMask(4)], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
-line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(4)), (size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(4))], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
+line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2))], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
 
                 end
                 adjustParamsChoice = GetWithDefault('>> Satisfied with these parameters? Enter ''y'' to proceed and exit, or ''n'' to manually adjust the parameters. [y/n]', 'y');
