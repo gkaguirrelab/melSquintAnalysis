@@ -85,7 +85,7 @@ end
 % display and save mean image
 if p.Results.displayMeanFrame || p.Results.saveMeanFrame
     plotFig = figure;
-    imshow(meanFrame, []);
+    imshow(squeeze(meanFrame), [], 'Border', 'tight');
     
     if p.Results.saveMeanFrame
         if isempty(p.Results.saveName)
@@ -94,7 +94,7 @@ if p.Results.displayMeanFrame || p.Results.saveMeanFrame
         else
             saveName = p.Results.saveName;
         end
-       saveas(plotFig, saveName);
+    export_fig(plotFig, saveName)
     end
     
     if ~p.Results.displayMeanFrame
