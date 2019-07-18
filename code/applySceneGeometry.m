@@ -37,14 +37,16 @@ end
 
 %% Re-run fitting of pupil ellipse with scene geometry
 
-fitPupilPerimeter(perimeterFileName, pupilFileName, 'sceneGeometryFileName', sceneGeometryFileName, 'verbose', true);
-
+%fitPupilPerimeter(perimeterFileName, pupilFileName, 'sceneGeometryFileName', sceneGeometryFileName, 'verbose', true);
+runStages(subjectID, session, acquisitionNumber, trialNumber, [8], [8]);
 
 %% Perform smoothing
 
-smoothPupilRadius(perimeterFileName, pupilFileName, sceneGeometryFileName, 'verbose', true);
+%smoothPupilRadius(perimeterFileName, pupilFileName, sceneGeometryFileName, 'verbose', true);
+runStages(subjectID, session, acquisitionNumber, trialNumber, [9], []);
 
 %% Make fit video
-makeFitVideo(grayFileName, outVideoName, 'pupilFileName', pupilFileName, 'sceneGeometryFileName', sceneGeometryFileName, 'glintFileName', glintFileName, 'perimeterFileName', perimeterFileName, 'controlFileName', controlFileName, 'modelEyeMaxAlpha', 1)
+runStages(subjectID, session, acquisitionNumber, trialNumber, [10], [10]);
+%makeFitVideo(grayFileName, outVideoName, 'pupilFileName', pupilFileName, 'sceneGeometryFileName', sceneGeometryFileName, 'glintFileName', glintFileName, 'perimeterFileName', perimeterFileName, 'controlFileName', controlFileName, 'modelEyeMaxAlpha', 1)
 
 end
