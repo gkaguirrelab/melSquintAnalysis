@@ -1,5 +1,15 @@
 function runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo)
 
+%% Summary of stages
+% 1) De-interlace videos: not relevant for squint
+% 2) findGlint
+% 3) findPupilPerimeter
+% 4) makeControlFile
+% 5) correctPerimeter
+% 6) fitEllipse to correctedPerimeter
+% 7) estimate scene geometry
+% 8) re-fit ellipse using scene geometry
+% 9) bayesian smoothing
 
 
 skipStageByNumber = setdiff(1:11, stagesToRun);

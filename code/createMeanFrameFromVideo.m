@@ -1,5 +1,44 @@
 function [ meanFrame] = createMeanFrameFromVideo(videoFileName, varargin)
 
+%{ 
+Example:
+subjectID = 'MELA_0144';
+
+sessionID = 1;
+acquisitionNumber = 6;
+trialNumber = 10;
+
+[ defaultFitParams, cameraParams, pathParams, sceneParams ] = getDefaultParams('approach', 'Squint','protocol', 'SquintToPulse');
+
+pathParams.subject = subjectID;
+if isnumeric(sessionID)
+    sessionDir = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, ['2*session_', num2str(sessionID)]));
+    sessionID = sessionDir(end).name;
+end
+
+if acquisitionNumber ~= 7 && ~strcmp(acquisitionNumber, 'pupilCalibration')
+    acquisitionFolderName = sprintf('videoFiles_acquisition_%02d', acquisitionNumber);
+else
+    acquisitionFolderName = 'pupilCalibration';
+end
+
+if ~isnumeric(trialNumber)
+    runName = trialNumber;
+elseif acquisitionNumber == 7 || strcmp(acquisitionNumber, 'pupilCalibration')
+    runName = pathParams.runNames{end};
+else
+    runName = sprintf('trial_%03d', trialNumber);
+end
+
+videoFileName = fullfile(pathParams.dataSourceDirFull, subjectID, sessionID, acquisitionFolderName, [runName, '.mp4']);
+saveName = strrep(strrep(videoFileName, 'MELA_data', 'MELA_processing'), '.mp4', 'mean.jpg');
+
+createMeanFrameFromVideo(videoFileName, 'saveName', saveName);
+
+
+%}
+
+
 % input parser
 p = inputParser; p.KeepUnmatched = true;
 
