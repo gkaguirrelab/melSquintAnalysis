@@ -1,4 +1,4 @@
-function [trialStructTemplate] = makeTrialStructTemplate(varargin)
+function [trialStructTemplate] = makeTrialStructTemplate(subjectID, varargin)
 % Analyzes a single subject's verbal discomfort ratings  from the OLApproach_Squint,
 % SquintToPulse Experiment
 %
