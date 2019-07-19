@@ -49,7 +49,7 @@ if performSceneGeometryAdjustment
     clear pupilData
     
     % load in the pupil file for the calibration run
-    load(fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, subfoldersList{end}, [pathParams.runNames{end}, '_pupil.mat']));
+    load(fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, subfoldersList{end}, [pathParams.runNames{end}(1:end-4), '_pupil.mat']));
     pupilCenterXCalibration = nanmean(pupilData.initial.ellipses.values(:,1));
     pupilCenterYCalibration = nanmean(pupilData.initial.ellipses.values(:,2));
     
@@ -61,8 +61,9 @@ if performSceneGeometryAdjustment
     % load calibration scene geometry
     load(sceneGeometryFileName);
     eyePose1 = [-10 5 0 3];
-    [pupilEllipseOnImagePlane, ~, worldPoints, ~, ~, pointLabels, ~, ~] = pupilProjection_fwd(eyePose1, sceneGeometry);
-
+    [pupilEllipseOnImagePlane1, ~, worldPoints1, ~, ~, pointLabels1, ~, ~] = pupilProjection_fwd(eyePose1, sceneGeometry, 'fullEyeModelFlag', true);
+    stopCenterIndex = find(strcmp(pointLabels1, 'stopCenter'));
+    xyzInMM
     
 end
 
