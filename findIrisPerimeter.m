@@ -250,17 +250,16 @@ end
 % show the bad points
 plot(ellipseX(badDistanceIndices), ellipseY(badDistanceIndices), 'X', 'Color', 'r', 'MarkerSize', 14);
 
-
 % I have here two potential methods to define the iris boundary on the
 % basis of these points. First is to try to fit an ellipse to the iris
 % boundaries. This was problematic in early versions (perhaps I didn't find
 % enough points?).
-doEllipseFit = false;
+doEllipseFit = true;
 if doEllipseFit
     % fit an ellipse to the inputted points
-    ellipseTransparentUB = [irisCenterX+50, irisCenterY+50, 1000000, 0.6, pi];
+    ellipseTransparentUB = [irisCenterX+50, irisCenterY+50, 10000000, 0.6, pi];
     ellipseTransparentLB = [irisCenterX-50, irisCenterY-50, meanRadius^2*pi, 0, 0];
-    [ellipseFitParams] = constrainedEllipseFit(goodEllipseX,goodEllipseY, ellipseTransparentLB, ellipseTransparentUB, []);
+    [ellipseFitParams, RMSE, constraintError, fitAtBound] = constrainedEllipseFit(goodEllipseX',goodEllipseY', ellipseTransparentLB, ellipseTransparentUB, []);
     
     % convert the ellipse params from transparent params to explicit params
     explicitEllipseFitParams = ellipse_transparent2ex(ellipseFitParams);
@@ -271,7 +270,7 @@ if doEllipseFit
     fh=@(xFunc,yFunc) pFitImplicit(1).*xFunc.^2 +pFitImplicit(2).*xFunc.*yFunc +pFitImplicit(3).*yFunc.^2 +pFitImplicit(4).*xFunc +pFitImplicit(5).*yFunc +pFitImplicit(6);
     % superimpose the ellipse using fimplicit
     hold on
-    fHandle = fimplicit(fh,[1, size(grayImage,1), 1, size(grayImage,2)],'Color', 'green','LineWidth',1);
+    fHandle = fimplicit(fh,[1, size(grayImage,2), 1, size(grayImage,1)],'Color', 'green','LineWidth',1);
     set(gca,'position',[0 0 1 1],'units','normalized')
 end
 
