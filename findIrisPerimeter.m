@@ -2,7 +2,7 @@ function [ center, radius ] = findIrisPerimeter(grayImageFile, pupilFile)
 %{
 Example
 
-subjectID = 'MELA_0206';
+subjectID = 'MELA_0215';
 
 sessionID = 1;
 acquisitionNumber = 1;
@@ -125,9 +125,13 @@ for aa = angleRange
         maxPeakIndex = possibleRelevantPeakLocationsBeyondPupil(maxPeakNumber);
         
         [~, minLocations] = findpeaks(-smoothedDiffValues);
+        if maxPeakIndex > max(minLocations)
+            endOfIris = [];
+        else
         minPeakIndex = find(minLocations > maxPeakIndex);
         minPeakIndex = minLocations(minPeakIndex(1));
         endOfIris = mean([maxPeakIndex, minPeakIndex]);
+        end
        
         
         
