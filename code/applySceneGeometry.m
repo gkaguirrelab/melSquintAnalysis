@@ -29,10 +29,41 @@ outVideoName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathPa
 
 if exist(fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']))
     sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']);
-elseif exist(fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, acquisitionFolderName, ['sceneGeometry.mat']))
-    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, acquisitionFolderName, ['sceneGeometry.mat']);
+    performSceneGeometryAdjustment = false;
 else
     sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, session, 'pupilCalibration', 'sceneGeometry.mat');
+    performSceneGeometryAdjustment = true;
+    
+end
+
+%% Adjust the scene geometry, if necessary
+if performSceneGeometryAdjustment
+    % load in the pupil file
+    load(pupilFileName);
+    
+    % use the center of the found ellipses to say where the center of the
+    % pupil is
+    pupilCenterXThisTrial = nanmean(pupilData.initial.ellipses.values(:,1));
+    pupilCenterYThisTrial = nanmean(pupilData.initial.ellipses.values(:,2));
+    
+    clear pupilData
+    
+    % load in the pupil file for the calibration run
+    load(fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, subfoldersList{end}, [pathParams.runNames{end}, '_pupil.mat']));
+    pupilCenterXCalibration = nanmean(pupilData.initial.ellipses.values(:,1));
+    pupilCenterYCalibration = nanmean(pupilData.initial.ellipses.values(:,2));
+    
+    % calculate the X and Y displacement, in pixels
+    xDisplacement = pupilCenterXCalibration - pupilCenterXThisTrial;    
+    yDisplacement = pupilCenterYCalibration - pupilCenterYThisTrial;
+    
+    % convert displacement in pixels to displacement in mm
+    % load calibration scene geometry
+    load(sceneGeometryFileName);
+    eyePose1 = [-10 5 0 3];
+    [pupilEllipseOnImagePlane, ~, worldPoints, ~, ~, pointLabels, ~, ~] = pupilProjection_fwd(eyePose1, sceneGeometry);
+
+    
 end
 
 %% Re-run fitting of pupil ellipse with scene geometry
