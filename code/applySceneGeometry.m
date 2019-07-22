@@ -85,7 +85,7 @@ if performSceneGeometryAdjustment
     
     % adjust the scene geometry file appropriately
     sceneGeometry.cameraPosition.translation(1) = sceneGeometry.cameraPosition.translation(1) + xDisplacementInMM;
-    sceneGeometry.cameraPosition.translation(2) = sceneGeometry.cameraPosition.translation(2) + yDisplacementInMM;
+    sceneGeometry.cameraPosition.translation(2) = sceneGeometry.cameraPosition.translation(2) - yDisplacementInMM;
     
     % save the updated scene geometry file
     newSceneGeometryFileName = fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']);
