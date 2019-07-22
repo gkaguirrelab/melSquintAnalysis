@@ -54,16 +54,42 @@ if performSceneGeometryAdjustment
     pupilCenterYCalibration = nanmean(pupilData.initial.ellipses.values(:,2));
     
     % calculate the X and Y displacement, in pixels
-    xDisplacement = pupilCenterXCalibration - pupilCenterXThisTrial;    
-    yDisplacement = pupilCenterYCalibration - pupilCenterYThisTrial;
+    xDisplacementInPixels = pupilCenterXCalibration - pupilCenterXThisTrial;    
+    yDisplacementInPixels = pupilCenterYCalibration - pupilCenterYThisTrial;
     
     % convert displacement in pixels to displacement in mm
     % load calibration scene geometry
     load(sceneGeometryFileName);
-    eyePose1 = [-10 5 0 3];
-    [pupilEllipseOnImagePlane1, ~, worldPoints1, ~, ~, pointLabels1, ~, ~] = pupilProjection_fwd(eyePose1, sceneGeometry, 'fullEyeModelFlag', true);
-    stopCenterIndex = find(strcmp(pointLabels1, 'stopCenter'));
-    xyzInMM
+    
+    % create forward model of the eye with the same eye pose, but two
+    % different translations of the camera. we'll use the camera
+    % translations and the resulting change in center of the pupil to
+    % convert from units of pixels to mm.
+    fakeSceneGeometry1 = sceneGeometry;
+    fakeSceneGeometry1.cameraPosition.translation = [1; 1; 25.1];
+    fakeSceneGeometry2 = sceneGeometry;
+    fakeSceneGeometry2.cameraPosition.translation = [-2; -2; 25.1];
+    eyePose = [0.01 0.01 0.01 3];
+    [pupilEllipseOnImagePlane1] = pupilProjection_fwd(eyePose, fakeSceneGeometry1, 'fullEyeModelFlag', true);
+    [pupilEllipseOnImagePlane2] = pupilProjection_fwd(eyePose, fakeSceneGeometry2, 'fullEyeModelFlag', true);
+    xyzInPixels = pupilEllipseOnImagePlane2 - pupilEllipseOnImagePlane1;
+    
+    pixelsPerMM = abs(xyzInPixels(1)/(fakeSceneGeometry1.cameraPosition.translation(1) - fakeSceneGeometry2.cameraPosition.translation(1)));
+    
+    % based on this conversion factor, convert the X and Y displacement of
+    % the pupil center from the calibration to the trial of inteest from
+    % units of pixels to units of mm
+    
+    xDisplacementInMM = xDisplacementInPixels / pixelsPerMM;
+    yDisplacementInMM = yDisplacementInPixels / pixelsPerMM;
+    
+    % adjust the scene geometry file appropriately
+    sceneGeometry.cameraPosition.translation(1) = sceneGeometry.cameraPosition.translation(1) + xDisplacementInMM;
+    sceneGeometry.cameraPosition.translation(2) = sceneGeometry.cameraPosition.translation(2) + yDisplacementInMM;
+    
+    % save the updated scene geometry file
+    newSceneGeometryFileName = fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']);
+    save(newSceneGeometryFileName, 'sceneGeometry');
     
 end
 
