@@ -1,5 +1,11 @@
-function runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo)
+function runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, varargin)
 
+
+p = inputParser; p.KeepUnmatched = true;
+
+p.addParameter('Protocol', 'SquintToPulse' ,@isstr);
+
+p.parse(varargin{:})
 %% Summary of stages
 % 1) De-interlace videos: not relevant for squint
 % 2) findGlint
@@ -14,7 +20,7 @@ function runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesT
 
 skipStageByNumber = setdiff(1:11, stagesToRun);
 %% Get some params
-[ defaultFitParams, cameraParams, pathParams, sceneParams ] = getDefaultParams('approach', 'Squint','protocol', 'SquintToPulse');
+[ defaultFitParams, cameraParams, pathParams, sceneParams ] = getDefaultParams('approach', 'Squint','Protocol', p.Results.Protocol);
 
 pathParams.subject = subjectID;
 if isnumeric(sessionID)
@@ -24,7 +30,7 @@ end
 pathParams.session = sessionID;
 pathParams.protocol = 'SquintToPulse';
 
-[pathParams.runNames, subfolders] = getTrialList(pathParams);
+[pathParams.runNames, subfolders] = getTrialList(pathParams, 'Protocol', p.Results.Protocol);
 
 %% Load params for this trial
 if acquisitionNumber ~= 7 && ~strcmp(acquisitionNumber, 'pupilCalibration')

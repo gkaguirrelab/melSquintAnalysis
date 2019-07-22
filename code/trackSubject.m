@@ -4,13 +4,13 @@ function trackSubject(subjectID, sessionID, varargin)
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('approach', 'Squint' ,@isstr);
-p.addParameter('protocol', 'SquintToPulse' ,@isstr);
+p.addParameter('Protocol', 'SquintToPulse' ,@isstr);
 p.addParameter('resume', false, @islogical);
 p.addParameter('skipProcessing', false, @islogical);
 
 p.parse(varargin{:})
 
-[ defaultFitParams, ~, pathParams, ~ ] = getDefaultParams('approach', 'Squint','protocol', 'SquintToPulse');
+[ defaultFitParams, ~, pathParams, ~ ] = getDefaultParams('approach', 'Squint','Protocol', p.Results.Protocol);
 
 if isnumeric(sessionID)
     sessionDir = dir(fullfile(pathParams.dataSourceDirFull, subjectID, ['2*session_', num2str(sessionID)]));
@@ -18,16 +18,16 @@ if isnumeric(sessionID)
 end
 
 pathParams.subject = subjectID;
-pathParams.protocol = p.Results.protocol;
+pathParams.Protocol = p.Results.Protocol;
 pathParams.session = sessionID;
 
 
 
 % figure out if we're resuming a session, which dictates whether we're
 % figuring out the initialParameters
-if strcmp(p.Results.protocol, 'Screening')
+if strcmp(p.Results.Protocol, 'Screening')
     trialsToEstimate = 2;
-elseif strcmp(p.Results.protocol, 'SquintToPulse')
+elseif strcmp(p.Results.Protocol, 'SquintToPulse')
     trialsToEstimate = [2+4, 12+4, 22+4, 32+4, 42+4, 52+4, 61];
 end
 

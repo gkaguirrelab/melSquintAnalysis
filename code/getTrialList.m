@@ -3,7 +3,7 @@ function [runNamesList, subfoldersList] = getTrialList(pathParams, varargin)
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('approach', 'Squint' ,@isstr);
-p.addParameter('protocol', 'SquintToPulse' ,@isstr);
+p.addParameter('Protocol', 'SquintToPulse' ,@isstr);
 
 p.parse(varargin{:})
 
@@ -16,7 +16,7 @@ p.parse(varargin{:})
 
 
 % now figure out the paths of the pulse trial videos
-if strcmp(pathParams.protocol, 'Screening')
+if strcmp(pathParams.Protocol, 'Screening')
     for ii = 1:12
         runNames{ii} = sprintf('trial_%03d.mp4',ii);
         trialsSubfolders{ii} = 'videoFiles_acquisition_01';
@@ -26,7 +26,7 @@ if strcmp(pathParams.protocol, 'Screening')
 end
 
 counter = 1;
-if strcmp(pathParams.protocol, 'SquintToPulse')
+if strcmp(pathParams.Protocol, 'SquintToPulse')
     potentialCalibrationVideos = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, 'pupilCalibration', '*post.mp4'));
     if ~isempty(potentialCalibrationVideos)
         calibrationRunName = [potentialCalibrationVideos(end).name];

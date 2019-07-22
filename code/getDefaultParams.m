@@ -4,7 +4,7 @@ function [ fitParams, cameraParams, pathParams, sceneParams ] = getDefaultParams
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('approach', 'Squint' ,@isstr);
-p.addParameter('protocol', 'SquintToPulse' ,@isstr);
+p.addParameter('Protocol', 'SquintToPulse' ,@isstr);
 
 p.parse(varargin{:})
 
@@ -18,11 +18,11 @@ if strcmp(p.Results.approach, 'Squint')
     pathParams.useParallel = true;
     pathParams.eyeLaterality = 'left';
     pathParams.resume = false;
-    pathParams.protocol = p.Results.protocol;
+    pathParams.Protocol = p.Results.Protocol;
 
     
-    pathParams.dataSourceDirFull = fullfile(pathParams.dataBasePath,'Experiments','OLApproach_Squint',p.Results.protocol,'DataFiles');
-    pathParams.dataOutputDirBase = fullfile(pathParams.analysisBasePath,'Experiments','OLApproach_Squint',p.Results.protocol,'DataFiles');
+    pathParams.dataSourceDirFull = fullfile(pathParams.dataBasePath,'Experiments','OLApproach_Squint',p.Results.Protocol,'DataFiles');
+    pathParams.dataOutputDirBase = fullfile(pathParams.analysisBasePath,'Experiments','OLApproach_Squint',p.Results.Protocol,'DataFiles');
 
     
     fitParams.skipStageByNumber = [1, 7:11];
@@ -60,7 +60,7 @@ if strcmp(p.Results.approach, 'Squint')
     cameraParams.sensorResolution = [1280 720];
     cameraParams.radialDistortionVector = [0.21524, -1.5616];
     
-    %cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', pathParams.protocol, 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
+    %cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', pathParams.Protocol, 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
     %cameraDepthMean = cameraDepthMean.distanceFromCornealApexToIRLens;
     cameraDepthMean = 24;
     cameraDepthSD = 1.4; % just a value on the order of what depthFromIrisDiameter would provide

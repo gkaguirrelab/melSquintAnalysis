@@ -42,6 +42,6 @@ for rr = firstRunIndex:length(pathParams.runNames)
     stagesToRun = setdiff(1:11, [1 7 8 9 10 11]);
     stagesToWriteToVideo = [6];
     
-    runStages(pathParams.subject, pathParams.session, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo);
+    runStages(pathParams.subject, pathParams.session, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, varargin{:});
     
 end

@@ -5,12 +5,14 @@ p = inputParser; p.KeepUnmatched = true;
 p.addParameter('trialNumber',[],@isnumeric);
 p.addParameter('paramName', []);
 p.addParameter('paramValue', []);
+p.addParameter('Protocol', 'SquintToPulse', @ischar);
+
 
 % Parse and check the parameters
 p.parse(varargin{:});
 
 %% Get some params
-[ defaultFitParams, cameraParams, pathParams, sceneParams ] = getDefaultParams('approach', 'Squint','protocol', 'SquintToPulse');
+[ defaultFitParams, cameraParams, pathParams, sceneParams ] = getDefaultParams('approach', 'Squint','protocol', p.Results.Protocol);
 
 pathParams.subject = subjectID;
 if isnumeric(sessionID)
