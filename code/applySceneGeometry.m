@@ -29,7 +29,7 @@ outVideoName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathPa
 
 if exist(fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']))
     sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']);
-    performSceneGeometryAdjustment = false;
+    performSceneGeometryAdjustment = true;
 else
     sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, session, 'pupilCalibration', 'sceneGeometry.mat');
     performSceneGeometryAdjustment = true;
