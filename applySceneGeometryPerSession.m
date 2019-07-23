@@ -56,7 +56,7 @@ for rr = firstRunIndex:length(pathParams.runNames) - 1
         trialNumber = rr - (acquisitionNumber-1)*10;
         
         stillTrying = true; tryAttempt = 0;
-        
+        fprintf('Processing %s, %s, acquisition %d, trial %d', subjectID, sessionID, acquisitionNumber, trialNumber);
         while stillTrying
             try
                 performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
