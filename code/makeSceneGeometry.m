@@ -3,6 +3,7 @@ function makeSceneGeometry(subjectID, session, varargin)
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('pickVideo',[],@isnumeric);
+p.addParameter('adjust', false, @islogical);
 
 % Parse and check the parameters
 p.parse(varargin{:});
@@ -37,37 +38,45 @@ else
 end
 
 
+
 %% Make default scene geometry file
-
-% determine spherical ametropia
-sphericalAmetropia = getSphericalAmetropia(subjectID);
-
-% load measured distance away from camera
-cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', 'SquintToPulse', 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
-
-
-if isempty(sphericalAmetropia)
-    sceneGeometry = createSceneGeometry('intrinsicCameraMatrix', cameraParams.intrinsicCameraMatrix, ...
-        'radialDistortionVector', cameraParams.radialDistortionVector, ...
-        'sensorResolution', cameraParams.sensorResolution, ...
-        'cameraTranslation', [0; 0; cameraDepthMean.distanceFromCornealApexToIRLens]);
-else
+if ~p.Results.adjust
+    % determine spherical ametropia
+    sphericalAmetropia = getSphericalAmetropia(subjectID);
     
-    sceneGeometry = createSceneGeometry('intrinsicCameraMatrix', cameraParams.intrinsicCameraMatrix, ...
-        'radialDistortionVector', cameraParams.radialDistortionVector, ...
-        'sensorResolution', cameraParams.sensorResolution, ...
-        'cameraTranslation', [0; 0; cameraDepthMean.distanceFromCornealApexToIRLens], ...
-        'sphericalAmetropia', sphericalAmetropia);
-end
-
-% save scene geometry file, even though this version just serves as a
-% template
-if isempty(p.Results.pickVideo)
-    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, session, 'pupilCalibration', 'sceneGeometry.mat');
+    % load measured distance away from camera
+    cameraDepthMean = load(fullfile(pathParams.dataBasePath, 'Experiments/OLApproach_Squint', 'SquintToPulse', 'DataFiles', pathParams.subject, pathParams.session, 'pupilCalibration', 'distance.mat'));
+    
+    
+    if isempty(sphericalAmetropia)
+        sceneGeometry = createSceneGeometry('intrinsicCameraMatrix', cameraParams.intrinsicCameraMatrix, ...
+            'radialDistortionVector', cameraParams.radialDistortionVector, ...
+            'sensorResolution', cameraParams.sensorResolution, ...
+            'cameraTranslation', [0; 0; cameraDepthMean.distanceFromCornealApexToIRLens]);
+    else
+        
+        sceneGeometry = createSceneGeometry('intrinsicCameraMatrix', cameraParams.intrinsicCameraMatrix, ...
+            'radialDistortionVector', cameraParams.radialDistortionVector, ...
+            'sensorResolution', cameraParams.sensorResolution, ...
+            'cameraTranslation', [0; 0; cameraDepthMean.distanceFromCornealApexToIRLens], ...
+            'sphericalAmetropia', sphericalAmetropia);
+    end
+    
+    % save scene geometry file, even though this version just serves as a
+    % template
+    if isempty(p.Results.pickVideo)
+        sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, session, 'pupilCalibration', 'sceneGeometry.mat');
+    else
+        sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, session, acquisitionFolderName, [runName, '_sceneGeometry.mat']);
+    end
+    save(sceneGeometryFileName, 'sceneGeometry');
 else
-    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, session, acquisitionFolderName, [runName, '_sceneGeometry.mat']);
+    if isempty(p.Results.pickVideo)
+        sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, session, 'pupilCalibration', 'sceneGeometry.mat');
+    else
+        sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, session, acquisitionFolderName, [runName, '_sceneGeometry.mat']);
+    end
 end
-save(sceneGeometryFileName, 'sceneGeometry');
 
 %% Make ellipseArrayList
 
