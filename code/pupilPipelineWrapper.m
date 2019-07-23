@@ -4,7 +4,7 @@ function pupilPipelineWrapper(pathParams, varargin)
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('approach', 'Squint' ,@isstr);
-p.addParameter('protocol', 'SquintToPulse' ,@isstr);
+p.addParameter('Protocol', 'SquintToPulse' ,@isstr);
 p.addParameter('expandPupilRange', true ,@islogical);
 p.addParameter('candidateThetas', pi/2:pi/16:pi,@isnumeric);
 
@@ -12,9 +12,9 @@ p.addParameter('candidateThetas', pi/2:pi/16:pi,@isnumeric);
 
 p.parse(varargin{:})
 
-%% Get the list of trials for the relevant protocol
+%% Get the list of trials for the relevant Protocol
 
-[pathParams.runNames, subfolders] = getTrialList(pathParams, 'protocol', p.Results.protocol);
+[pathParams.runNames, subfolders] = getTrialList(pathParams, 'Protocol', p.Results.Protocol);
 
 %% if we're resuming the analysis, figure out which trial we're resuming on
 if ~pathParams.resume
@@ -36,8 +36,15 @@ end
 %% Run the video pipeline
 for rr = firstRunIndex:length(pathParams.runNames)
     
+    if strcmp(p.Results.Protocol, 'SquintToPulse')
     acquisitionNumber = ceil(rr/10);
     trialNumber = rr - (acquisitionNumber-1)*10;
+    elseif strcmp(p.Results.Protocol, 'Screening')
+        acquisitionNumber = 1;
+        trialNumber = strsplit(pathParams.runNames{rr}, '.mp4');
+        trialNumber = strsplit(trialNumber{1}, '_');
+        trialNumber = str2num(trialNumber{2});
+    end
     
     stagesToRun = setdiff(1:11, [1 7 8 9 10 11]);
     stagesToWriteToVideo = [6];
