@@ -5,6 +5,8 @@ p = inputParser; p.KeepUnmatched = true;
 p.addParameter('resume', true ,@islogical);
 p.addParameter('checkStatus', false ,@islogical);
 p.addParameter('reprocessEverything', false ,@islogical);
+p.addParameter('videoRange', [] );
+
 
 
 
@@ -38,6 +40,23 @@ else
     end
 end
 
+lastRunIndex = length(pathParams.runNames) - 1;
+
+if ~isempty(p.Results.videoRange)
+    firstAcquisitionNumber = p.Results.videoRange{1}(1);
+    firstTrialNumber = p.Results.videoRange{1}(2);
+    
+    firstRunIndex = (firstAcquisitionNumber-1)*10 + firstTrialNumber;
+    
+    
+    secondAcquisitionNumber = p.Results.videoRange{2}(1);
+    secondTrialNumber = p.Results.videoRange{2}(2);
+
+    lastRunIndex = (secondAcquisitionNumber-1)*10 + secondTrialNumber;
+
+    
+end
+
 if ~(exist('firstRunIndex', 'var'))
     fprintf('All videos have been processed for this session\n')
     return
@@ -63,7 +82,7 @@ currentTime = clock;
 errorLogFileName = ['errorLog_applySceneGeometry_', num2str(currentTime(1)), '-', num2str(currentTime(2)), '-', num2str(currentTime(3)), '_', num2str(currentTime(4)), num2str(currentTime(5))];
 
 
-for rr = firstRunIndex:length(pathParams.runNames) - 1
+for rr = firstRunIndex:lastRunIndex
     if ~strcmp(pathParams.runNames{rr}, 'trial_001.mp4')
         acquisitionNumber = ceil(rr/10);
         trialNumber = rr - (acquisitionNumber-1)*10;
