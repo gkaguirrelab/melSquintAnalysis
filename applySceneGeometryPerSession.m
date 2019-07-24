@@ -4,6 +4,8 @@ p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('resume', true ,@islogical);
 p.addParameter('checkStatus', false ,@islogical);
+p.addParameter('reprocessEverything', false ,@islogical);
+
 
 
 p.parse(varargin{:})
@@ -70,6 +72,13 @@ for rr = firstRunIndex:length(pathParams.runNames) - 1
         fprintf('Processing %s, %s, acquisition %d, trial %d\n', subjectID, sessionID, acquisitionNumber, trialNumber);
         while stillTrying
             try
+                if p.Results.reprocessEverything
+                    
+                    stagesToRun = [2 3];
+                    stagesToWriteToVideo = [];
+                    runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, 'Protocol', 'SquintToPulse');
+
+                end
                 performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
                 applySceneGeometry(subjectID, sessionID, acquisitionNumber, trialNumber);
                 stillTrying = false;
