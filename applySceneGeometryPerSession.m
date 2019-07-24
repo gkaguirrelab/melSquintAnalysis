@@ -3,6 +3,8 @@ function applySceneGeometryPerSession(subjectID, sessionID, varargin)
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('resume', true ,@islogical);
+p.addParameter('checkStatus', false ,@islogical);
+
 
 p.parse(varargin{:})
 
@@ -39,6 +41,15 @@ if ~(exist('firstRunIndex', 'var'))
     return
 end
 
+if p.Results.checkStatus
+    acquisitionNumber = ceil(rr/10);
+    trialNumber = rr - (acquisitionNumber-1)*10;
+    
+    fprintf('Processed up until %s, %s, acquisition %d, trial %d\n', subjectID, sessionID, acquisitionNumber, trialNumber);
+    return
+end
+    
+
 %% Do the processing
 
 % set up error log
@@ -56,7 +67,7 @@ for rr = firstRunIndex:length(pathParams.runNames) - 1
         trialNumber = rr - (acquisitionNumber-1)*10;
         
         stillTrying = true; tryAttempt = 0;
-        fprintf('Processing %s, %s, acquisition %d, trial %d', subjectID, sessionID, acquisitionNumber, trialNumber);
+        fprintf('Processing %s, %s, acquisition %d, trial %d\n', subjectID, sessionID, acquisitionNumber, trialNumber);
         while stillTrying
             try
                 performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
@@ -67,7 +78,9 @@ for rr = firstRunIndex:length(pathParams.runNames) - 1
                 if tryAttempt > 5
                     stillTrying = false;
                     warning(sprintf('Failed to process %s, %s, acquisition %d, trial %d', subjectID, sessionID, acquisitionNumber, trialNumber));
-                    system(['echo "', sprintf('Failed to process %s, %s, acquisition %d, trial %d', subjectID, sessionID, acquisitionNumber, trialNumber), '" >> ', [errorLogPath, errorLogFileName]]);
+                    
+                    spacesAdjustErrorLogPath = strrep(errorLogPath, 'Dropbox (Aguirre-Brainard Lab)', 'Dropbox\ \(Aguirre-Brainard\ Lab\)');
+                    system(['echo "', sprintf('Failed to process %s, %s, acquisition %d, trial %d', subjectID, sessionID, acquisitionNumber, trialNumber), '" >> ', [spacesAdjustErrorLogPath, errorLogFileName]]);
                 end
                 
             end
