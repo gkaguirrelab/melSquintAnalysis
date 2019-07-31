@@ -76,7 +76,7 @@ sortedDates = sort([mTBISubjectInfoArray{:,2}]);
 
 legend(['Migraine with Aura: N = ', num2str(length(find(strcmp({subjectInfoArray{:,3}},'mwa'))))], ['Controls: N = ', num2str(length(find(strcmp({subjectInfoArray{:,3}},'c'))))],['Migraine without Aura: N = ', num2str(length(find(strcmp({subjectInfoArray{:,3}},'mwoa'))))], ['mTBI: N = ', num2str(length(mTBISubjects))], 'Location', 'NorthWest') 
 
-export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/Admin', 'recruitment.pdf'));
+export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/Admin', 'recruitment.pdf'), '-transparent');
 
 
 end
