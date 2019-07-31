@@ -12,7 +12,7 @@ end
 % accidentally saved the initial pupil calibration as RunPulseSquintTrials
 % rather than ScreenPulseSquintTrials
 % MELA_0195, MELA_0144, MELA_0162: poor pupillometry
-badSubjects = {'MELA_0127', 'MELA_0215', 'MELA_0195', 'MELA_0144', 'MELA_0162'};
+badSubjects = {'MELA_0127', 'MELA_0195', 'MELA_0144', 'MELA_0162'};
 subjectIDs = setdiff(subjectIDs, badSubjects);
 
 %% Pool results
