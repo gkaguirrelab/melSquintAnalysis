@@ -87,6 +87,7 @@ p.addParameter('interpolateThroughRuns', false, @islogical);
 p.addParameter('interpolationLimitInFrames', 30, @isnumeric);
 p.addParameter('extremePercentageChangeThreshold', 1, @isnumeric);
 p.addParameter('interpolate', true, @islogical);
+p.addParameter('fitLabel', 'initial', @ischar);
 
 
 
@@ -186,10 +187,10 @@ for ss = 1:length(sessionIDs)
                     trialData = load(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)));
                     
                     % gather into memory the pupil area, RMSE, and timebase
-                    if isfield(trialData.pupilData, 'radiusSmoothed')
+                    if strcmp(p.Results.fitLabel, 'radiusSmoothed')
                         trialData.response.values = ((trialData.pupilData.radiusSmoothed.eyePoses.values(:,4)).^2)*pi;
                         initialResponse = ((trialData.pupilData.radiusSmoothed.eyePoses.values(:,4)).^2)*pi;
-                    else
+                    elseif strcmp(p.Results.fitLabel, 'initial')
                         
                         trialData.response.values = trialData.pupilData.initial.ellipses.values(:,3);
                         initialResponse = trialData.pupilData.initial.ellipses.values(:,3);
@@ -452,12 +453,12 @@ for ss = 1:length(sessionIDs)
                         fprintf('\tInitial NaN frames: %d\n', length(initialNaNFrames));
                         
                         
-                        saveas(plotFig, fullfile(analysisBasePath,'allTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt), '.png']));
+                        saveas(plotFig, fullfile(analysisBasePath,'allTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt), '_', p.Results.fitLabel, '.png']));
                         if percentageBadFrames >= trialNaNThreshold
                             if ~exist(fullfile(analysisBasePath,'allTrials', 'failedTrials'))
                                 mkdir(fullfile(analysisBasePath,'allTrials', 'failedTrials'));
                             end
-                            saveas(plotFig, fullfile(analysisBasePath,'allTrials', 'failedTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt), '.png']));
+                            saveas(plotFig, fullfile(analysisBasePath,'allTrials', 'failedTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt),'_', p.Results.fitLabel, '.png']));
                             
                         end
                         
@@ -490,7 +491,7 @@ for ss = 1:length(stimuli)
     end
 end
 
-fileName = 'trialStruct_postSpotcheck';
+fileName = ['trialStruct_', p.Results.fitLabel];
 save(fullfile(analysisBasePath, fileName), 'trialStruct', '-v7.3');
 
 
@@ -564,12 +565,12 @@ ylabel('Pupil Area (% Change)')
 legend(['100% Contrast, N = ' num2str(size(trialStruct.LightFlux.Contrast100,1))], ['200% Contrast, N = ' num2str(size(trialStruct.LightFlux.Contrast200,1))], ['400% Contrast, N = ' num2str(size(trialStruct.LightFlux.Contrast400,1))], 'Location', 'southeast')
 legend('boxoff')
 line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
-print(plotFig, fullfile(analysisBasePath,'averageResponse_postSpotCheck'), '-dpdf', '-fillpage')
+print(plotFig, fullfile(analysisBasePath, ['averageResponse_', p.Results.fitLabel]), '-dpdf', '-fillpage')
 
 if ~exist(fullfile(analysisBasePath, '..', 'averageResponsePlots'), 'dir')
     mkdir(fullfile(analysisBasePath, '..', 'averageResponsePlots'));
 end
-print(plotFig, fullfile(analysisBasePath, '..', 'averageResponsePlots', [subjectID, '_averageResponse_postSpotCheck']), '-dpdf', '-fillpage')
+print(plotFig, fullfile(analysisBasePath, '..', 'averageResponsePlots', [subjectID, '_averageResponse_', p.Results.fitLabel]), '-dpdf', '-fillpage')
 
 close(plotFig)
 
