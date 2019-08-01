@@ -4,6 +4,7 @@ p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('resume', true ,@islogical);
 p.addParameter('checkStatus', false ,@islogical);
+p.addParameter('debug', false ,@islogical);
 p.addParameter('reprocessEverything', false ,@islogical);
 p.addParameter('videoRange', [] );
 
@@ -89,41 +90,80 @@ for rr = firstRunIndex:lastRunIndex
         
         stillTrying = true; tryAttempt = 0;
         fprintf('Processing %s, %s, acquisition %d, trial %d\n', subjectID, sessionID, acquisitionNumber, trialNumber);
-        while stillTrying
-            try
-                if p.Results.reprocessEverything
+        
+        if ~p.Results.debug
+            while stillTrying
+                try
+                    status = doesSessionContainGoodGlintTracking(subjectID, sessionID, 'pickTrial', [acquisitionNumber, trialNumber]);
+                    if p.Results.reprocessEverything || ~status
+                        
+                        stagesToRun = [2 3];
+                        stagesToWriteToVideo = [];
+                        runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, 'Protocol', 'SquintToPulse');
+                        fitParams = getDefaultParams;
+                        editFitParams(subjectID, sessionID, acquisitionNumber, 'trialNumber', trialNumber, 'paramName', 'threshold', 'paramValue', fitParams.threshold);
+                    end
+                    % only perform aggressive cutting if it hasn't been
+                    % performed yet
+                    controlFileName = fopen(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)));
+                    if exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)))
+                        controlFileContents = textscan(controlFileName,'%s', 'Delimiter',',');
+                        indices = strfind(controlFileContents{1}, 'cutErrorThreshold');
+                        cutErrorThresholdIndex = find(~cellfun(@isempty,indices));
+                        cutErrorThresholdFromControlFile = (controlFileContents{1}(cutErrorThresholdIndex+1));
+                        cutErrorThresholdFromControlFile = str2num(cutErrorThresholdFromControlFile{1});
+                        
+                        if cutErrorThresholdFromControlFile > 1
+                            
+                            performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1);
+                        end
+                    else
+                        performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1);
+                        
+                    end
+                    applySceneGeometry(subjectID, sessionID, acquisitionNumber, trialNumber);
+                    stillTrying = false;
+                catch
+                    tryAttempt = tryAttempt + 1;
+                    if tryAttempt > 5
+                        stillTrying = false;
+                        warning(sprintf('Failed to process %s, %s, acquisition %d, trial %d', subjectID, sessionID, acquisitionNumber, trialNumber));
+                        
+                        spacesAdjustErrorLogPath = strrep(errorLogPath, 'Dropbox (Aguirre-Brainard Lab)', 'Dropbox\ \(Aguirre-Brainard\ Lab\)');
+                        system(['echo "', sprintf('Failed to process %s, %s, acquisition %d, trial %d', subjectID, sessionID, acquisitionNumber, trialNumber), '" >> ', [spacesAdjustErrorLogPath, errorLogFileName]]);
+                    end
                     
-                    stagesToRun = [2 3];
-                    stagesToWriteToVideo = [];
-                    runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, 'Protocol', 'SquintToPulse');
-
                 end
-                % only perform aggressive cutting if it hasn't been
-                % performed yet
-                controlFileName = fopen(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)));
+            end
+        else
+            status = doesSessionContainGoodGlintTracking(subjectID, sessionID, 'pickTrial', [acquisitionNumber, trialNumber]);
+            if p.Results.reprocessEverything || ~status
+                stagesToRun = [2 3];
+                stagesToWriteToVideo = [];
+                runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, 'Protocol', 'SquintToPulse');
+                
+            end
+            % only perform aggressive cutting if it hasn't been
+            % performed yet
+            controlFileName = fopen(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)));
+            if exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)))
                 controlFileContents = textscan(controlFileName,'%s', 'Delimiter',',');
                 indices = strfind(controlFileContents{1}, 'cutErrorThreshold');
                 cutErrorThresholdIndex = find(~cellfun(@isempty,indices));
                 cutErrorThresholdFromControlFile = (controlFileContents{1}(cutErrorThresholdIndex+1));
                 cutErrorThresholdFromControlFile = str2num(cutErrorThresholdFromControlFile{1});
                 
-                if cutErrorThresholdFromControlFile > 1         
+                if cutErrorThresholdFromControlFile > 1
                     
                     performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1);
                 end
-                applySceneGeometry(subjectID, sessionID, acquisitionNumber, trialNumber);
-                stillTrying = false;
-            catch
-                tryAttempt = tryAttempt + 1;
-                if tryAttempt > 5
-                    stillTrying = false;
-                    warning(sprintf('Failed to process %s, %s, acquisition %d, trial %d', subjectID, sessionID, acquisitionNumber, trialNumber));
-                    
-                    spacesAdjustErrorLogPath = strrep(errorLogPath, 'Dropbox (Aguirre-Brainard Lab)', 'Dropbox\ \(Aguirre-Brainard\ Lab\)');
-                    system(['echo "', sprintf('Failed to process %s, %s, acquisition %d, trial %d', subjectID, sessionID, acquisitionNumber, trialNumber), '" >> ', [spacesAdjustErrorLogPath, errorLogFileName]]);
-                end
+            else
+                performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1);
                 
             end
+            applySceneGeometry(subjectID, sessionID, acquisitionNumber, trialNumber);
+            stillTrying = false;
+            
         end
         
     end
