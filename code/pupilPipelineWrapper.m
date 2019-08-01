@@ -36,15 +36,18 @@ end
 %% Run the video pipeline
 for rr = firstRunIndex:length(pathParams.runNames)
     
+    
+    
     if strcmp(p.Results.Protocol, 'SquintToPulse')
-    acquisitionNumber = ceil(rr/10);
-    trialNumber = rr - (acquisitionNumber-1)*10;
+        acquisitionNumber = ceil(rr/10);
+        trialNumber = rr - (acquisitionNumber-1)*10;
     elseif strcmp(p.Results.Protocol, 'Screening')
         acquisitionNumber = 1;
         trialNumber = strsplit(pathParams.runNames{rr}, '.mp4');
         trialNumber = strsplit(trialNumber{1}, '_');
         trialNumber = str2num(trialNumber{2});
     end
+    fprintf('Processing %s, %s, acquisition %d, trial %d\n', pathParams.subject, pathParams.session, acquisitionNumber, trialNumber);
     
     stagesToRun = setdiff(1:11, [1 7 8 9 10 11]);
     stagesToWriteToVideo = [6];
