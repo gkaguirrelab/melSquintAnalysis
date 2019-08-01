@@ -52,7 +52,7 @@ if strcmp(p.Results.approach, 'Squint')
     fitParams.expandPupilRange = true;
     fitParams.extendBlinkWindow = [0 0];
     fitParams.pickLargestCircle = false;
-    fitParams.threshold = 0.10;
+    fitParams.threshold = 0.15;
     
     cameraParams.intrinsicCameraMatrix =  [1347.76, 0, 658.90; ...
                                             0, 1345.48, 365.68; ...
