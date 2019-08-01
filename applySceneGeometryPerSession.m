@@ -98,7 +98,19 @@ for rr = firstRunIndex:lastRunIndex
                     runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, 'Protocol', 'SquintToPulse');
 
                 end
-                performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
+                % only perform aggressive cutting if it hasn't been
+                % performed yet
+                controlFileName = fopen(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)));
+                controlFileContents = textscan(controlFileName,'%s', 'Delimiter',',');
+                indices = strfind(controlFileContents{1}, 'cutErrorThreshold');
+                cutErrorThresholdIndex = find(~cellfun(@isempty,indices));
+                cutErrorThresholdFromControlFile = (controlFileContents{1}(cutErrorThresholdIndex+1));
+                cutErrorThresholdFromControlFile = str2num(cutErrorThresholdFromControlFile{1});
+                
+                if cutErrorThresholdFromControlFile > 1         
+                    
+                    performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1);
+                end
                 applySceneGeometry(subjectID, sessionID, acquisitionNumber, trialNumber);
                 stillTrying = false;
             catch
