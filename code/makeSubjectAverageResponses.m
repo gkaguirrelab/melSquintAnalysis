@@ -190,13 +190,15 @@ for ss = 1:length(sessionIDs)
                     if strcmp(p.Results.fitLabel, 'radiusSmoothed')
                         trialData.response.values = ((trialData.pupilData.radiusSmoothed.eyePoses.values(:,4)).^2)*pi;
                         initialResponse = ((trialData.pupilData.radiusSmoothed.eyePoses.values(:,4)).^2)*pi;
+                        trialData.response.RMSE = trialData.pupilData.radiusSmoothed.ellipses.RMSE;
                     elseif strcmp(p.Results.fitLabel, 'initial')
                         
                         trialData.response.values = trialData.pupilData.initial.ellipses.values(:,3);
                         initialResponse = trialData.pupilData.initial.ellipses.values(:,3);
+                        trialData.response.RMSE = trialData.pupilData.initial.ellipses.RMSE;
+                        
                     end
                     trialData.response.timebase = acquisitionData.responseStruct.data(tt).pupil.timebase;
-                    trialData.response.RMSE = trialData.pupilData.initial.ellipses.RMSE;
                     
                     initialNaNFrames = find(isnan(trialData.response.values));
                     
