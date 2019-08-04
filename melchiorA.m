@@ -1,0 +1,14 @@
+spotCheckVideo('MELA_0221', '2019-07-31_session_3', 3, 6, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0221', '2019-07-31_session_3', 4, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0221', '2019-07-31_session_3', 4, 6, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0221', '2019-07-31_session_3', 4, 7, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0221', '2019-07-31_session_3', 4, 8, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0221', '2019-07-31_session_3', 4, 9, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0221', '2019-07-31_session_4', 1, 4, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0221', '2019-07-31_session_4', 1, 5, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0221', '2019-07-31_session_4', 4, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0221', '2019-07-31_session_4', 5, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0221', '2019-07-31_session_4', 6, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0221', '2019-07-31_session_4', 6, 8, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0221', '2019-07-31_session_4', 6, 9, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+applySceneGeometryPerSession('MELA_0221', 1, 'resume', true);
