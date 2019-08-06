@@ -28,20 +28,19 @@ pathParams.session = sessionID;
 
 %% If we're resuming, figure out which trial we're resuming from
 if ~p.Results.resume
-    firstRunIndex = 1;
+    runsToBeProcessed = 1:length(pathParams.runNames) - 1;
 else
-    sessions = [];
+    runsToBeProcessed = [];
     for rr = 1:length(pathParams.runNames) - 1
         if ~strcmp(pathParams.runNames{rr}, 'trial_001.mp4')
             if ~exist(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, subfolders{rr}, [pathParams.runNames{rr}(1:end-4), '_finalFit.avi']), 'file')
-                firstRunIndex = rr;
-                break
+                runsToBeProcessed = [runsToBeProcessed, rr];
+                
             end
         end
     end
 end
 
-lastRunIndex = length(pathParams.runNames) - 1;
 
 if ~isempty(p.Results.videoRange)
     firstAcquisitionNumber = p.Results.videoRange{1}(1);
@@ -58,7 +57,7 @@ if ~isempty(p.Results.videoRange)
     
 end
 
-if ~(exist('firstRunIndex', 'var'))
+if isempty(runsToBeProcessed)
     fprintf('All videos have been processed for this session\n')
     return
 end
@@ -83,7 +82,7 @@ currentTime = clock;
 errorLogFileName = ['errorLog_applySceneGeometry_', num2str(currentTime(1)), '-', num2str(currentTime(2)), '-', num2str(currentTime(3)), '_', num2str(currentTime(4)), num2str(currentTime(5))];
 
 
-for rr = firstRunIndex:lastRunIndex
+for rr = runsToBeProcessed
     if ~strcmp(pathParams.runNames{rr}, 'trial_001.mp4')
         acquisitionNumber = ceil(rr/10);
         trialNumber = rr - (acquisitionNumber-1)*10;
