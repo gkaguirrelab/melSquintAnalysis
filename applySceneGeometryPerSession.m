@@ -29,7 +29,21 @@ pathParams.session = sessionID;
 %% If we're resuming, figure out which trial we're resuming from
 if ~p.Results.resume
     runsToBeProcessed = 1:length(pathParams.runNames) - 1;
-elseif ~isempty(p.Results.videoRange)
+
+    
+else
+    runsToBeProcessed = [];
+    for rr = 1:length(pathParams.runNames) - 1
+        if ~strcmp(pathParams.runNames{rr}, 'trial_001.mp4')
+            if ~exist(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, subfolders{rr}, [pathParams.runNames{rr}(1:end-4), '_finalFit.avi']), 'file')
+                runsToBeProcessed = [runsToBeProcessed, rr];
+                
+            end
+        end
+    end
+end
+
+if ~isempty(p.Results.videoRange)
     
         firstAcquisitionNumber = p.Results.videoRange{1}(1);
     firstTrialNumber = p.Results.videoRange{1}(2);
@@ -42,17 +56,6 @@ elseif ~isempty(p.Results.videoRange)
 
     lastRunIndex = (secondAcquisitionNumber-1)*10 + secondTrialNumber;
     runsToBeProcessed = firstRunIndex:lastRunIndex;
-    
-else
-    runsToBeProcessed = [];
-    for rr = 1:length(pathParams.runNames) - 1
-        if ~strcmp(pathParams.runNames{rr}, 'trial_001.mp4')
-            if ~exist(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, subfolders{rr}, [pathParams.runNames{rr}(1:end-4), '_finalFit.avi']), 'file')
-                runsToBeProcessed = [runsToBeProcessed, rr];
-                
-            end
-        end
-    end
 end
 
 
