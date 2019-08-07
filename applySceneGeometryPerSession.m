@@ -29,6 +29,20 @@ pathParams.session = sessionID;
 %% If we're resuming, figure out which trial we're resuming from
 if ~p.Results.resume
     runsToBeProcessed = 1:length(pathParams.runNames) - 1;
+elseif ~isempty(p.Results.videoRange)
+    
+        firstAcquisitionNumber = p.Results.videoRange{1}(1);
+    firstTrialNumber = p.Results.videoRange{1}(2);
+    
+    firstRunIndex = (firstAcquisitionNumber-1)*10 + firstTrialNumber;
+    
+    
+    secondAcquisitionNumber = p.Results.videoRange{2}(1);
+    secondTrialNumber = p.Results.videoRange{2}(2);
+
+    lastRunIndex = (secondAcquisitionNumber-1)*10 + secondTrialNumber;
+    runsToBeProcessed = firstRunIndex:lastRunIndex;
+    
 else
     runsToBeProcessed = [];
     for rr = 1:length(pathParams.runNames) - 1
@@ -42,20 +56,7 @@ else
 end
 
 
-if ~isempty(p.Results.videoRange)
-    firstAcquisitionNumber = p.Results.videoRange{1}(1);
-    firstTrialNumber = p.Results.videoRange{1}(2);
-    
-    firstRunIndex = (firstAcquisitionNumber-1)*10 + firstTrialNumber;
-    
-    
-    secondAcquisitionNumber = p.Results.videoRange{2}(1);
-    secondTrialNumber = p.Results.videoRange{2}(2);
 
-    lastRunIndex = (secondAcquisitionNumber-1)*10 + secondTrialNumber;
-
-    
-end
 
 if isempty(runsToBeProcessed)
     fprintf('All videos have been processed for this session\n')
@@ -63,8 +64,8 @@ if isempty(runsToBeProcessed)
 end
 
 if p.Results.checkStatus
-    acquisitionNumber = ceil(rr/10);
-    trialNumber = rr - (acquisitionNumber-1)*10;
+    acquisitionNumber = ceil(runsToBeProcessed(1)/10);
+    trialNumber = runsToBeProcessed(1) - (acquisitionNumber-1)*10;
     
     fprintf('Processed up until %s, %s, acquisition %d, trial %d\n', subjectID, sessionID, acquisitionNumber, trialNumber);
     return
