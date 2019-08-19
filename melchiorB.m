@@ -1,3 +1,5 @@
+applySceneGeometryPerSession('MELA_0150', 2, 'resume', true);
+
 trackSubject('MELA_0218', 3, 'resume', true);
 trackSubject('MELA_0218', 4, 'resume', true);
 trackSubject('MELA_0218', 1, 'resume', true);
