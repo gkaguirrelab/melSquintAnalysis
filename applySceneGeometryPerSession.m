@@ -7,6 +7,8 @@ p.addParameter('checkStatus', false ,@islogical);
 p.addParameter('debug', false ,@islogical);
 p.addParameter('reprocessEverything', false ,@islogical);
 p.addParameter('videoRange', [] );
+p.addParameter('cutErrorTreshold', 1.5, @isnumeric);
+
 
 
 
@@ -110,7 +112,7 @@ for rr = runsToBeProcessed
                     % performed yet
                     controlFileName = fopen(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)));
                     if p.Results.reprocessEverything
-                        performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
+                        performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', p.Results.cutErrorThreshold);
                     else
                         
                         if exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)))
@@ -120,12 +122,12 @@ for rr = runsToBeProcessed
                             cutErrorThresholdFromControlFile = (controlFileContents{1}(cutErrorThresholdIndex+1));
                             cutErrorThresholdFromControlFile = str2num(cutErrorThresholdFromControlFile{1});
                             
-                            if cutErrorThresholdFromControlFile > 1.5
+                            if cutErrorThresholdFromControlFile > p.Results.cutErrorThreshold
                                 
-                                performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
+                                performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', p.Results.cutErrorThreshold);
                             end
                         else
-                            performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
+                            performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', p.Results.cutErrorThreshold);
                             
                         end
                     end
@@ -157,7 +159,7 @@ for rr = runsToBeProcessed
             % performed yet
             controlFileName = fopen(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)));
             if p.Results.reprocessEverything
-                performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
+                performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', p.Results.cutErrorThreshold);
             else
                 
                 if exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)))
@@ -167,12 +169,12 @@ for rr = runsToBeProcessed
                     cutErrorThresholdFromControlFile = (controlFileContents{1}(cutErrorThresholdIndex+1));
                     cutErrorThresholdFromControlFile = str2num(cutErrorThresholdFromControlFile{1});
                     
-                    if cutErrorThresholdFromControlFile > 1.5
+                    if cutErrorThresholdFromControlFile > p.Results.cutErrorThreshold
                         
-                        performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
+                        performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', p.Results.cutErrorThreshold);
                     end
                 else
-                    performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
+                    performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', p.Results.cutErrorThreshold);
                     
                 end
             end
