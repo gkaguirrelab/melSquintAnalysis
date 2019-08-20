@@ -29,7 +29,7 @@ pathParams.session = sessionID;
 %% If we're resuming, figure out which trial we're resuming from
 if ~p.Results.resume
     runsToBeProcessed = 1:length(pathParams.runNames) - 1;
-
+    
     
 else
     runsToBeProcessed = [];
@@ -45,7 +45,7 @@ end
 
 if ~isempty(p.Results.videoRange)
     
-        firstAcquisitionNumber = p.Results.videoRange{1}(1);
+    firstAcquisitionNumber = p.Results.videoRange{1}(1);
     firstTrialNumber = p.Results.videoRange{1}(2);
     
     firstRunIndex = (firstAcquisitionNumber-1)*10 + firstTrialNumber;
@@ -53,7 +53,7 @@ if ~isempty(p.Results.videoRange)
     
     secondAcquisitionNumber = p.Results.videoRange{2}(1);
     secondTrialNumber = p.Results.videoRange{2}(2);
-
+    
     lastRunIndex = (secondAcquisitionNumber-1)*10 + secondTrialNumber;
     runsToBeProcessed = firstRunIndex:lastRunIndex;
 end
@@ -73,7 +73,7 @@ if p.Results.checkStatus
     fprintf('Processed up until %s, %s, acquisition %d, trial %d\n', subjectID, sessionID, acquisitionNumber, trialNumber);
     return
 end
-    
+
 
 %% Do the processing
 
@@ -146,28 +146,35 @@ for rr = runsToBeProcessed
         else
             status = doesSessionContainGoodGlintTracking(subjectID, sessionID, 'pickTrial', [acquisitionNumber, trialNumber]);
             if p.Results.reprocessEverything || ~status
+                
                 stagesToRun = [2 3];
                 stagesToWriteToVideo = [];
                 runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, 'Protocol', 'SquintToPulse');
-                
+                fitParams = getDefaultParams;
+                editFitParams(subjectID, sessionID, acquisitionNumber, 'trialNumber', trialNumber, 'paramName', 'threshold', 'paramValue', fitParams.threshold);
             end
             % only perform aggressive cutting if it hasn't been
             % performed yet
             controlFileName = fopen(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)));
-            if exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)))
-                controlFileContents = textscan(controlFileName,'%s', 'Delimiter',',');
-                indices = strfind(controlFileContents{1}, 'cutErrorThreshold');
-                cutErrorThresholdIndex = find(~cellfun(@isempty,indices));
-                cutErrorThresholdFromControlFile = (controlFileContents{1}(cutErrorThresholdIndex+1));
-                cutErrorThresholdFromControlFile = str2num(cutErrorThresholdFromControlFile{1});
-                
-                if cutErrorThresholdFromControlFile > 1.5
-                    
-                    performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
-                end
-            else
+            if p.Results.reprocessEverything
                 performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
+            else
                 
+                if exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)))
+                    controlFileContents = textscan(controlFileName,'%s', 'Delimiter',',');
+                    indices = strfind(controlFileContents{1}, 'cutErrorThreshold');
+                    cutErrorThresholdIndex = find(~cellfun(@isempty,indices));
+                    cutErrorThresholdFromControlFile = (controlFileContents{1}(cutErrorThresholdIndex+1));
+                    cutErrorThresholdFromControlFile = str2num(cutErrorThresholdFromControlFile{1});
+                    
+                    if cutErrorThresholdFromControlFile > 1.5
+                        
+                        performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
+                    end
+                else
+                    performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
+                    
+                end
             end
             applySceneGeometry(subjectID, sessionID, acquisitionNumber, trialNumber);
             stillTrying = false;
