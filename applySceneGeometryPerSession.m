@@ -7,7 +7,7 @@ p.addParameter('checkStatus', false ,@islogical);
 p.addParameter('debug', false ,@islogical);
 p.addParameter('reprocessEverything', false ,@islogical);
 p.addParameter('videoRange', [] );
-p.addParameter('cutErrorTreshold', 1.5, @isnumeric);
+p.addParameter('cutErrorThreshold', 1.5, @isnumeric);
 
 
 
