@@ -109,20 +109,25 @@ for rr = runsToBeProcessed
                     % only perform aggressive cutting if it hasn't been
                     % performed yet
                     controlFileName = fopen(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)));
-                    if exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)))
-                        controlFileContents = textscan(controlFileName,'%s', 'Delimiter',',');
-                        indices = strfind(controlFileContents{1}, 'cutErrorThreshold');
-                        cutErrorThresholdIndex = find(~cellfun(@isempty,indices));
-                        cutErrorThresholdFromControlFile = (controlFileContents{1}(cutErrorThresholdIndex+1));
-                        cutErrorThresholdFromControlFile = str2num(cutErrorThresholdFromControlFile{1});
-                        
-                        if cutErrorThresholdFromControlFile > 1
-                            
-                            performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1);
-                        end
+                    if p.Results.reprocessEverything
+                        performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
                     else
-                        performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1);
                         
+                        if exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)))
+                            controlFileContents = textscan(controlFileName,'%s', 'Delimiter',',');
+                            indices = strfind(controlFileContents{1}, 'cutErrorThreshold');
+                            cutErrorThresholdIndex = find(~cellfun(@isempty,indices));
+                            cutErrorThresholdFromControlFile = (controlFileContents{1}(cutErrorThresholdIndex+1));
+                            cutErrorThresholdFromControlFile = str2num(cutErrorThresholdFromControlFile{1});
+                            
+                            if cutErrorThresholdFromControlFile > 1.5
+                                
+                                performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
+                            end
+                        else
+                            performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
+                            
+                        end
                     end
                     applySceneGeometry(subjectID, sessionID, acquisitionNumber, trialNumber);
                     stillTrying = false;
@@ -156,12 +161,12 @@ for rr = runsToBeProcessed
                 cutErrorThresholdFromControlFile = (controlFileContents{1}(cutErrorThresholdIndex+1));
                 cutErrorThresholdFromControlFile = str2num(cutErrorThresholdFromControlFile{1});
                 
-                if cutErrorThresholdFromControlFile > 1
+                if cutErrorThresholdFromControlFile > 1.5
                     
-                    performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1);
+                    performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
                 end
             else
-                performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1);
+                performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', 1.5);
                 
             end
             applySceneGeometry(subjectID, sessionID, acquisitionNumber, trialNumber);
