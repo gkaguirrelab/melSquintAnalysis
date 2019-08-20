@@ -1,4 +1,4 @@
-function [ subjectList ] = generateSubjectList(varargin)
+function [ subjectList, subjectStructWithSessions ] = generateSubjectList(varargin)
 
 p = inputParser; p.KeepUnmatched = true;
 
@@ -75,7 +75,9 @@ elseif strcmp(p.Results.method, 'sufficientSubjects')
     % two sessions
     
     sufficientSubjects = [];
+    subjectStructWithSessions = [];
     for ss = 1:length(subjectIDs)
+        completedSessionIDs = [];
         potentialSessions = dir(fullfile(getpref('melSquintAnalysis','melaDataPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectIDs{ss}, '2*_session*'));
         completedSessions = 0;
         for ii = 1:length(potentialSessions)
@@ -87,12 +89,14 @@ elseif strcmp(p.Results.method, 'sufficientSubjects')
                     exist(fullfile(getpref('melSquintAnalysis','melaDataPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectIDs{ss}, potentialSessions(ii).name, 'videoFiles_acquisition_05')) && ...
                     exist(fullfile(getpref('melSquintAnalysis','melaDataPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectIDs{ss}, potentialSessions(ii).name, 'videoFiles_acquisition_06'))
                 completedSessions = completedSessions + 1;
+                completedSessionIDs{end+1} = potentialSessions(ii).name;
             end
         end
         
         if completedSessions >= 2
             
             sufficientSubjects{end+1} = subjectIDs{ss};
+            subjectStructWithSessions.(subjectIDs{ss}) = completedSessionIDs;
         end
         subjectList = sufficientSubjects;
         
