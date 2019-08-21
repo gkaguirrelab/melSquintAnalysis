@@ -50,6 +50,11 @@ for ii = 1:length(whichValidations)
         failReason{end+1} = ['LightFlux validation failed ', whichValidations{ii}];
     end
     
+    if median(LightFluxValidation.backgroundLuminance) > 254.6685 || median(LightFluxValidation.backgroundLuminance) < 160.685
+        failStatus = 1;
+        failReason{end+1} = ['Light flux outside of background luminance range ', whichValidations{ii}];
+    end
+    
 end
 
 % see if anything failed
