@@ -1,3 +1,5 @@
+applySceneGeometryPerSession('MELA_0139', 4, 'resume', true)
+
 applySceneGeometryPerSession('MELA_0150', 4, 'resume', true)
 
 %applySceneGeometryPerSession('MELA_0147', 3, 'resume', true, 'reprocessEverything', true)

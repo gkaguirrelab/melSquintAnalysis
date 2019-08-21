@@ -1,6 +1,8 @@
+applySceneGeometryPerSession('MELA_0138', 3, 'resume', true)
+
 applySceneGeometryPerSession('MELA_0140', 1, 'resume', true)
 
-applySceneGeometryPerSession('MELA_0221', 3, 'resume', false, 'reprocessEverything', true)
+%applySceneGeometryPerSession('MELA_0221', 3, 'resume', false, 'reprocessEverything', true)
 
 trackSubject('MELA_0218', 2, 'resume', true);
 applySceneGeometryPerSession('MELA_0187', 4, 'resume', true)
