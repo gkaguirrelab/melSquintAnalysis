@@ -66,7 +66,7 @@ elseif strcmp(p.Results.method, 'sufficientSubjects')
     
     
     % exclude subjects with poor pupillometry
-    badSubjects = {'MELA_0195', 'MELA_0144', 'MELA_0162'};
+    badSubjects = {'MELA_0195', 'MELA_0144', 'MELA_0162', 'MELA_0127'};
     mTBISubjects = {'MELA_0212', 'MELA_0173'};
     badSubjects = {badSubjects{:}, mTBISubjects{:}};
     subjectIDs = setdiff(subjectIDs, badSubjects);
@@ -82,15 +82,38 @@ elseif strcmp(p.Results.method, 'sufficientSubjects')
         completedSessions = 0;
         for ii = 1:length(potentialSessions)
             
+            % determine if a session is good depending on if all of the
+            % data has been saved
             if exist(fullfile(getpref('melSquintAnalysis','melaDataPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectIDs{ss}, potentialSessions(ii).name, 'videoFiles_acquisition_01')) && ...
                     exist(fullfile(getpref('melSquintAnalysis','melaDataPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectIDs{ss}, potentialSessions(ii).name, 'videoFiles_acquisition_02')) && ...
                     exist(fullfile(getpref('melSquintAnalysis','melaDataPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectIDs{ss}, potentialSessions(ii).name, 'videoFiles_acquisition_03')) && ...
                     exist(fullfile(getpref('melSquintAnalysis','melaDataPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectIDs{ss}, potentialSessions(ii).name, 'videoFiles_acquisition_04')) && ...
                     exist(fullfile(getpref('melSquintAnalysis','melaDataPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectIDs{ss}, potentialSessions(ii).name, 'videoFiles_acquisition_05')) && ...
                     exist(fullfile(getpref('melSquintAnalysis','melaDataPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectIDs{ss}, potentialSessions(ii).name, 'videoFiles_acquisition_06'))
+                
+                dataAllPresent = 1;
+            else
+                dataAllPresent = 0;
+                
+                
+            end
+            
+            % also determine if a session is good if both pre- and
+            % post-experimental validations are good
+            [passStatus, ~] = evaluateValidationsPerSession(subjectIDs{ss}, potentialSessions(ii).name);
+            if passStatus == 1
+                goodValidations = 1;
+            else
+                goodValidations = 0;
+            end
+            
+            % if we have both all the data, and good validations, then this
+            % is a complete session
+            if goodValidations == 1 && dataAllPresent == 1
                 completedSessions = completedSessions + 1;
                 completedSessionIDs{end+1} = potentialSessions(ii).name;
             end
+            
         end
         
         if completedSessions >= 2
