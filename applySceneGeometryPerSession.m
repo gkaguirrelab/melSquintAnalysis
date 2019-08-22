@@ -69,10 +69,13 @@ if isempty(runsToBeProcessed)
 end
 
 if p.Results.checkStatus
-    acquisitionNumber = ceil(runsToBeProcessed(1)/10);
-    trialNumber = runsToBeProcessed(1) - (acquisitionNumber-1)*10;
     
-    fprintf('Processed up until %s, %s, acquisition %d, trial %d\n', subjectID, sessionID, acquisitionNumber, trialNumber);
+    fprintf('Need to process:\n')
+    for ii = 1:length(runsToBeProcessed)
+        acquisitionNumber = ceil(runsToBeProcessed(ii)/10);
+        trialNumber = runsToBeProcessed(ii) - (acquisitionNumber-1)*10;
+        fprintf(' - acquisition %d, trial %d\n', acquisitionNumber, trialNumber);
+    end
     return
 end
 
