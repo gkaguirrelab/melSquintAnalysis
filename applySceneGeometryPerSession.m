@@ -70,7 +70,7 @@ end
 
 if p.Results.checkStatus
     
-    fprintf('Need to process:\n')
+    fprintf('For subject %s, %s, need to process:\n', subjectID, sessionID)
     for ii = 1:length(runsToBeProcessed)
         acquisitionNumber = ceil(runsToBeProcessed(ii)/10);
         trialNumber = runsToBeProcessed(ii) - (acquisitionNumber-1)*10;
