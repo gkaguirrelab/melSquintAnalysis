@@ -1,4 +1,7 @@
-applySceneGeometryPerSession('MELA_0160', 4, 'resume', true)
+applySceneGeometryPerSession('MELA_0163', 1, 'resume', true)
+
+%applySceneGeometryPerSession('MELA_0160', 4, 'resume', true) % not
+% a good session actually on basis of validation results
 
 applySceneGeometryPerSession('MELA_0171', 1, 'resume', true);
 
