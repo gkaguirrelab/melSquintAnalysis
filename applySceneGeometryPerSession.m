@@ -6,6 +6,7 @@ p.addParameter('resume', true ,@islogical);
 p.addParameter('checkStatus', false ,@islogical);
 p.addParameter('debug', false ,@islogical);
 p.addParameter('reprocessEverything', false ,@islogical);
+p.addParameter('forceApplySceneGeometryOnly', false ,@islogical);
 p.addParameter('videoRange', [] );
 p.addParameter('cutErrorThreshold', 1.5, @isnumeric);
 
@@ -102,36 +103,38 @@ for rr = runsToBeProcessed
         if ~p.Results.debug
             while stillTrying
                 try
-                    status = doesSessionContainGoodGlintTracking(subjectID, sessionID, 'pickTrial', [acquisitionNumber, trialNumber]);
-                    if p.Results.reprocessEverything || ~status
-                        
-                        stagesToRun = [2 3];
-                        stagesToWriteToVideo = [];
-                        runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, 'Protocol', 'SquintToPulse');
-                        fitParams = getDefaultParams;
-                        editFitParams(subjectID, sessionID, acquisitionNumber, 'trialNumber', trialNumber, 'paramName', 'threshold', 'paramValue', fitParams.threshold);
-                    end
-                    % only perform aggressive cutting if it hasn't been
-                    % performed yet
-                    controlFileName = fopen(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)));
-                    if p.Results.reprocessEverything
-                        performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', p.Results.cutErrorThreshold);
-                    else
-                        
-                        if exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)))
-                            controlFileContents = textscan(controlFileName,'%s', 'Delimiter',',');
-                            indices = strfind(controlFileContents{1}, 'cutErrorThreshold');
-                            cutErrorThresholdIndex = find(~cellfun(@isempty,indices));
-                            cutErrorThresholdFromControlFile = (controlFileContents{1}(cutErrorThresholdIndex+1));
-                            cutErrorThresholdFromControlFile = str2num(cutErrorThresholdFromControlFile{1});
+                    if ~p.Results.forceApplySceneGeometryOnly
+                        status = doesSessionContainGoodGlintTracking(subjectID, sessionID, 'pickTrial', [acquisitionNumber, trialNumber]);
+                        if p.Results.reprocessEverything || ~status
                             
-                            if cutErrorThresholdFromControlFile > p.Results.cutErrorThreshold
-                                
-                                performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', p.Results.cutErrorThreshold);
-                            end
-                        else
+                            stagesToRun = [2 3];
+                            stagesToWriteToVideo = [];
+                            runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, 'Protocol', 'SquintToPulse');
+                            fitParams = getDefaultParams;
+                            editFitParams(subjectID, sessionID, acquisitionNumber, 'trialNumber', trialNumber, 'paramName', 'threshold', 'paramValue', fitParams.threshold);
+                        end
+                        % only perform aggressive cutting if it hasn't been
+                        % performed yet
+                        controlFileName = fopen(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)));
+                        if p.Results.reprocessEverything
                             performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', p.Results.cutErrorThreshold);
+                        else
                             
+                            if exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, sessionID, sprintf('videoFiles_acquisition_%02d', acquisitionNumber), sprintf('trial_%03d_controlFile.csv', trialNumber)))
+                                controlFileContents = textscan(controlFileName,'%s', 'Delimiter',',');
+                                indices = strfind(controlFileContents{1}, 'cutErrorThreshold');
+                                cutErrorThresholdIndex = find(~cellfun(@isempty,indices));
+                                cutErrorThresholdFromControlFile = (controlFileContents{1}(cutErrorThresholdIndex+1));
+                                cutErrorThresholdFromControlFile = str2num(cutErrorThresholdFromControlFile{1});
+                                
+                                if cutErrorThresholdFromControlFile > p.Results.cutErrorThreshold
+                                    
+                                    performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', p.Results.cutErrorThreshold);
+                                end
+                            else
+                                performAggressiveCutting(subjectID, sessionID, acquisitionNumber, trialNumber, 'cutErrorThreshold', p.Results.cutErrorThreshold);
+                                
+                            end
                         end
                     end
                     applySceneGeometry(subjectID, sessionID, acquisitionNumber, trialNumber);
