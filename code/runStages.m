@@ -55,8 +55,11 @@ if exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.s
     load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']));
 elseif exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']))
     load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']));
-else
+elseif exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, ['fitParams.mat']));
+
     load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, ['fitParams.mat']));
+else
+    fitParams = getDefaultParams;
 end
 
 %% Determine scene geomtry file name
