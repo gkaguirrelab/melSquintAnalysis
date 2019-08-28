@@ -1,4 +1,4 @@
-applySceneGeometryPerSession('MELA_0130', 1, 'resume', true)
+applySceneGeometryPerSession('MELA_0130', 1, 'resume', true, 'forceApplySceneGeometryOnly', true)
 
 applySceneGeometryPerSession('MELA_0160', 2, 'resume', true)
 
