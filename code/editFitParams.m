@@ -49,6 +49,9 @@ else
     if ~exist(fitParamsLoadName)
         warning('FitParams not saved for that trial. Loading fitParams for the acquisition, but will still save for the trial')
         fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']);
+        if ~exist(fitParamsLoadName)
+            fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, 'fitParams.mat');
+        end
     end
     fitParamsSaveName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']);
 
