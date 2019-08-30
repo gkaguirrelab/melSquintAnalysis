@@ -96,7 +96,7 @@ end
 %% Re-run fitting of pupil ellipse with scene geometry
 
 %fitPupilPerimeter(perimeterFileName, pupilFileName, 'sceneGeometryFileName', sceneGeometryFileName, 'verbose', true);
-runStages(subjectID, session, acquisitionNumber, trialNumber, [8], [8]);
+runStages(subjectID, session, acquisitionNumber, trialNumber, [8], []);
 
 %% Perform smoothing
 
