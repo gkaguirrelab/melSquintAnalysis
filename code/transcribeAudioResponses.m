@@ -95,7 +95,7 @@ dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 if (p.Results.repeat)
     fileName = 'audioTrialStruct_repetition.mat';
 else
-    fileName = 'audioTrialStruct.mat';
+    fileName = 'audioTrialStruct_final.mat';
 end
 
 % figure out the number of completed sessions
@@ -176,6 +176,7 @@ if ~(resumeStatus) % if resume is false
     end
 end
 
+trialStruct.metaData.sessions = sessionIDs;
 
 %% Load in the data for each session
 % figure out where we're starting from
