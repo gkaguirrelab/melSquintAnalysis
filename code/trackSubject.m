@@ -27,7 +27,7 @@ pathParams.session = sessionID;
 % figuring out the initialParameters
 if strcmp(p.Results.Protocol, 'Screening')
     trialsToEstimate = 2;
-elseif strcmp(p.Results.Protocol, 'SquintToPulse')
+elseif strcmp(p.Results.Protocol, 'SquintToPulse') || strcmp(p.Results.Protocol, 'Deuteranopes')
     trialsToEstimate = [2+4, 12+4, 22+4, 32+4, 42+4, 52+4, 61];
 end
 

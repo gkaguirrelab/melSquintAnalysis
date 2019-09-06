@@ -26,7 +26,7 @@ if strcmp(pathParams.Protocol, 'Screening')
 end
 
 counter = 1;
-if strcmp(pathParams.Protocol, 'SquintToPulse')
+if strcmp(pathParams.Protocol, 'SquintToPulse') || strcmp(p.Results.Protocol, 'Deuteranopes')
     potentialCalibrationVideos = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, 'pupilCalibration', '*post.mp4'));
     if ~isempty(potentialCalibrationVideos)
         calibrationRunName = [potentialCalibrationVideos(end).name];
