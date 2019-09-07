@@ -61,17 +61,24 @@ function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(su
 %                           timeseries share the same timebase
 %                           (0:0.001:18.5)
 
+% Example command for deuteranopes: [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses('MELA_3009', 'Protocol', 'Deuteranopes', 'contrasts', {400, 800, 1200}, 'stimuli', {'Melanopsin', 'LS', 'LightFlux'}, 'protocolShortName', 'Deuteranopes', 'debugNumberOfNaNValuesPerTrial', true, 'performSpikeRemoval', true, 'blinkVelocityThreshold', 0.15, 'trialNaNThreshold', 0.25, 'blinkBufferFrames', [3 6], 'interpolateThroughRuns', false, 'RMSEThreshold', 5, 'interpolateThroughRuns', false, 'fitLabel', 'initial')
+
 %% Parse the input
 
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('debugSpikeRemover',false,@islogical);
 p.addParameter('debugNumberOfNaNValuesPerTrial', false, @islogical);
 p.addParameter('sessions', {}, @iscell);
-
+p.addParameter('Protocol', 'SquintToPulse', @ischar);
+p.addParameter('protocolShortName', 'StP', @ischar);
+p.addParameter('contrasts', {100, 200, 400}, @iscell);
+p.addParameter('stimuli', {'Melanopsin', 'LMS', 'LightFlux'}, @iscell);
 
 % Fixed experimental parameters
 p.addParameter('baselineWindowOnsetTime', 1, @isnumeric);
 p.addParameter('baselineWindowOffsetTime', 1.5, @isnumeric);
+p.addParameter('pulseOnset', 1.5, @isnumeric);
+p.addParameter('pulseOffset', 5.5, @isnumeric);
 p.addParameter('frameRate', 60, @isnumeric);
 p.addParameter('trialNaNThreshold', 0.2, @isnumeric); % meaning 20%
 
@@ -85,16 +92,22 @@ p.addParameter('performSpikeRemoval', false, @islogical);
 p.addParameter('performControlFileBlinkRemoval', true, @islogical);
 p.addParameter('interpolateThroughRuns', false, @islogical);
 p.addParameter('interpolationLimitInFrames', 30, @isnumeric);
-p.addParameter('extremePercentageChangeThreshold', 1, @isnumeric);
+p.addParameter('extremePercentageChangeThreshold', 4, @isnumeric);
 p.addParameter('interpolate', true, @islogical);
 p.addParameter('fitLabel', 'initial', @ischar);
+
+% Plotting parameters
+p.addParameter('plotShift', 1, @isnumeric);
+p.addParameter('xLims', [0 17], @isnumeric);
+p.addParameter('yLims', [-0.8 0.1], @isnumeric);
+
 
 
 
 p.parse(varargin{:});
 
 %% Find the data
-analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
+analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', subjectID);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 
 % figure out the number of completed sessions
@@ -102,8 +115,8 @@ potentialSessions = dir(fullfile(analysisBasePath, '2*session*'));
 potentialNumberOfSessions = length(potentialSessions);
 
 % initialize outputStruct
-stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
-contrasts = {100, 200, 400};
+stimuli = p.Results.stimuli
+contrasts = p.Results.contrasts;
 for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
         trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]) = [];
@@ -172,12 +185,12 @@ for ss = 1:length(sessionIDs)
     sessionNumber = strsplit(sessionIDs{ss}, 'session_');
     sessionNumber = sessionNumber{2};
     for aa = 1:6
-        system(['touch -a "', fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_pupil.mat', str2num(sessionNumber),aa)), '"']);
-        system(['touch -a "', fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', str2num(sessionNumber),aa)), '"']);
+        system(['touch -a "', fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_pupil.mat', str2num(sessionNumber),p.Results.protocolShortName, aa)), '"']);
+        system(['touch -a "', fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)), '"']);
         
-        acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_pupil.mat', str2num(sessionNumber),aa)));
-        if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', str2num(sessionNumber),aa)))
-            stimulusData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', str2num(sessionNumber),aa)));
+        acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_pupil.mat', str2num(sessionNumber), p.Results.protocolShortName, aa)));
+        if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)))
+            stimulusData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)));
             
             for tt = 1:10
                 if tt ~= 1
@@ -404,11 +417,14 @@ for ss = 1:length(sessionIDs)
                     directionNameSplit = strsplit(directionNameLong, ' ');
                     if strcmp(directionNameSplit{1}, 'Light')
                         directionName = 'LightFlux';
+                    elseif strcmp(directionNameSplit{1}, 'L+S')
+                        directionName = 'LS';
                     else
                         directionName = directionNameSplit{1};
                     end
                     contrastLong = strsplit(directionNameLong, '%');
-                    contrast = contrastLong{1}(end-2:end);
+                    contrastLong = strsplit(contrastLong{1}, ' ');
+                    contrast = contrastLong{2};
                     % pool the results
                     nRow = size(trialStruct.(directionName).(['Contrast', contrast]),1);
                     
@@ -482,8 +498,9 @@ for ss = 1:length(sessionIDs)
         end
     end
 end
+close all;
 
-% make average responses
+%% make average responses
 for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
         for tt = 1:length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,:))
@@ -493,80 +510,63 @@ for ss = 1:length(stimuli)
     end
 end
 
+% save out trial responses
 fileName = ['trialStruct_', p.Results.fitLabel];
 save(fullfile(analysisBasePath, fileName), 'trialStruct', '-v7.3');
 
 
-
+%% Do some plotting
+% set up plot
 plotFig = figure;
-subplot(3,1,1)
-title('Melanopsin')
-hold on
+nStimuli = length(p.Results.stimuli);
+nContrasts = length(p.Results.contrasts);
 
-lineProps.width = 1;
-lineProps.col{1} = [220/255, 237/255, 200/255];
-ax1 = mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.Melanopsin.Contrast100(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.Melanopsin.Contrast100_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps);
-
-lineProps.col{1} = [66/255, 179/255, 213/255];
-ax2 = mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.Melanopsin.Contrast200(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.Melanopsin.Contrast200_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps);
-
-lineProps.col{1} = [26/255, 35/255, 126/255];
-ax3 = mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.Melanopsin.Contrast400(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.Melanopsin.Contrast400_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps);
-ylim([-0.8 0.1])
-xlim([0 17])
-xlabel('Time (s)')
-ylabel('Pupil Area (% Change)')
-legend(['100% Contrast, N = ' num2str(size(trialStruct.Melanopsin.Contrast100,1))], ['200% Contrast, N = ' num2str(size(trialStruct.Melanopsin.Contrast200,1))], ['400% Contrast, N = ' num2str(size(trialStruct.Melanopsin.Contrast400,1))], 'Location', 'southeast')
-legend('boxoff')
-line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
-
-%saveas(plotFig, fullfile(analysisBasePath, 'melanopsin.pdf'), 'pdf');
-%close(plotFig)
-
-subplot(3,1,2)
-title('LMS')
-hold on
+% set up color palette
+colorPalette.Melanopsin{1} = [220/255, 237/255, 200/255];
+colorPalette.Melanopsin{2} = [66/255, 179/255, 213/255];
+colorPalette.Melanopsin{3} = [26/255, 35/255, 126/255];
 
 grayColorMap = colormap(gray);
-lineProps.width = 1;
-lineProps.col{1} = grayColorMap(50,:);
-mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.LMS.Contrast100(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.LMS.Contrast100_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps)
+colorPalette.LMS{1} = grayColorMap(50,:);
+colorPalette.LMS{2} = grayColorMap(25,:);
+colorPalette.LMS{3} = grayColorMap(1,:);
+colorPalette.LS = colorPalette.LMS;
 
-lineProps.col{1} = grayColorMap(25,:);
-mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.LMS.Contrast200(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.LMS.Contrast200_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps)
+colorPalette.LightFlux{1} = [254/255, 235/255, 101/255];
+colorPalette.LightFlux{2} = [228/255, 82/255, 27/255];
+colorPalette.LightFlux{3} = [77/255, 52/255, 47/255];
 
-lineProps.col{1} = grayColorMap(1,:);
-mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.LMS.Contrast400(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.LMS.Contrast400_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps)
-ylim([-0.8 0.1])
-xlim([0 17])
-xlabel('Time (s)')
-ylabel('Pupil Area (% Change)')
-legend(['100% Contrast, N = ' num2str(size(trialStruct.LMS.Contrast100,1))], ['200% Contrast, N = ' num2str(size(trialStruct.LMS.Contrast200,1))], ['400% Contrast, N = ' num2str(size(trialStruct.LMS.Contrast400,1))], 'Location', 'southeast')
-legend('boxoff')
-line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
-%saveas(plotFig, fullfile(analysisBasePath, 'LMS.pdf'), 'pdf');
-%close(plotFig)
+for ss = 1:nStimuli
+    
+    % pick the right subplot for the right stimuli
+    subplot(nStimuli,1,ss)
+    title(p.Results.stimuli{ss})
+    hold on
+    
+    for cc = 1:nContrasts
+        
+        % make thicker plot lines
+        lineProps.width = 1;
+        
+        % adjust color
+        lineProps.col{1} = colorPalette.(p.Results.stimuli{ss}){cc};
+        
+        % plot
+        axis.(['ax', num2str(cc)]) = mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-p.Results.plotShift, averageResponseStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})])(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc}), '_SEM'])(1:end-p.Results.nTimePointsToSkipPlotting), lineProps);
+        
+    end
+    
+    % add line for pulse onset
+    line([p.Results.pulseOnset-p.Results.plotShift,  p.Results.pulseOffset-p.Results.plotShift], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
+    
+    % spruce up axes
+    ylim(p.Results.yLims)
+    xlim(p.Results.xLims)
+    xlabel('Time (s)')
+    ylabel('Pupil Area (% Change)')
+end
 
-subplot(3,1,3)
-title('LightFlux')
-hold on
-
-lineProps.width = 1;
-lineProps.col{1} = [254/255, 235/255, 101/255];
-mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.LightFlux.Contrast100(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.LightFlux.Contrast100_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps)
-
-lineProps.col{1} = [228/255, 82/255, 27/255];
-mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.LightFlux.Contrast200(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.LightFlux.Contrast200_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps)
-
-lineProps.col{1} = [77/255, 52/255, 47/255];
-mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-1, averageResponseStruct.LightFlux.Contrast400(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.LightFlux.Contrast400_SEM(1:end-p.Results.nTimePointsToSkipPlotting), lineProps)
-ylim([-0.8 0.1])
-xlim([0 17])
-xlabel('Time (s)')
-ylabel('Pupil Area (% Change)')
-legend(['100% Contrast, N = ' num2str(size(trialStruct.LightFlux.Contrast100,1))], ['200% Contrast, N = ' num2str(size(trialStruct.LightFlux.Contrast200,1))], ['400% Contrast, N = ' num2str(size(trialStruct.LightFlux.Contrast400,1))], 'Location', 'southeast')
-legend('boxoff')
-line([0.5 4.5], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
+% save out plots
 print(plotFig, fullfile(analysisBasePath, ['averageResponse_', p.Results.fitLabel]), '-dpdf', '-fillpage')
 
 if ~exist(fullfile(analysisBasePath, '..', 'averageResponsePlots'), 'dir')
