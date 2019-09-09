@@ -274,8 +274,8 @@ for ii = startingIndex:totalTrials
     % listen to the audio
     trialDoneFlag = false;
     while ~trialDoneFlag
-        sound(trialData.response.values, 16000)
-        pause(length(trialData.response.values)/16000)
+        sound(trialData.response.values, 16000*1.25)
+       % pause(length(trialData.response.values)/16000)
         % prompt user to input rating
         discomfortRating = GetWithDefault('>><strong>Enter discomfort rating:</strong>', '');
         switch discomfortRating
