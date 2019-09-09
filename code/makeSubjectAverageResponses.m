@@ -95,6 +95,7 @@ p.addParameter('interpolationLimitInFrames', 30, @isnumeric);
 p.addParameter('extremePercentageChangeThreshold', 4, @isnumeric);
 p.addParameter('interpolate', true, @islogical);
 p.addParameter('fitLabel', 'initial', @ischar);
+p.addParameter('forceExcludeTrials', [], @isnumeric);
 
 % Plotting parameters
 p.addParameter('plotShift', 1, @isnumeric);
@@ -115,7 +116,7 @@ potentialSessions = dir(fullfile(analysisBasePath, '2*session*'));
 potentialNumberOfSessions = length(potentialSessions);
 
 % initialize outputStruct
-stimuli = p.Results.stimuli
+stimuli = p.Results.stimuli;
 contrasts = p.Results.contrasts;
 for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
@@ -424,7 +425,7 @@ for ss = 1:length(sessionIDs)
                     end
                     contrastLong = strsplit(directionNameLong, '%');
                     contrastLong = strsplit(contrastLong{1}, ' ');
-                    contrast = contrastLong{2};
+                    contrast = contrastLong{end};
                     % pool the results
                     nRow = size(trialStruct.(directionName).(['Contrast', contrast]),1);
                     
@@ -554,7 +555,12 @@ for ss = 1:nStimuli
         % plot
         axis.(['ax', num2str(cc)]) = mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-p.Results.plotShift, averageResponseStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})])(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc}), '_SEM'])(1:end-p.Results.nTimePointsToSkipPlotting), lineProps);
         
+        legendText{cc} = ([num2str(p.Results.contrasts{cc}), '% Contrast, N = ', num2str(size(trialStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})]), 1))]);
+        
     end
+    
+    legend(legendText, 'Location', 'SouthEast')
+    legend('boxoff')
     
     % add line for pulse onset
     line([p.Results.pulseOnset-p.Results.plotShift,  p.Results.pulseOffset-p.Results.plotShift], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
@@ -564,6 +570,7 @@ for ss = 1:nStimuli
     xlim(p.Results.xLims)
     xlabel('Time (s)')
     ylabel('Pupil Area (% Change)')
+    
 end
 
 % save out plots
