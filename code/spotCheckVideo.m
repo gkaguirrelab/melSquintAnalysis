@@ -59,7 +59,7 @@ if p.Results.openVideo
 end
 
 if p.Results.openPlot
-    plotFile = fullfile(pathParams.dataOutputDirBase, pathParams.subject, 'allTrials', [pathParams.session, '_a', num2str(acquisitionNumber), '_t', num2str(trialNumber), '.png']);
+    plotFile = fullfile(pathParams.dataOutputDirBase, pathParams.subject, 'allTrials', [pathParams.session, '_a', num2str(acquisitionNumber), '_t', num2str(trialNumber), '_initial.png']);
     [recordedErrorFlag, consoleOutput] = system(['open ''' plotFile '''']);
 end
 
