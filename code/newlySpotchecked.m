@@ -679,3 +679,13 @@ spotCheckVideo('MELA_0221', '2019-07-31_session_4', 5, 10, 'skipParamsAdjustment
 spotCheckVideo('MELA_0221', '2019-07-31_session_4', 6, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
 spotCheckVideo('MELA_0221', '2019-07-31_session_4', 6, 8, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
 spotCheckVideo('MELA_0221', '2019-07-31_session_4', 6, 9, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+
+
+
+spotCheckVideo('MELA_0147', '2018-09-27_session_1', 3, 2, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0147', '2018-11-01_session_4', 5, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0147', '2018-11-01_session_4', 3, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0147', '2018-11-01_session_4', 3, 2, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0147', '2018-11-01_session_4', 3, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0147', '2018-09-10_session_3', 5, 5, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+
