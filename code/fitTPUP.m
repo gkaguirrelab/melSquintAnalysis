@@ -16,7 +16,7 @@ p.addParameter('plotFits', true, @islogical);
 p.addParameter('closePlots', false, @islogical);
 p.addParameter('plotComponents', true, @islogical);
 p.addParameter('printParams', true, @islogical);
-p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP'));
+p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP'));
 p.addParameter('LMSResponse',[]);
 p.addParameter('MelanopsinResponse',[]);
 p.addParameter('LightFluxResponse',[]);
@@ -29,19 +29,19 @@ p.parse(varargin{:});
 
 if strcmp(subjectID, 'group') || strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToGroupAverage')
     % load average responses across all subjects
-    load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/averageResponsePlots/groupAverageMatrix.mat'));
+    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'trialStructs', 'combinedGroupAverageResponse_radiusSmoothed.mat'));
     
     % compute group average responses, including NaNing poor indices (at
     % the beginning and the end)
-    groupMelanopsinResponse = nanmean(averageResponseMatrix.Melanopsin.Contrast400);
+    groupMelanopsinResponse = groupAveragePupilResponses.Melanopsin.Contrast400;
     groupMelanopsinResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
     groupMelanopsinResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
     
-    groupLMSResponse = nanmean(averageResponseMatrix.LMS.Contrast400);
+    groupLMSResponse = groupAveragePupilResponses.LMS.Contrast400;
     groupLMSResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
     groupLMSResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
     
-    groupLightFluxResponse = nanmean(averageResponseMatrix.LightFlux.Contrast400);
+    groupLightFluxResponse = groupAveragePupilResponses.LightFlux.Contrast400;
     groupLightFluxResponse(1:p.Results.numberOfResponseIndicesToExclude) = NaN;
     groupLightFluxResponse(end-p.Results.numberOfResponseIndicesToExclude:end) = NaN;
 end
@@ -61,7 +61,7 @@ if isempty(subjectID)
 
 elseif ~strcmp(subjectID, 'group')
     % load average responses across all subjects
-    load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID, 'trialStruct_postSpotcheck.mat'));
+    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'trialStructs', [subjectID, '_trialStruct_radiusSmoothed.mat']));
     
     % compute group average responses, including NaNing poor indices (at
     % the beginning and the end)
