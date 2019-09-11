@@ -152,7 +152,7 @@ if isempty(p.Results.sessions)
         end
     end
     sessionIDs = sessionIDs(~cellfun('isempty',sessionIDs));
-
+    
     nSessions = length(sessionIDs);
 else
     sessionIDs = p.Results.sessions;
@@ -201,6 +201,7 @@ trialAccumulator = [];
 
 %% pool the audio files
 % to speed up just rolling through trials
+counter = 1;
 for ii = 1:totalTrials
     
     [tt, aa, ss] = ind2sub([10;6;nSessions], ii);
@@ -213,43 +214,46 @@ for ii = 1:totalTrials
     sessionNumber = sessionNumber{2};
     sessionNumber = str2num(sessionNumber);
     
-    
-    acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', sessionNumber,aa)));
-    
-    
-    
-    trialData.response.values = acquisitionData.responseStruct.data(tt).audio;
-    [ firstTimePoint, secondTimePoint ] = grabRelevantAudioIndices(trialData.response.values, 16000);
-    % convert timepoint to indices
-    firstIndex = firstTimePoint * 16000;
-    secondIndex = secondTimePoint * 16000;
-    if isempty(firstIndex)
-        firstIndex = 1;
-    elseif firstIndex < 1
-        firstIndex = 1;
+    acquisitionDataFile = fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', sessionNumber,aa));
+    if exist(acquisitionDataFile)
+        acquisitionData = load(acquisitionDataFile);
+        
+        
+        
+        trialData.response.values = acquisitionData.responseStruct.data(tt).audio;
+        [ firstTimePoint, secondTimePoint ] = grabRelevantAudioIndices(trialData.response.values, 16000);
+        % convert timepoint to indices
+        firstIndex = firstTimePoint * 16000;
+        secondIndex = secondTimePoint * 16000;
+        if isempty(firstIndex)
+            firstIndex = 1;
+        elseif firstIndex < 1
+            firstIndex = 1;
+        end
+        if isempty(secondIndex)
+            secondIndex = length(trialData.response.values);
+        elseif (secondIndex > length(trialData.response.values))
+            secondIndex = length(trialData.response.values);
+        end
+        trialAccumulator(counter).audio = trialData.response.values(firstIndex:secondIndex);
+        
+        
+        
+        directionNameLong = acquisitionData.trialList(tt).modulationData.modulationParams.direction;
+        directionNameSplit = strsplit(directionNameLong, ' ');
+        if strcmp(directionNameSplit{1}, 'Light')
+            directionName = 'LightFlux';
+        else
+            directionName = directionNameSplit{1};
+        end
+        contrastLong = strsplit(directionNameLong, '%');
+        contrast = contrastLong{1}(end-2:end);
+        % pool the results
+        nItems = length((trialStruct.(directionName).(['Contrast', contrast])));
+        trialAccumulator(counter).stimulus =[directionName, '_Contrast' contrast];
+        
+        counter = counter + 1
     end
-    if isempty(secondIndex)
-        secondIndex = length(trialData.response.values);
-    elseif (secondIndex > length(trialData.response.values))
-        secondIndex = length(trialData.response.values);
-    end
-    trialAccumulator(ii).audio = trialData.response.values(firstIndex:secondIndex);
-    
-    
-    
-    directionNameLong = acquisitionData.trialList(tt).modulationData.modulationParams.direction;
-    directionNameSplit = strsplit(directionNameLong, ' ');
-    if strcmp(directionNameSplit{1}, 'Light')
-        directionName = 'LightFlux';
-    else
-        directionName = directionNameSplit{1};
-    end
-    contrastLong = strsplit(directionNameLong, '%');
-    contrast = contrastLong{1}(end-2:end);
-    % pool the results
-    nItems = length((trialStruct.(directionName).(['Contrast', contrast])));
-    trialAccumulator(ii).stimulus =[directionName, '_Contrast' contrast];
-    
     
     
     
@@ -259,7 +263,7 @@ for ii = startingIndex:totalTrials
     
     [tt, aa, ss] = ind2sub([10;6;nSessions], ii);
     
-        sessionID = sessionIDs{ceil((ii/totalTrials*nSessions))};
+    sessionID = sessionIDs{ceil((ii/totalTrials*nSessions))};
     sessionNumber = strsplit(sessionIDs{ss}, 'session_');
     sessionNumber = sessionNumber{2};
     sessionNumber = str2num(sessionNumber);
@@ -274,8 +278,8 @@ for ii = startingIndex:totalTrials
     % listen to the audio
     trialDoneFlag = false;
     while ~trialDoneFlag
-        sound(trialData.response.values, 16000*1.25)
-       % pause(length(trialData.response.values)/16000)
+        sound(trialData.response.values, 16000*1)
+        % pause(length(trialData.response.values)/16000)
         % prompt user to input rating
         discomfortRating = GetWithDefault('>><strong>Enter discomfort rating:</strong>', '');
         switch discomfortRating
