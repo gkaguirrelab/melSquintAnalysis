@@ -60,6 +60,7 @@ function [ medianRMS, trialStruct ] = calculateRMSforEMG(subjectID, varargin)
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('makePlots',false,@islogical);
+p.addParameter('makeDebugPlots',false,@islogical);
 p.addParameter('normalize',false,@islogical);
 p.addParameter('windowOnset',2.5,@isnumeric);
 p.addParameter('windowOffset',6.5,@isnumeric);
@@ -129,132 +130,133 @@ sessionIDs = sessionIDs(~cellfun('isempty',sessionIDs));
 for ss = 1:length(sessionIDs)
     sessionNumber = strsplit(sessionIDs{ss}, 'session_');
     sessionNumber = sessionNumber{2};
-     availableAcquisitions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, '*acquisition*_emg.mat'));
+    availableAcquisitions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, '*acquisition*_emg.mat'));
     
-     acquisitions = [];
+    acquisitions = [];
     for aa = 1:length(availableAcquisitions)
-       acquisitionLongName = availableAcquisitions(aa).name;
-       acquisitionLongName = strsplit(acquisitionLongName, '_emg.mat');
-       acquisition = acquisitionLongName{1}(end-1:end);
-       acquisition = str2num(acquisition);
-       acquisitions = [acquisitions, acquisition];
+        acquisitionLongName = availableAcquisitions(aa).name;
+        acquisitionLongName = strsplit(acquisitionLongName, '_emg.mat');
+        acquisition = acquisitionLongName{1}(end-1:end);
+        acquisition = str2num(acquisition);
+        acquisitions = [acquisitions, acquisition];
     end
-      
+    
     
     for aa = acquisitions
-
-        acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_emg.mat', str2num(sessionNumber),aa)));
-        stimulusData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', str2num(sessionNumber),aa)));
-        
-        if p.Results.makePlots
-            figure;
-        end
-        
-        voltages = [];
-        for tt = 1:10
+        stimulusDataFile = fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', str2num(sessionNumber),aa));
+        if exist(stimulusDataFile)
+            acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_emg.mat', str2num(sessionNumber),aa)));
+            stimulusData = load(stimulusDataFile);
             
-            if tt ~= 1 % we're discarding the first trial of each acquisition
-                % assemble packet
-                trialData.response.timebase = acquisitionData.responseStruct.data(tt).emg.timebase;
-                trialData.response.values.right = acquisitionData.responseStruct.data(tt).emg.response(1,:);
-                trialData.response.values.left = acquisitionData.responseStruct.data(tt).emg.response(2,:);
+            if p.Results.makeDebugPlots
+                figure;
+            end
+            
+            voltages = [];
+            for tt = 1:10
                 
-                % center the voltages at 0. we've noticed that for whatever
-                % reason, the baseline EMG results are not centered around
-                % 0, but are in fact shifted a bit negative. even more
-                % confusing, this is worse for the left EMG leads relative
-                % to the right. centering at 0 should take care of this
-                
-                trialData.response.values.right = trialData.response.values.right - mean(trialData.response.values.right);
-                trialData.response.values.left = trialData.response.values.left - mean(trialData.response.values.left);
-                
-                
-                if p.Results.makePlots
-                    subplot(2,5,tt)
-                    hold on
-                    plot(trialData.response.timebase, trialData.response.values.right);
-                    plot(trialData.response.timebase, trialData.response.values.left);
-                end
-                
-                % calculate RMS for the trial
-                onsetIndex = find(trialData.response.timebase == p.Results.windowOnset);
-                offsetIndex = find(trialData.response.timebase == p.Results.windowOffset);
-                baselineOnsetIndex = find(trialData.response.timebase == p.Results.baselineOnset);
-                baselineOffsetIndex = find(trialData.response.timebase == p.Results.baselineOffset);
-                
-                voltages.left = trialData.response.values.left(onsetIndex:offsetIndex);
-                voltages.right = trialData.response.values.right(onsetIndex:offsetIndex);
-                
-                numberOfIndicesEvoked = offsetIndex - onsetIndex + 1;
-                numberOfIndicesBaseline = baselineOffsetIndex - baselineOnsetIndex + 1;
-                
-                counter = 1;
-                startingEvokedIndex = onsetIndex;
-                
-                RMSEvokedPooledAcrossSlidingWindows = [];
-                if (p.Results.normalize)
-                    while startingEvokedIndex + numberOfIndicesBaseline - 1 < offsetIndex
-                        
-                        
-                        voltages.left = trialData.response.values.left(startingEvokedIndex:(startingEvokedIndex+numberOfIndicesBaseline));
-                        voltages.right = trialData.response.values.right(startingEvokedIndex:(startingEvokedIndex+numberOfIndicesBaseline));
-                        
-                        RMS.left = (sum(((voltages.left).^2)))^(1/2);
-                        RMS.right = (sum(((voltages.right).^2)))^(1/2);
-                        
-                        RMSEvokedPooledAcrossSlidingWindows(1,counter) = RMS.left;
-                        RMSEvokedPooledAcrossSlidingWindows(2,counter) = RMS.right;
-                        
-                        
-                        counter = counter + 1;
-                        startingEvokedIndex = startingEvokedIndex + 1;
-                        
+                if tt ~= 1 % we're discarding the first trial of each acquisition
+                    % assemble packet
+                    trialData.response.timebase = acquisitionData.responseStruct.data(tt).emg.timebase;
+                    trialData.response.values.right = acquisitionData.responseStruct.data(tt).emg.response(1,:);
+                    trialData.response.values.left = acquisitionData.responseStruct.data(tt).emg.response(2,:);
+                    
+                    % center the voltages at 0. we've noticed that for whatever
+                    % reason, the baseline EMG results are not centered around
+                    % 0, but are in fact shifted a bit negative. even more
+                    % confusing, this is worse for the left EMG leads relative
+                    % to the right. centering at 0 should take care of this
+                    
+                    trialData.response.values.right = trialData.response.values.right - mean(trialData.response.values.right);
+                    trialData.response.values.left = trialData.response.values.left - mean(trialData.response.values.left);
+                    
+                    
+                    if p.Results.makeDebugPlots
+                        subplot(2,5,tt)
+                        hold on
+                        plot(trialData.response.timebase, trialData.response.values.right);
+                        plot(trialData.response.timebase, trialData.response.values.left);
                     end
                     
+                    % calculate RMS for the trial
+                    onsetIndex = find(trialData.response.timebase == p.Results.windowOnset);
+                    offsetIndex = find(trialData.response.timebase == p.Results.windowOffset);
+                    baselineOnsetIndex = find(trialData.response.timebase == p.Results.baselineOnset);
+                    baselineOffsetIndex = find(trialData.response.timebase == p.Results.baselineOffset);
                     
-                    
-                    RMS.left = mean(RMSEvokedPooledAcrossSlidingWindows(1,:));
-                    RMS.right = mean(RMSEvokedPooledAcrossSlidingWindows(2,:));
-                    
-                    baselineVoltages.left = trialData.response.values.left(baselineOnsetIndex:baselineOffsetIndex);
-                    baselineVoltages.right = trialData.response.values.right(baselineOnsetIndex:baselineOffsetIndex);
-                    
-                    baselineRMS.left = (sum(((baselineVoltages.left).^2)))^(1/2);
-                    baselineRMS.right = (sum(((baselineVoltages.right).^2)))^(1/2);
-                else
                     voltages.left = trialData.response.values.left(onsetIndex:offsetIndex);
                     voltages.right = trialData.response.values.right(onsetIndex:offsetIndex);
                     
+                    numberOfIndicesEvoked = offsetIndex - onsetIndex + 1;
+                    numberOfIndicesBaseline = baselineOffsetIndex - baselineOnsetIndex + 1;
                     
-                    RMS.left = (sum(((voltages.left).^2)))^(1/2);
-                    RMS.right = (sum(((voltages.right).^2)))^(1/2);
-                end
-                
-                % stash the trial
-                % first figure out what type of trial we're working with
-                directionNameLong = stimulusData.trialList(tt).modulationData.modulationParams.direction;
-                directionNameSplit = strsplit(directionNameLong, ' ');
-                if strcmp(directionNameSplit{1}, 'Light')
-                    directionName = 'LightFlux';
-                else
-                    directionName = directionNameSplit{1};
-                end
-                contrastLong = strsplit(directionNameLong, '%');
-                contrast = contrastLong{1}(end-2:end);
-                % pool the results
-                nItems = length((trialStruct.(directionName).(['Contrast', contrast]).left));
-                if (p.Results.normalize)
-                    trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left - baselineRMS.left)/(baselineRMS.left);
-                    trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right - baselineRMS.right)/(baselineRMS.right);
-                else
-                    trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = RMS.left;
-                    trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = RMS.right;
+                    counter = 1;
+                    startingEvokedIndex = onsetIndex;
+                    
+                    RMSEvokedPooledAcrossSlidingWindows = [];
+                    if (p.Results.normalize)
+                        while startingEvokedIndex + numberOfIndicesBaseline - 1 < offsetIndex
+                            
+                            
+                            voltages.left = trialData.response.values.left(startingEvokedIndex:(startingEvokedIndex+numberOfIndicesBaseline));
+                            voltages.right = trialData.response.values.right(startingEvokedIndex:(startingEvokedIndex+numberOfIndicesBaseline));
+                            
+                            RMS.left = (sum(((voltages.left).^2)))^(1/2);
+                            RMS.right = (sum(((voltages.right).^2)))^(1/2);
+                            
+                            RMSEvokedPooledAcrossSlidingWindows(1,counter) = RMS.left;
+                            RMSEvokedPooledAcrossSlidingWindows(2,counter) = RMS.right;
+                            
+                            
+                            counter = counter + 1;
+                            startingEvokedIndex = startingEvokedIndex + 1;
+                            
+                        end
+                        
+                        
+                        
+                        RMS.left = mean(RMSEvokedPooledAcrossSlidingWindows(1,:));
+                        RMS.right = mean(RMSEvokedPooledAcrossSlidingWindows(2,:));
+                        
+                        baselineVoltages.left = trialData.response.values.left(baselineOnsetIndex:baselineOffsetIndex);
+                        baselineVoltages.right = trialData.response.values.right(baselineOnsetIndex:baselineOffsetIndex);
+                        
+                        baselineRMS.left = (sum(((baselineVoltages.left).^2)))^(1/2);
+                        baselineRMS.right = (sum(((baselineVoltages.right).^2)))^(1/2);
+                    else
+                        voltages.left = trialData.response.values.left(onsetIndex:offsetIndex);
+                        voltages.right = trialData.response.values.right(onsetIndex:offsetIndex);
+                        
+                        
+                        RMS.left = (sum(((voltages.left).^2)))^(1/2);
+                        RMS.right = (sum(((voltages.right).^2)))^(1/2);
+                    end
+                    
+                    % stash the trial
+                    % first figure out what type of trial we're working with
+                    directionNameLong = stimulusData.trialList(tt).modulationData.modulationParams.direction;
+                    directionNameSplit = strsplit(directionNameLong, ' ');
+                    if strcmp(directionNameSplit{1}, 'Light')
+                        directionName = 'LightFlux';
+                    else
+                        directionName = directionNameSplit{1};
+                    end
+                    contrastLong = strsplit(directionNameLong, '%');
+                    contrast = contrastLong{1}(end-2:end);
+                    % pool the results
+                    nItems = length((trialStruct.(directionName).(['Contrast', contrast]).left));
+                    if (p.Results.normalize)
+                        trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left - baselineRMS.left)/(baselineRMS.left);
+                        trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right - baselineRMS.right)/(baselineRMS.right);
+                    else
+                        trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = RMS.left;
+                        trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = RMS.right;
+                        
+                    end
                     
                 end
                 
             end
-            
-            
         end
     end
 end
@@ -279,7 +281,7 @@ for ss = 1:length(stimuli)
     end
 end
 
-save(fullfile(p.Results.savePath, [subjectID, '_EMGMedianRMS.mat']), 'medianRMS');
+save(fullfile(p.Results.savePath, 'medianStructs', [subjectID, '_EMGMedianRMS.mat']), 'medianRMS');
 %% Plot to summarize
 makePlots = p.Results.makePlots;
 if makePlots
@@ -360,6 +362,6 @@ if makePlots
     title('LightFlux')
     xlabel('Contrast')
     ylabel('RMS')
-    print(plotFig, fullfile(analysisBasePath,'EMG_RMS_leftRightCombined'), '-dpdf', '-fillpage')
+    print(plotFig, fullfile(p.Results.savePath, 'plots', [subjectID, '_EMG_RMS_leftRightCombined']), '-dpdf', '-fillpage')
 end
 end % end function
