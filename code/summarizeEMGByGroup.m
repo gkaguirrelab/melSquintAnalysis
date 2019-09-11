@@ -34,7 +34,7 @@ for ss = 1:length(subjectIDs)
     
     resultsDir = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'EMG');
     
-    calculateRMSforEMG(subjectIDs{ss}, 'sessions', subjectListStruct.(subjectIDs{ss}));
+    calculateRMSforEMG(subjectIDs{ss}, 'sessions', subjectListStruct.(subjectIDs{ss}), 'makePlots', true);
     
     for stimulus = 1:length(stimuli)
         for contrast = 1:length(contrasts)

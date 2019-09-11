@@ -279,7 +279,7 @@ for ss = 1:length(stimuli)
     end
 end
 
-save(fullfile(p.Results.savePath, [subjectID, '_EMGMedianRMS.mat']), 'medianRMS');
+save(fullfile(p.Results.savePath, 'medianStructs', [subjectID, '_EMGMedianRMS.mat']), 'medianRMS');
 %% Plot to summarize
 makePlots = p.Results.makePlots;
 if makePlots
@@ -360,6 +360,6 @@ if makePlots
     title('LightFlux')
     xlabel('Contrast')
     ylabel('RMS')
-    print(plotFig, fullfile(analysisBasePath,'EMG_RMS_leftRightCombined'), '-dpdf', '-fillpage')
+    print(plotFig, fullfile(p.Results.savePath, 'plots', [subjectID, '_EMG_RMS_leftRightCombined']), '-dpdf', '-fillpage')
 end
 end % end function
