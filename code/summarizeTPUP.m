@@ -1,11 +1,12 @@
-csvFile = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'TPUP', 'TPUPParams.csv');
+function summarizeTPUP(subjectList, persistentGammaTau)
+
+csvFile = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP', 'TPUPParams.csv');
 cellArray = {'SubjectID', 'LMS Delay', 'LMS Pupil Gamma', 'LMS Persistent Gamma', 'LMS Exponential Tau', 'LMS Transient Amplitude', 'LMS Sustained Amplitude', 'LMS Persistent Amplitude','Melanopsin Delay', 'Melanopsin Pupil Gamma', 'Melanopsin Persistent Gamma', 'Melanopsin Exponential Tau', 'Melanopsin Transient Amplitude', 'Melanopsin Sustained Amplitude', 'Melanopsin Persistent Amplitude', 'Light Flux Delay', 'Light Flux Pupil Gamma', 'Light Flux Persistent Gamma', 'Light Flux Exponential Tau', 'Light Flux Transient Amplitude', 'Light Flux Sustained Amplitude', 'Light Flux Persistent Amplitude'};
 
-subjectList = generateSubjectList;
 
 rowNumber = 2;
 for ss = 1:length(subjectList)
-    modeledResponses = fitTPUP(subjectList{ss}, 'methodForDeterminingPersistentGammaTau', 213.888);
+    modeledResponses = fitTPUP(subjectList{ss}, 'methodForDeterminingPersistentGammaTau', persistentGammaTau);
     close all
     cellArray{rowNumber, 1} = subjectList{ss};
     cellArray{rowNumber, 2} = modeledResponses.LMS.params.paramMainMatrix(1);
@@ -37,3 +38,5 @@ for ss = 1:length(subjectList)
 end
 
 cell2csv(csvFile, cellArray);
+
+end
