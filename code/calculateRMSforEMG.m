@@ -67,6 +67,7 @@ p.addParameter('baselineOnset',1,@isnumeric);
 p.addParameter('baselineOffset',1.5,@isnumeric);
 p.addParameter('confidenceInterval', [10 90], @isnumeric);
 p.addParameter('sessions', {}, @iscell);
+p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG'), @ischar);
 % Parse and check the parameters
 p.parse(varargin{:});
 %% Find the data
@@ -277,6 +278,8 @@ for ss = 1:length(stimuli)
         end
     end
 end
+
+save(fullfile(p.Results.savePath, [subjectID, '_EMGMedianRMS.mat']), 'medianRMS');
 %% Plot to summarize
 makePlots = p.Results.makePlots;
 if makePlots
