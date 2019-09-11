@@ -682,10 +682,39 @@ spotCheckVideo('MELA_0221', '2019-07-31_session_4', 6, 9, 'skipParamsAdjustment'
 
 
 
-spotCheckVideo('MELA_0147', '2018-09-27_session_1', 3, 2, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
-spotCheckVideo('MELA_0147', '2018-11-01_session_4', 5, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
-spotCheckVideo('MELA_0147', '2018-11-01_session_4', 3, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
-spotCheckVideo('MELA_0147', '2018-11-01_session_4', 3, 2, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
-spotCheckVideo('MELA_0147', '2018-11-01_session_4', 3, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
-spotCheckVideo('MELA_0147', '2018-09-10_session_3', 5, 5, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+%spotCheckVideo('MELA_0147', '2018-09-27_session_1', 3, 2, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+%spotCheckVideo('MELA_0147', '2018-11-01_session_4', 5, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+%spotCheckVideo('MELA_0147', '2018-11-01_session_4', 3, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+%spotCheckVideo('MELA_0147', '2018-11-01_session_4', 3, 2, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% spotCheckVideo('MELA_0147', '2018-11-01_session_4', 3, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% %spotCheckVideo('MELA_0147', '2018-09-10_session_3', 5, 5, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% 
+% spotCheckVideo('MELA_0147', '2018-07-18_session_2', 3, 5, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% spotCheckVideo('MELA_0147', '2018-07-18_session_2', 3, 7, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% spotCheckVideo('MELA_0147', '2018-07-18_session_2', 3, 9, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% spotCheckVideo('MELA_0147', '2018-07-18_session_2', 3, 8, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% spotCheckVideo('MELA_0147', '2018-09-10_session_3', 3, 2, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% spotCheckVideo('MELA_0147', '2018-09-10_session_3', 4, 4, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% spotCheckVideo('MELA_0147', '2018-11-01_session_4', 3, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% spotCheckVideo('MELA_0147', '2018-09-10_session_3', 5, 6, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% spotCheckVideo('MELA_0192', '2019-04-05_session_1', 2, 4, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% spotCheckVideo('MELA_0192', '2019-04-05_session_1', 4, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+% spotCheckVideo('MELA_0192', '2019-04-05_session_1', 2, 7, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-08-01_session_3', 5, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-08-01_session_3', 3, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-08-01_session_3', 2, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+
+
+spotCheckVideo('MELA_0122', '2018-05-16_session_1', 6, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-05-16_session_1', 6, 9, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-05-16_session_1', 6, 7, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-05-16_session_1', 6, 6, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-05-16_session_1', 6, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-05-16_session_1', 5, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-05-16_session_1', 5, 9, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-05-16_session_1', 5, 8, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-05-16_session_1', 5, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-05-16_session_1', 2, 9, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-05-16_session_1', 2, 5, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
+spotCheckVideo('MELA_0122', '2018-05-16_session_1', 1, 4, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false);
 
