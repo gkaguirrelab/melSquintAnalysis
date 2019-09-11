@@ -54,11 +54,23 @@ for stimulus = 1:length(stimuli)
     categoryIdx = repmat([0:nGroups-1], max(nObservationsPerGroup), size(data,1)/nGroups);
     
     if nGroups == 3
-        xValues = [0.8 1 1.2 1.8 2 2.2 2.8 3 3.2];
         categoryColors = {'k', 'r', 'b'};
     elseif nGroups == 2
-        xValues = [0.8 1.2 1.8 2.2 2.8 3.2];
         categoryColors = {'k', 'r'};
+    end
+    
+    if length(contrasts) == 3
+        if nGroups == 3
+            xValues = [0.8 1 1.2 1.8 2 2.2 2.8 3 3.2];
+        elseif nGroups == 2
+            xValues = [0.8 1.2 1.8 2.2 2.8 3.2];
+        end
+    elseif length(contrasts) == 1
+        if nGroups == 3
+            xValues = [0.8 1 1.2];
+        elseif nGroups == 2
+            xValues = [0.8 1.2];
+        end
     end
     
     plotSpread(data', 'categoryIdx', categoryIdx(:), 'xValues', xValues, 'categoryColors', categoryColors, 'showMM', 0, 'categoryLabels', groupNames)
@@ -66,20 +78,31 @@ for stimulus = 1:length(stimuli)
     axesCellArray = [];
     legendText = [];
     for ii = 1:nGroups
-        plot([1:length(contrasts)], [nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast100), ...
-            nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast200), ...
-            nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400)], ...
-            '*', 'Color', categoryColors{ii}, 'MarkerSize', 12);
-        ax.(['ax', num2str(ii)]) = plot([1:length(contrasts)], [nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast100), ...
-            nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast200), ...
-            nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400)], ...
-            'Color', categoryColors{ii});
-        axesCellArray{end+1} = ax.(['ax', num2str(ii)]);
-        legendText{end+1} = [groupNames{ii}, ', N = ', num2str(length(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400))];
+        if length(contrasts) == 3
+            plot([1:length(contrasts)], [nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast100), ...
+                nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast200), ...
+                nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400)], ...
+                '*', 'Color', categoryColors{ii}, 'MarkerSize', 12);
+            ax.(['ax', num2str(ii)]) = plot([1:length(contrasts)], [nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast100), ...
+                nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast200), ...
+                nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400)], ...
+                'Color', categoryColors{ii});
+            axesCellArray{end+1} = ax.(['ax', num2str(ii)]);
+            legendText{end+1} = [groupNames{ii}, ', N = ', num2str(length(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400))];
+        elseif length(contrasts) == 1
+            ax.(['ax', num2str(ii)]) = plot(xValues(ii), nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400), '*', 'Color', categoryColors{ii}, 'MarkerSize', 12);
+            legendText{end+1} = [groupNames{ii}, ', N = ', num2str(length(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400))];
+            
+        end
     end
     
-    xticks([1:3])
-    xticklabels({'100%', '200%', '400%'})
+    if length(contrasts) == 3
+        xticks([1:3])
+        xticklabels({'100%', '200%', '400%'})
+    elseif length(contrasts) == 1
+        xticks([1])
+        xticklabels({'400%'})
+    end
     xlabel('Contrast')
     ylabel(p.Results.yLabel)
     title(stimuli{stimulus})
