@@ -90,6 +90,20 @@
 		"update": "",
 		"url": "http:\/\/www.mathworks.com\/matlabcentral\/mlc-downloads\/downloads\/submissions\/47950\/versions\/4\/download\/zip"
 	},
+    {
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "tight_subplot",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "webget",
+		"update": "",
+		"url": "http:\/\/www.mathworks.com\/matlabcentral\/mlc-downloads\/downloads\/submissions\/27991\/versions\/2\/download\/zip"
+	},
+
 	{
 		"flavor": "",
 		"hook": "",
