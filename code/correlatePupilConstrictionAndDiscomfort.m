@@ -205,3 +205,61 @@ for stimulus = 1:length(stimuli)
     end
 end
 
+%% Do the summary plotting
+plotFig = figure;
+hold on;
+counter = 1;
+for stimulus = 1:length(stimuli)
+    for contrast = 1:length(contrasts)
+        subplot(3,3,counter); hold on;
+        plot(discomfortRatings.CombinedMigraineurs.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), totalResponseAmplitude.CombinedMigraineurs.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), 'o', 'Color', 'r')
+        plot(discomfortRatings.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), totalResponseAmplitude.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), 'o', 'Color', 'k')
+        
+        coeffs = polyfit(discomfortRatings.CombinedMigraineurs.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), totalResponseAmplitude.CombinedMigraineurs.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), 1);
+        fittedX = linspace(min(discomfortRatings.CombinedMigraineurs.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), max(discomfortRatings.CombinedMigraineurs.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 200);
+        fittedY = polyval(coeffs, fittedX);
+        plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'r')
+        
+        coeffs = polyfit(discomfortRatings.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), totalResponseAmplitude.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), 1);
+        fittedX = linspace(min(discomfortRatings.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), max(discomfortRatings.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 200);
+        fittedY = polyval(coeffs, fittedX);
+        plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'k')
+        
+        counter = counter + 1;
+        
+        title([stimuli{stimulus}, 'Contrast ', num2str(contrasts{contrast}), '%']);
+    end
+end
+
+
+plotFig = figure;
+hold on;
+counter = 1;
+for stimulus = 1:length(stimuli)
+    for contrast = 1:length(contrasts)
+        subplot(3,3,counter); hold on;
+        plot(discomfortRatings.MwA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), totalResponseAmplitude.MwA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), 'o', 'Color', 'b')
+        plot(discomfortRatings.MwoA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), totalResponseAmplitude.MwoA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), 'o', 'Color', 'r')
+        
+        plot(discomfortRatings.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), totalResponseAmplitude.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), 'o', 'Color', 'k')
+        
+        coeffs = polyfit(discomfortRatings.MwoA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), totalResponseAmplitude.MwoA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), 1);
+        fittedX = linspace(min(discomfortRatings.MwoA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), max(discomfortRatings.MwoA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 200);
+        fittedY = polyval(coeffs, fittedX);
+        plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'r')
+        
+        coeffs = polyfit(discomfortRatings.MwA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), totalResponseAmplitude.MwA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), 1);
+        fittedX = linspace(min(discomfortRatings.MwA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), max(discomfortRatings.MwA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 200);
+        fittedY = polyval(coeffs, fittedX);
+        plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'b')
+        
+        coeffs = polyfit(discomfortRatings.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), totalResponseAmplitude.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), 1);
+        fittedX = linspace(min(discomfortRatings.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), max(discomfortRatings.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 200);
+        fittedY = polyval(coeffs, fittedX);
+        plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'k')
+        
+        counter = counter + 1;
+        
+        title([stimuli{stimulus}, 'Contrast ', num2str(contrasts{contrast}), '%']);
+    end
+end
