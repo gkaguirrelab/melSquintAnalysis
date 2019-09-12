@@ -5,7 +5,7 @@ function plotSpreadResults(resultsStruct, varargin)
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('contrasts',{100, 200, 400});
-p.addParameter('stimuli',{'Melanopsin', 'LMS', 'LightFlux'});
+p.addParameter('stimuli',{'Melanopsin', 'LightFlux', 'LMS'});
 p.addParameter('yLabel', 'Discomfort Ratings', @ischar);
 p.addParameter('yLims', [-0.5 10], @isnumeric);
 p.addParameter('saveName', [], @ischar);
@@ -18,12 +18,16 @@ if nGroups == 3
     groupNames = {'Controls', 'MwoA', 'MwA'};
 elseif nGroups == 2
     groupNames = {'Controls', 'CombinedMigraineurs'};
+elseif nGroups == 1
+    groupNames = fieldnames(resultsStruct);
 end
 stimuli = p.Results.stimuli;
 contrasts = p.Results.contrasts;
 
 
-plotFig = figure;
+plotFig = figure; hold on;
+[ha, pos] = tight_subplot(1,length(stimuli), 0.08);
+
 for stimulus = 1:length(stimuli)
     nObservationsPerGroup = [];
     
@@ -35,8 +39,9 @@ for stimulus = 1:length(stimuli)
     
     for contrast = 1:length(contrasts)
         
+        axes(ha(stimulus)); hold on;
         
-        subplot(1,length(stimuli), stimulus); hold on;
+        %subplot(1,length(stimuli), stimulus); hold on;
         
         
         fprintf('<strong>Stimulus type: %s</strong>\n', stimuli{stimulus});
@@ -57,6 +62,8 @@ for stimulus = 1:length(stimuli)
         categoryColors = {'k', 'r', 'b'};
     elseif nGroups == 2
         categoryColors = {'k', 'r'};
+    elseif nGroups == 1
+        categoryColors = {'k'};
     end
     
     if length(contrasts) == 3
@@ -64,6 +71,8 @@ for stimulus = 1:length(stimuli)
             xValues = [0.8 1 1.2 1.8 2 2.2 2.8 3 3.2];
         elseif nGroups == 2
             xValues = [0.8 1.2 1.8 2.2 2.8 3.2];
+        elseif nGroups == 1
+            xValues = [1:3];
         end
     elseif length(contrasts) == 1
         if nGroups == 3
@@ -73,7 +82,24 @@ for stimulus = 1:length(stimuli)
         end
     end
     
-    plotSpread(data', 'categoryIdx', categoryIdx(:), 'xValues', xValues, 'categoryColors', categoryColors, 'showMM', 0, 'categoryLabels', groupNames)
+    if stimulus == 1
+        for ii = 1:nGroups
+            categoryMarkers{ii} = '.';
+        end
+        
+    elseif stimulus == 2
+        for ii = 1:nGroups
+            categoryMarkers{ii} = '.';
+        end
+        
+    elseif stimulus == 3
+        for ii = 1:nGroups
+            categoryMarkers{ii} = '.';
+        end
+        
+    end
+    
+    plotSpread(data', 'categoryIdx', categoryIdx(:), 'categoryMarkers', categoryMarkers, 'xValues', xValues, 'categoryColors', categoryColors, 'showMM', 0, 'categoryLabels', groupNames)
     
     axesCellArray = [];
     legendText = [];
@@ -107,6 +133,7 @@ for stimulus = 1:length(stimuli)
     ylabel(p.Results.yLabel)
     title(stimuli{stimulus})
     ylim(p.Results.yLims)
+    xlim([0.5 3.5])
     
     if stimulus == length(stimuli)
         if nGroups == 2
@@ -122,7 +149,7 @@ for stimulus = 1:length(stimuli)
     if ~exist(savePath, 'dir')
         mkdir(savePath)
     end
-    set(plotFig, 'Position', [85 230 1633 748], 'Units', 'pixels');
+    set(plotFig, 'Position', [-1811 170 1025 767], 'Units', 'pixels');
     export_fig(plotFig, fullfile(p.Results.saveName));
     
 end
