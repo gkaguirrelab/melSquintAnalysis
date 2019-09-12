@@ -6,6 +6,8 @@ load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLA
 
 subjectIDs = fieldnames(subjectListStruct);
 
+calculateRMS = false;
+
 %% Pool results
 controlRMS = [];
 mwaRMS = [];
@@ -34,7 +36,9 @@ for ss = 1:length(subjectIDs)
     
     resultsDir = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'EMG');
     
-    calculateRMSforEMG(subjectIDs{ss}, 'sessions', subjectListStruct.(subjectIDs{ss}), 'makePlots', true);
+    if calculateRMS
+        calculateRMSforEMG(subjectIDs{ss}, 'sessions', subjectListStruct.(subjectIDs{ss}), 'makePlots', true);
+    end
     close all;
     for stimulus = 1:length(stimuli)
         for contrast = 1:length(contrasts)
@@ -63,63 +67,28 @@ mwoaSubjects = unique(mwoaSubjects);
 controlSubjects = unique(controlSubjects);
 
 %% Display results
-combineMigraineurs = true;
 
-contrastsOfInterest = {100, 200, 400};
-
-if combineMigraineurs
-    plotFig = figure;
-    
-    for stimulus = 1:length(stimuli)
-        ax.(['ax', num2str(stimulus)]) = subplot(1,length(stimuli), stimulus);
-        data = nan(2*length(contrastsOfInterest), max(length([mwoaRMS.Melanopsin.Contrast400, mwaRMS.Melanopsin.Contrast400]), length(controlRMS.Melanopsin.Contrast400)));
+EMG = [];
+for stimulus = 1:length(stimuli)
+    for contrast = 1:length(contrasts)
+        EMG.MwoA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
         
-        fprintf('<strong>Stimulus type: %s</strong>\n', stimuli{stimulus});
-        for contrast = 1:length(contrastsOfInterest)
-            data(contrast*2,1:length([mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})]),mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})])]')) = [mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})]),mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})])]';
-            data(contrast*2-1,1:length(controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})])')) = controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})])';
-            
-            fprintf('\tContrast: %s%%\n', num2str(contrastsOfInterest{contrast}));
-            medianMigraineDiscomfort = nanmedian([mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})]),mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})])]);
-            mediancontrolRMS = nanmedian(controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})]));
-            
-            
-            fprintf('\t\tMedian discomfort rating for all migraineurs: %4.2f\n', medianMigraineDiscomfort);
-            fprintf('\t\tMedian discomfort rating for controls: %4.2f\n', mediancontrolRMS);
-            
-        end
-        categoryIdx = repmat([0,1], max(length([mwoaRMS.Melanopsin.Contrast400, mwaRMS.Melanopsin.Contrast400]), length(controlRMS.Melanopsin.Contrast400)), size(data,1)/2);
-        plotSpread(data', 'categoryIdx', categoryIdx(:), 'xValues', [0.8 1.2 1.8 2.2 2.8 3.2], 'categoryColors', {'k', 'r'}, 'showMM', 3, 'categoryLabels', {'Controls', 'Migraineurs'})
-        xticks([1:3])
-        xticklabels({'100%', '200%', '400%'})
-        xlabel('Contrast')
-        ylabel('Discomfort Rating')
-        title(stimuli{stimulus})
-    end
-    linkaxes([ax.ax1, ax.ax2, ax.ax3]);
-    
-end
-
-
-
-
-
-
-if combineMigraineurs
-    for stimulus = 1:length(stimuli)
-        fprintf('<strong>Stimulus type: %s</strong>\n', stimuli{stimulus});
-        for contrast = 1:length(contrastsOfInterest)
-            fprintf('\tContrast: %s%%\n', num2str(contrastsOfInterest{contrast}));
-            medianMigraineRMS = median([mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})]),mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})])]);
-            medianControlRMS = median(controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrastsOfInterest{contrast})]));
-            
-            fprintf('\t\tMedian RMS for all migraineurs: %4.2f\n', medianMigraineRMS);
-            fprintf('\t\tMedian RMS for controls: %4.2f\n', medianControlRMS);
-
-        end
+        EMG.MwA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
+        EMG.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
     end
 end
-    
-    
 
+plotSpreadResults(EMG, 'yLims', [0 6], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', 'groupAverage.pdf'))
+
+
+
+EMG = [];
+for stimulus = 1:length(stimuli)
+    for contrast = 1:length(contrasts)
+        EMG.CombinedMigraineurs.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])];
+        EMG.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
+    end
+end
+
+plotSpreadResults(EMG, 'yLims', [0 6], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', 'groupAverage_combinedMigraineurs.pdf'))
 
