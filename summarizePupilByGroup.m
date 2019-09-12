@@ -145,7 +145,7 @@ save(fullfile(resultsDir, 'combinedGroupAverageResponse_radiusSmoothed.mat'), 'g
 
 %% Plot average response by group
 groupAveragePupilResponses= [];
-
+stimuli = {'Melanopsin', 'LightFlux', 'LMS'};
 for groupNumber = 1:4
     if groupNumber == 1
         pooledResponses = controlPupilResponses;
@@ -177,7 +177,7 @@ for groupNumber = 1:4
         end
     end
     
-    plotFig = figure;
+    plotFig = figure; hold on;
     nStimuli = length(stimuli);
     nContrasts = length(contrasts);
     
@@ -201,14 +201,26 @@ for groupNumber = 1:4
     pulseOnset = 1.5;
     pulseOffset = 5.5;
     plotShift = 1;
-    yLims = [-0.8 0.1];
+    
     xLims = [0 17];
     nTimePointsToSkipPlotting = 40;
     
+    [ha, pos] = tight_subplot(nStimuli,1, 0.01);
+    
+    
     for ss = 1:nStimuli
-        
+        if ss == 1
+            yLims = [-0.4 0.3];
+            
+        elseif ss == 2
+            yLims = [-0.65 0.05];
+            
+        elseif ss == 3
+            yLims = [-0.675 0.025];
+        end
         % pick the right subplot for the right stimuli
-        subplot(nStimuli,1,ss)
+        %subplot(nStimuli,1,ss)
+        axes(ha(ss)); hold on;
         title(stimuli{ss})
         hold on
         
@@ -231,8 +243,9 @@ for groupNumber = 1:4
         legend('boxoff')
         
         % add line for pulse onset
-        line([pulseOnset-plotShift,  pulseOffset-plotShift], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
-        
+        if ss == 1
+            line([pulseOnset-plotShift,  pulseOffset-plotShift], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
+        end
         % spruce up axes
         ylim(yLims)
         xlim(xLims)
@@ -240,7 +253,8 @@ for groupNumber = 1:4
         ylabel('Pupil Area (% Change)')
         
     end
-    
+    set(ha(1:3),'XTickLabel',''); set(ha(1:3),'YTickLabel','')
+    export_fig(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'averageResponsePlots', [groupName, '_averageResponse_unstretched.pdf']), '-painters')
     print(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'averageResponsePlots', [groupName, '_averageResponse.pdf']), '-dpdf', '-fillpage')
     close all
     
@@ -313,6 +327,186 @@ for ss = 1:length(stimuli)
         
     end
 end
+
+%% Plots comparing pupil constriciton between groups, this time no SEM
+for ss = 1:length(stimuli)
+    for cc = 1:length(contrasts)
+        
+        % plotting each migraine group seprately
+        plotFig = figure; hold on;
+        
+        lineProps.col{1} = 'k';
+        axis.Controls = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.Control.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), 0*groupAveragePupilResponses.Control.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps);
+        
+        lineProps.col{1} = 'r';
+        axis.MwoA = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.MwoA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), 0*groupAveragePupilResponses.MwoA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps);
+        
+        lineProps.col{1} = 'b';
+        axis.MwA = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.MwA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), 0*groupAveragePupilResponses.MwA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps);
+        
+        legend({['Controls, N = ', num2str(size(controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1))],['MwoA, N = ', num2str(size(mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1))], ['MwA, N = ', num2str(size(mwaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1))]}, 'Location', 'SouthEast')
+        legend('boxoff')
+        
+        % add line for pulse onset
+        line([pulseOnset-plotShift,  pulseOffset-plotShift], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
+        
+        % spruce up axes
+        ylim(yLims)
+        xlim(xLims)
+        xlabel('Time (s)')
+        ylabel('Pupil Area (% Change)')
+        title([stimuli{ss}, ', ', num2str(contrasts{cc}), '% Contrast']);
+        
+        print(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'averageResponsePlots', [stimuli{ss}, 'Contrast', num2str(contrasts{cc}), '_averageResponse_noSEM.pdf']), '-dpdf', '-fillpage')
+        close all
+        
+        
+        % plotting both migraine groups together
+        plotFig = figure; hold on;
+        
+        lineProps.col{1} = 'k';
+        axis.Controls = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.Control.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), 0*groupAveragePupilResponses.Control.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps);
+        
+        lineProps.col{1} = 'r';
+        axis.MwoA = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.CombinedMigraine.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), 0*groupAveragePupilResponses.CombinedMigraine.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps);
+        
+        legend({['Controls, N = ', num2str(size(controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1))],['Combined Migraine, N = ', num2str(size(combinedMigrainePupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1))]},  'Location', 'SouthEast')
+        legend('boxoff')
+        
+        % add line for pulse onset
+        line([pulseOnset-plotShift,  pulseOffset-plotShift], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
+        
+        % spruce up axes
+        ylim(yLims)
+        xlim(xLims)
+        xlabel('Time (s)')
+        ylabel('Pupil Area (% Change)')
+        title([stimuli{ss}, ', ', num2str(contrasts{cc}), '% Contrast']);
+        
+        
+        print(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'averageResponsePlots', [stimuli{ss}, 'Contrast', num2str(contrasts{cc}), '_combinedMigraineurs_averageResponse_noSEM.pdf']), '-dpdf', '-fillpage')
+        close all
+        
+        
+        
+        
+    end
+end
+
+%% Plotting pupil constriction by group, but comparing stimuli across subplots
+
+for cc = 1:length(contrasts)
+    plotFig = figure;
+    for ss = 1:length(stimuli)
+        
+        subplot(1,3,ss)
+        % plotting each migraine group seprately
+        
+        lineProps.col{1} = 'k';
+        axis.Controls = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.Control.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), groupAveragePupilResponses.Control.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps);
+        
+        lineProps.col{1} = 'r';
+        axis.MwoA = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.MwoA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), groupAveragePupilResponses.MwoA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps);
+        
+        lineProps.col{1} = 'b';
+        axis.MwA = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.MwA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), groupAveragePupilResponses.MwA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps);
+        
+        legend({['Controls, N = ', num2str(size(controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1))],['MwoA, N = ', num2str(size(mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1))], ['MwA, N = ', num2str(size(mwaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1))]}, 'Location', 'SouthEast')
+        legend('boxoff')
+        
+        % add line for pulse onset
+        line([pulseOnset-plotShift,  pulseOffset-plotShift], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
+        
+        % spruce up axes
+        ylim(yLims)
+        xlim(xLims)
+        xlabel('Time (s)')
+        ylabel('Pupil Area (% Change)')
+        title([stimuli{ss}, ', ', num2str(contrasts{cc}), '% Contrast']);
+        
+        print(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'averageResponsePlots', ['Contrast', num2str(contrasts{cc}), '_averageResponse.pdf']), '-dpdf', '-fillpage')
+        
+        
+        
+        
+        
+        
+    end
+end
+
+%% Summarize response amplitude as area under the curve
+
+for stimulus = 1:length(stimuli)
+    for contrast = 1:length(contrasts)
+        controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+        mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+        mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+        
+        
+    end
+end
+
+
+
+
+
+group = linkMELAIDToGroup(subjectIDs{ss});
+
+for stimulus = 1:length(stimuli)
+    for contrast = 1:length(contrasts)
+        for group = 1:3
+            if group == 1
+                pupilResponses = controlPupilResponses;
+            elseif group == 2
+                pupilResponses = mwoaPupilResponses;
+            elseif group == 3
+                pupilResponses = mwaPupilResponses;
+            end
+            AUC = [];
+            for ss = 1:size(pupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1)
+                pupilResponse = pupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss,:);
+                pupilResponse = pupilResponse(~isnan(pupilResponse));
+                AUC(ss) = trapz(pupilResponse);
+                
+            end
+            
+            if group == 1
+                controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = AUC;
+            elseif group == 2
+                mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = AUC;
+            elseif group == 3
+                mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = AUC;
+            end
+            
+        end
+    end
+end
+
+pupilAUC = [];
+for stimulus = 1:length(stimuli)
+    for contrast = 1:length(contrasts)
+        pupilAUC.MwA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
+        pupilAUC.MwoA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
+        pupilAUC.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
+    end
+end
+
+plotSpreadResults(pupilAUC, 'yLims', [-250 0], 'yLabel', 'AUC', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'AUC_groupAverage.pdf'))
+
+% Next by combine migraineurs
+pupilAUC = [];
+for stimulus = 1:length(stimuli)
+    for contrast = 1:length(contrasts)
+        pupilAUC.CombinedMigraineurs.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])];
+        pupilAUC.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
+    end
+end
+
+plotSpreadResults(pupilAUC, 'yLims', [-250, 0], 'yLabel', 'AUC', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'AUC_groupAverage_combinedMigraineurs.pdf'))
+
+
+
+
 
 %% Fit TPUP to individual subject responses
 
@@ -410,7 +604,7 @@ for stimulus = 1:length(stimuli)
 end
 
 plotSpreadResults(percentPersistent, 'contrasts', {100,200,400}, 'yLims', [-5 100], 'yLabel', 'Percent Persistent (%)', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'percentPersistentByGroup.pdf'))
-plotSpreadResults(totalResponseAmplitude, 'contrasts', {100,200,400}, 'yLims', [-10 0], 'yLabel', 'Total Response Amplitude', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'totalResponseAmplitdueByGroup.pdf'))
+plotSpreadResults(totalResponseAmplitude, 'contrasts', {100,200,400}, 'yLims', [-11 0], 'yLabel', 'Total Response Amplitude', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'totalResponseAmplitdueByGroup.pdf'))
 
 % combined migraineurs
 percentPersistent = [];
