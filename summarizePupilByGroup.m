@@ -321,17 +321,15 @@ persistentGamma = modeledResponses.Melanopsin.params.paramMainMatrix(3);
 
 summarizeTPUP(subjectIDs, persistentGamma);
 
-% Load up percent persisten by group
-csvFileName = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis/pupil/TPUP/TPUPParams.csv');
-TPUPParamsTable = readtable(csvFileName);
-columnsNames = TPUPParamsTable.Properties.VariableNames;
+%% Load up percent persisten by group
+
 
 controlPercentPersistent = [];
 mwaPercentPersistent = [];
 mwoaPercentPersistent = [];
 
 stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
-contrasts = {400};
+contrasts = {100, 200, 400};
 amplitudes = {'Transient', 'Sustained', 'Persistent'};
 
 
@@ -350,12 +348,17 @@ end
 
 for ss = 1:length(subjectIDs)
     
-    subjectRow = find(contains(TPUPParamsTable{:,1}, subjectIDs{ss}));
     
     group = linkMELAIDToGroup(subjectIDs{ss});
     
     for stimulus = 1:length(stimuli)
         for contrast = 1:length(contrasts)
+            
+            csvFileName = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis/pupil/TPUP/', ['TPUPParams_Contrast', num2str(contrasts{contrast}),  '.csv']);
+            TPUPParamsTable = readtable(csvFileName);
+            columnsNames = TPUPParamsTable.Properties.VariableNames;
+            subjectRow = find(contains(TPUPParamsTable{:,1}, subjectIDs{ss}));
+            
             transientAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'TransientAmplitude']));
             sustainedAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'SustainedAmplitude']));
             persistentAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'PersistentAmplitude']));
@@ -397,17 +400,17 @@ for stimulus = 1:length(stimuli)
         percentPersistent.MwA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = mwaPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
         percentPersistent.MwoA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = mwoaPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
         percentPersistent.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = controlPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
-    
+        
         totalResponseAmplitude.MwA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = mwaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
         totalResponseAmplitude.MwoA.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = mwoaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
         totalResponseAmplitude.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
-    
-    
+        
+        
     end
 end
 
-plotSpreadResults(percentPersistent, 'contrasts', {400}, 'yLims', [-5 100], 'yLabel', 'Percent Persistent (%)', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'percentPersistentByGroup.pdf'))
-plotSpreadResults(totalResponseAmplitude, 'contrasts', {400}, 'yLims', [-10 0], 'yLabel', 'Total Response Amplitude', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'totalResponseAmplitdueByGroup.pdf'))
+plotSpreadResults(percentPersistent, 'contrasts', {100,200,400}, 'yLims', [-5 100], 'yLabel', 'Percent Persistent (%)', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'percentPersistentByGroup.pdf'))
+plotSpreadResults(totalResponseAmplitude, 'contrasts', {100,200,400}, 'yLims', [-10 0], 'yLabel', 'Total Response Amplitude', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'totalResponseAmplitdueByGroup.pdf'))
 
 % combined migraineurs
 percentPersistent = [];
@@ -416,15 +419,15 @@ for stimulus = 1:length(stimuli)
     for contrast = 1:length(contrasts)
         percentPersistent.CombinedMigraineurs.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [mwaPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), mwoaPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])];
         percentPersistent.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = controlPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
-    
+        
         totalResponseAmplitude.CombinedMigraineurs.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [mwaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), mwoaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])];
         totalResponseAmplitude.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
-    
-    
+        
+        
     end
 end
 
-plotSpreadResults(percentPersistent, 'contrasts', {400}, 'yLims', [-5 100], 'yLabel', 'Percent Persistent (%)', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'percentPersistentByGroup_combinedMigraine.pdf'))
-plotSpreadResults(totalResponseAmplitude, 'contrasts', {400}, 'yLims', [-10 0], 'yLabel', 'Total Response Amplitude', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'totalResponseAmplitdueByGroup_combinedMigraine.pdf'))
+plotSpreadResults(percentPersistent, 'contrasts', {100,200, 400}, 'yLims', [-5 100], 'yLabel', 'Percent Persistent (%)', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'percentPersistentByGroup_combinedMigraine.pdf'))
+plotSpreadResults(totalResponseAmplitude, 'contrasts', {100,200, 400}, 'yLims', [-10 0], 'yLabel', 'Total Response Amplitude', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'totalResponseAmplitdueByGroup_combinedMigraine.pdf'))
 
 
