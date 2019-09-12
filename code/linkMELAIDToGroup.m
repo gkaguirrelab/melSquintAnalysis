@@ -1,7 +1,7 @@
 function [ group ] = linkMELAIDToGroup(subjectID)
 
 keyName = 'MELA_Squint_Subject_Info.xlsx';
-pathToKey = fullfile('/Users', 'harrisonmcadams', 'Downloads', keyName);
+pathToKey = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', keyName);
 
 [num, txt, raw] = xlsread(pathToKey);
 
