@@ -311,7 +311,7 @@ for ss = 1:length(stimuli)
     averageBaselineSizeTrend.(stimuli{ss}) = nanmean(acquisitionsByStimulus.(stimuli{ss}),1);
 end
 
-save(fullfile(saveDir, [subjectID, '_baselineSize.mat']), 'trialStruct', 'subjectStruct', 'averageBaselineSizeTrend');
+save(fullfile(saveDir, [subjectID, '_baselineSize.mat']), 'trialStruct', 'subjectStruct', 'acquisitionByStimulus');
 
 
 
