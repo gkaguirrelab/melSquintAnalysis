@@ -121,8 +121,10 @@ if generateMatrix
     
     save(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'pooledObservationsForANOVA.mat'), 'pooledMatrix');
 else
-    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'pooledObservationsForANOVA.mat'))
+    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil/TPUP', 'pooledObservationsForANOVA.mat'))
     
 end
 
 %% Run the ANOVA
+
+p = anovan(pooledMatrix(:,1), pooledMatrix(:,2:4), 'varnames', {'Stimulus', 'Contrast', 'Group'})

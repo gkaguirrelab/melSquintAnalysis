@@ -105,3 +105,5 @@ else
 end
 
 %% Run the ANOVA
+
+p = anovan(pooledMatrix(:,1), pooledMatrix(:,2:4), 'varnames', {'Stimulus', 'Contrast', 'Group'})
