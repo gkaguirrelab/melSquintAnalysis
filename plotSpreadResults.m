@@ -5,7 +5,7 @@ function plotSpreadResults(resultsStruct, varargin)
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('contrasts',{100, 200, 400});
-p.addParameter('stimuli',{'Melanopsin', 'LightFlux', 'LMS'});
+p.addParameter('stimuli',{'LightFlux', 'Melanopsin', 'LMS'});
 p.addParameter('yLabel', 'Discomfort Ratings', @ischar);
 p.addParameter('yLims', [-0.5 10], @isnumeric);
 p.addParameter('saveName', [], @ischar);
