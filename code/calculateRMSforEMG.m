@@ -281,7 +281,14 @@ for ss = 1:length(stimuli)
     end
 end
 
-save(fullfile(p.Results.savePath, 'medianStructs', [subjectID, '_EMGMedianRMS.mat']), 'medianRMS');
+if p.Results.normalize
+    
+    saveName = [subjectID, '_EMGMedianRMS_normalized.mat'];
+else
+    saveName = [subjectID, '_EMGMedianRMS.mat'];
+end
+
+save(fullfile(p.Results.savePath, 'medianStructs', saveName, 'medianRMS');
 %% Plot to summarize
 makePlots = p.Results.makePlots;
 if makePlots
@@ -338,7 +345,14 @@ if makePlots
     linkaxes([lightFluxAxis1, lightFluxAxis2]);
     
     analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
-    print(plotFig, fullfile(analysisBasePath,'EMG_RMS'), '-dpdf', '-fillpage')
+    
+    if p.Results.normalize
+        saveName = 'EMG_RMS_normalized';
+    else
+        saveName = 'EMG_RMS';
+    end
+    
+    print(plotFig, fullfile(analysisBasePath, saveName), '-dpdf', '-fillpage')
     %close(plotFig)
     
     plotFig = figure;
@@ -362,6 +376,12 @@ if makePlots
     title('LightFlux')
     xlabel('Contrast')
     ylabel('RMS')
-    print(plotFig, fullfile(p.Results.savePath, 'plots', [subjectID, '_EMG_RMS_leftRightCombined']), '-dpdf', '-fillpage')
+    
+    if p.Results.normalize
+        saveName = [subjectID, '_EMG_RMS_leftRightCombined_normalized'];
+    else
+        saveName = [subjectID, '_EMG_RMS_leftRightCombined'];
+    end
+    print(plotFig, fullfile(p.Results.savePath, 'plots', saveName), '-dpdf', '-fillpage')
 end
 end % end function
