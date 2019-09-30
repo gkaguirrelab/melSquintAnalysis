@@ -288,7 +288,7 @@ else
     saveName = [subjectID, '_EMGMedianRMS.mat'];
 end
 
-save(fullfile(p.Results.savePath, 'medianStructs', saveName, 'medianRMS');
+save(fullfile(p.Results.savePath, 'medianStructs', saveName), 'medianRMS');
 %% Plot to summarize
 makePlots = p.Results.makePlots;
 if makePlots
@@ -353,6 +353,8 @@ if makePlots
     end
     
     print(plotFig, fullfile(analysisBasePath, saveName), '-dpdf', '-fillpage')
+    print(plotFig, fullfile(p.Results.savePath, 'plots', [subjectID, '_', saveName]), '-dpdf', '-fillpage')
+
     %close(plotFig)
     
     plotFig = figure;
@@ -382,6 +384,8 @@ if makePlots
     else
         saveName = [subjectID, '_EMG_RMS_leftRightCombined'];
     end
+    print(plotFig, fullfile(analysisBasePath, saveName), '-dpdf', '-fillpage')
     print(plotFig, fullfile(p.Results.savePath, 'plots', saveName), '-dpdf', '-fillpage')
+
 end
 end % end function

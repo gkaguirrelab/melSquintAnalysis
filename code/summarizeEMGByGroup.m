@@ -6,7 +6,7 @@ load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLA
 
 subjectIDs = fieldnames(subjectListStruct);
 
-calculateRMS = false;
+calculateRMS = true;
 
 %% Pool results
 controlRMS = [];
@@ -38,6 +38,8 @@ for ss = 1:length(subjectIDs)
     
     if calculateRMS
         calculateRMSforEMG(subjectIDs{ss}, 'sessions', subjectListStruct.(subjectIDs{ss}), 'makePlots', true);
+        calculateRMSforEMG(subjectIDs{ss}, 'sessions', subjectListStruct.(subjectIDs{ss}), 'makePlots', true, 'normalize', true);
+
     end
     close all;
     for stimulus = 1:length(stimuli)
