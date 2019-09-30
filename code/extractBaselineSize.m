@@ -124,7 +124,7 @@ for ss = 1:length(sessionIDs)
             nRowForAcquisitionStruct = size(acquisitionsByStimulus.(directionName),1);
 
                             
-            for tt = 1:10
+            for tt = 2:10
                 trialData.response = [];
                 
                 system(['touch -a "', fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)), '"']);
