@@ -62,7 +62,9 @@ p = inputParser; p.KeepUnmatched = true;
 p.addParameter('makePlots',true,@islogical);
 p.addParameter('makeDebugPlots',false,@islogical);
 p.addParameter('normalize',true,@islogical);
-p.addParameter('STDWindowSizeInIndices',100,@isnumeric);
+p.addParameter('STDWindowSizeInMSecs',500,@isnumeric);
+p.addParameter('delayInSecs',1.1,@isnumeric);
+p.addParameter('timebase',0:0.1:17.5,@isnumeric);
 p.addParameter('windowOnset',2.5,@isnumeric);
 p.addParameter('windowOffset',6.5,@isnumeric);
 p.addParameter('baselineOnset',0,@isnumeric);
@@ -170,6 +172,11 @@ for ss = 1:length(sessionIDs)
                     trialData.response.values.right = acquisitionData.responseStruct.data(tt).emg.response(1,:);
                     trialData.response.values.left = acquisitionData.responseStruct.data(tt).emg.response(2,:);
                     
+                    % adjust timebase for the delay in issuing the
+                    % beginning recording command and the actual beginning
+                    % of data recording
+                    trialData.response.timebase = trialData.response.timebase + p.Results.delay;
+                    
                     % center the voltages at 0. we've noticed that for whatever
                     % reason, the baseline EMG results are not centered around
                     % 0, but are in fact shifted a bit negative. even more
@@ -191,22 +198,25 @@ for ss = 1:length(sessionIDs)
                     timepoint = 1;
                     EMGResponseOverTime.left = [];
                     EMGResponseOverTime.right = [];
-                    resampledTimebase = [];
-                    while timepoint <= length(trialData.response.timebase)
+                    resampledTimebase = p.Results.timebase;
+                    
+                    %
+                    samplingRate = 1/(trialData.response.timebase(2) - trialData.response.timebase(1));
+                    STDWindowSizeInIndices = samplingRate * p.Results.STDWindowSizeInMSecs/1000;
+                    
+                    for timepoint = resampledTimebase
                         
-                        if timepoint - floor(p.Results.STDWindowSizeInIndices/2) < 1 || timepoint + floor(p.Results.STDWindowSizeInIndices/2) > length(trialData.response.timebase)
+                        if timepoint - floor(STDWindowSizeInIndices/2) < 1 || timepoint + floor(STDWindowSizeInIndices/2) > length(trialData.response.timebase)
                             EMGResponseOverTime.left(end+1) = NaN;
                             EMGResponseOverTime.right(end+1) = NaN;
                             
                         else
-                            EMGResponseOverTime.left(end+1) = std(trialData.response.values.left((timepoint-floor(p.Results.STDWindowSizeInIndices/2)):(timepoint+floor(p.Results.STDWindowSizeInIndices/2))));
-                            EMGResponseOverTime.right(end+1) = std(trialData.response.values.right((timepoint-floor(p.Results.STDWindowSizeInIndices/2)):(timepoint+floor(p.Results.STDWindowSizeInIndices/2))));
+                            EMGResponseOverTime.left(end+1) = std(trialData.response.values.left((timepoint-floor(STDWindowSizeInIndices/2)):(timepoint+floor(STDWindowSizeInIndices/2))));
+                            EMGResponseOverTime.right(end+1) = std(trialData.response.values.right((timepoint-floor(STDWindowSizeInIndices/2)):(timepoint+floor(STDWindowSizeInIndices/2))));
                             
                         end
                         
-                        resampledTimebase(end+1) = trialData.response.timebase(timepoint);
                         
-                        timepoint = timepoint + p.Results.STDWindowSizeInIndices;
                         
                     end
                     
@@ -214,13 +224,13 @@ for ss = 1:length(sessionIDs)
                     % left-over code when doing a true sliding window
                     %                     for timepoint = 1:length(trialData.response.timebase)
                     %
-                    %                         if timepoint - floor(p.Results.STDWindowSizeInIndices/2) < 1 || timepoint + floor(p.Results.STDWindowSizeInIndices/2) > length(trialData.response.timebase)
+                    %                         if timepoint - floor(STDWindowSizeInIndices/2) < 1 || timepoint + floor(STDWindowSizeInIndices/2) > length(trialData.response.timebase)
                     %                             EMGResponseOverTime.left(timepoint) = NaN;
                     %                             EMGResponseOverTime.right(timepoint) = NaN;
                     %
                     %                         else
-                    %                             EMGResponseOverTime.left(timepoint) = std(trialData.response.values.left((timepoint-floor(p.Results.STDWindowSizeInIndices/2)):(timepoint+floor(p.Results.STDWindowSizeInIndices/2))));
-                    %                             EMGResponseOverTime.right(timepoint) = std(trialData.response.values.right((timepoint-floor(p.Results.STDWindowSizeInIndices/2)):(timepoint+floor(p.Results.STDWindowSizeInIndices/2))));
+                    %                             EMGResponseOverTime.left(timepoint) = std(trialData.response.values.left((timepoint-floor(STDWindowSizeInIndices/2)):(timepoint+floor(STDWindowSizeInIndices/2))));
+                    %                             EMGResponseOverTime.right(timepoint) = std(trialData.response.values.right((timepoint-floor(STDWindowSizeInIndices/2)):(timepoint+floor(STDWindowSizeInIndices/2))));
                     %
                     %                         end
                     %
@@ -275,7 +285,7 @@ for ss = 1:length(sessionIDs)
 end
 
 % save out trialStruct
-fullSavePath = fullfile(p.Results.savePath, 'trialStructs');
+fullSavePath = fullfile(p.Results.savePath, ['WindowLength_', p.Results.STDWindowLengthInMSecs, 'MSecs'], 'trialStructs');
 if ~exist(fullSavePath)
     mkdir(fullSavePath);
 end
@@ -341,7 +351,7 @@ if makePlots
     
     linkaxes([ax.ax1, ax.ax2, ax.ax3]);
     
-    fullSavePath = fullfile(p.Results.savePath, ['windowLength', num2str(p.Results.STDWindowSizeInIndices)]);
+    fullSavePath = fullfile(p.Results.savePath, ['WindowLength_', p.Results.STDWindowLengthInMSecs, 'MSecs']);
     
     if ~exist(fullSavePath)
         mkdir(fullSavePath)
