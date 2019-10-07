@@ -68,7 +68,7 @@ p.addParameter('timebase',0:0.1:17.5,@isnumeric);
 p.addParameter('windowOnset',2.5,@isnumeric);
 p.addParameter('windowOffset',6.5,@isnumeric);
 p.addParameter('baselineOnset',0,@isnumeric);
-p.addParameter('baselineOffset',0.5,@isnumeric);
+p.addParameter('baselineOffset',1.5,@isnumeric);
 p.addParameter('confidenceInterval', [10 90], @isnumeric);
 p.addParameter('sessions', {}, @iscell);
 p.addParameter('contrasts', {100, 200, 400}, @iscell);
@@ -175,7 +175,7 @@ for ss = 1:length(sessionIDs)
                     % adjust timebase for the delay in issuing the
                     % beginning recording command and the actual beginning
                     % of data recording
-                    trialData.response.timebase = trialData.response.timebase + p.Results.delay;
+                    trialData.response.timebase = trialData.response.timebase + p.Results.delayInSecs;
                     
                     % center the voltages at 0. we've noticed that for whatever
                     % reason, the baseline EMG results are not centered around
@@ -206,13 +206,14 @@ for ss = 1:length(sessionIDs)
                     
                     for timepoint = resampledTimebase
                         
-                        if timepoint - floor(STDWindowSizeInIndices/2) < 1 || timepoint + floor(STDWindowSizeInIndices/2) > length(trialData.response.timebase)
+                        [~, timepointIndex ]  = min(abs(trialData.response.timebase-timepoint));
+                        if timepointIndex - floor(STDWindowSizeInIndices/2) < 1 || timepointIndex + floor(STDWindowSizeInIndices/2) > length(trialData.response.timebase)
                             EMGResponseOverTime.left(end+1) = NaN;
                             EMGResponseOverTime.right(end+1) = NaN;
                             
                         else
-                            EMGResponseOverTime.left(end+1) = std(trialData.response.values.left((timepoint-floor(STDWindowSizeInIndices/2)):(timepoint+floor(STDWindowSizeInIndices/2))));
-                            EMGResponseOverTime.right(end+1) = std(trialData.response.values.right((timepoint-floor(STDWindowSizeInIndices/2)):(timepoint+floor(STDWindowSizeInIndices/2))));
+                            EMGResponseOverTime.left(end+1) = std(trialData.response.values.left((timepointIndex-floor(STDWindowSizeInIndices/2)):(timepointIndex+floor(STDWindowSizeInIndices/2))));
+                            EMGResponseOverTime.right(end+1) = std(trialData.response.values.right((timepointIndex-floor(STDWindowSizeInIndices/2)):(timepointIndex+floor(STDWindowSizeInIndices/2))));
                             
                         end
                         
@@ -285,7 +286,7 @@ for ss = 1:length(sessionIDs)
 end
 
 % save out trialStruct
-fullSavePath = fullfile(p.Results.savePath, ['WindowLength_', p.Results.STDWindowLengthInMSecs, 'MSecs'], 'trialStructs');
+fullSavePath = fullfile(p.Results.savePath, ['WindowLength_', num2str(p.Results.STDWindowSizeInMSecs), 'MSecs'], 'trialStructs');
 if ~exist(fullSavePath)
     mkdir(fullSavePath);
 end
@@ -329,7 +330,7 @@ if makePlots
             lineProps.col{1} = colorPalette.(p.Results.stimuli{ss}){cc};
             
             % plot
-            axis.(['ax', num2str(cc)]) = mseb(resampledTimebase, nanmean(trialStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})]).combined), std(trialStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})]).combined)/size(trialStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})]).combined,1), lineProps);
+            axis.(['ax', num2str(cc)]) = mseb(resampledTimebase, nanmean(trialStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})]).combined), std(trialStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})]).combined)/sqrt(size(trialStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})]).combined,1)), lineProps);
             
             legendText{cc} = ([num2str(p.Results.contrasts{cc}), '% Contrast, N = ', num2str(size(trialStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})]).combined, 1))]);
             
@@ -351,7 +352,7 @@ if makePlots
     
     linkaxes([ax.ax1, ax.ax2, ax.ax3]);
     
-    fullSavePath = fullfile(p.Results.savePath, ['WindowLength_', p.Results.STDWindowLengthInMSecs, 'MSecs']);
+    fullSavePath = fullfile(p.Results.savePath, ['WindowLength_', num2str(p.Results.STDWindowSizeInMSecs), 'MSecs']);
     
     if ~exist(fullSavePath)
         mkdir(fullSavePath)
