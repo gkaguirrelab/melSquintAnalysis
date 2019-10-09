@@ -61,9 +61,10 @@ function [ medianRMS, trialStruct ] = calculateRMSforEMG(subjectID, varargin)
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('makePlots',false,@islogical);
 p.addParameter('makeDebugPlots',false,@islogical);
-p.addParameter('normalize',false,@islogical);
+p.addParameter('normalize',true,@islogical);
 p.addParameter('delayInSecs',1.1,@isnumeric);
 p.addParameter('windowOnset',2.5,@isnumeric);
+p.addParameter('nBootstraps',1000,@isnumeric);
 p.addParameter('windowOffset',6.5,@isnumeric);
 p.addParameter('baselineOnset',0,@isnumeric);
 p.addParameter('baselineOffset',1.5,@isnumeric);
@@ -202,30 +203,29 @@ for ss = 1:length(sessionIDs)
                     counter = 1;
                     startingEvokedIndex = onsetIndex;
                     
-                    RMSEvokedPooledAcrossSlidingWindows = [];
+                    RMSEvokedPooledAcrossBootstraps = [];
                     if (p.Results.normalize)
-                        while startingEvokedIndex + numberOfIndicesBaseline - 1 < offsetIndex
+                        % determine number of baseline indices
+                        nBaselineIndices = baselineOffsetIndex - baselineOnsetIndex + 1;
+                        
+                        for ii = 1:length(p.Results.nBootstraps)
                             
+                            bootstrapIndices = randi([onsetIndex offsetIndex], 1, nBaselineIndices);
                             
-                            voltages.left = trialData.response.values.left(startingEvokedIndex:(startingEvokedIndex+numberOfIndicesBaseline));
-                            voltages.right = trialData.response.values.right(startingEvokedIndex:(startingEvokedIndex+numberOfIndicesBaseline));
+                            voltages.left = trialData.response.values.left(bootstrapIndices);
+                            voltages.right = trialData.response.values.right(bootstrapIndices);
                             
                             RMS.left = (sum(((voltages.left).^2)))^(1/2);
                             RMS.right = (sum(((voltages.right).^2)))^(1/2);
                             
-                            RMSEvokedPooledAcrossSlidingWindows(1,counter) = RMS.left;
-                            RMSEvokedPooledAcrossSlidingWindows(2,counter) = RMS.right;
-                            
-                            
-                            counter = counter + 1;
-                            startingEvokedIndex = startingEvokedIndex + 1;
+                            RMSEvokedPooledAcrossBootstraps(1,counter) = RMS.left;
+                            RMSEvokedPooledAcrossBootstraps(2,counter) = RMS.right;
                             
                         end
+
                         
-                        
-                        
-                        RMS.left = mean(RMSEvokedPooledAcrossSlidingWindows(1,:));
-                        RMS.right = mean(RMSEvokedPooledAcrossSlidingWindows(2,:));
+                        RMS.left = mean(RMSEvokedPooledAcrossBootstraps(1,:));
+                        RMS.right = mean(RMSEvokedPooledAcrossBootstraps(2,:));
                         
                         baselineVoltages.left = trialData.response.values.left(baselineOnsetIndex:baselineOffsetIndex);
                         baselineVoltages.right = trialData.response.values.right(baselineOnsetIndex:baselineOffsetIndex);
