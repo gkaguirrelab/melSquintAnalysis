@@ -208,7 +208,7 @@ for ss = 1:length(sessionIDs)
                         % determine number of baseline indices
                         nBaselineIndices = baselineOffsetIndex - baselineOnsetIndex + 1;
                         
-                        for ii = 1:length(p.Results.nBootstraps)
+                        for ii = 1:p.Results.nBootstraps
                             
                             bootstrapIndices = randi([onsetIndex offsetIndex], 1, nBaselineIndices);
                             
@@ -218,8 +218,8 @@ for ss = 1:length(sessionIDs)
                             RMS.left = (sum(((voltages.left).^2)))^(1/2);
                             RMS.right = (sum(((voltages.right).^2)))^(1/2);
                             
-                            RMSEvokedPooledAcrossBootstraps(1,counter) = RMS.left;
-                            RMSEvokedPooledAcrossBootstraps(2,counter) = RMS.right;
+                            RMSEvokedPooledAcrossBootstraps(1,ii) = RMS.left;
+                            RMSEvokedPooledAcrossBootstraps(2,ii) = RMS.right;
                             
                         end
 
