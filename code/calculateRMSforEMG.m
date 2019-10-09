@@ -62,9 +62,10 @@ p = inputParser; p.KeepUnmatched = true;
 p.addParameter('makePlots',false,@islogical);
 p.addParameter('makeDebugPlots',false,@islogical);
 p.addParameter('normalize',false,@islogical);
+p.addParameter('delayInSecs',1.1,@isnumeric);
 p.addParameter('windowOnset',2.5,@isnumeric);
 p.addParameter('windowOffset',6.5,@isnumeric);
-p.addParameter('baselineOnset',1,@isnumeric);
+p.addParameter('baselineOnset',0,@isnumeric);
 p.addParameter('baselineOffset',1.5,@isnumeric);
 p.addParameter('confidenceInterval', [10 90], @isnumeric);
 p.addParameter('sessions', {}, @iscell);
@@ -161,6 +162,12 @@ for ss = 1:length(sessionIDs)
                     trialData.response.values.right = acquisitionData.responseStruct.data(tt).emg.response(1,:);
                     trialData.response.values.left = acquisitionData.responseStruct.data(tt).emg.response(2,:);
                     
+                    % adjust timebase for the delay in issuing the
+                    % beginning recording command and the actual beginning
+                    % of data recording
+                    trialData.response.timebase = trialData.response.timebase + p.Results.delayInSecs;
+                    
+                    
                     % center the voltages at 0. we've noticed that for whatever
                     % reason, the baseline EMG results are not centered around
                     % 0, but are in fact shifted a bit negative. even more
@@ -179,10 +186,12 @@ for ss = 1:length(sessionIDs)
                     end
                     
                     % calculate RMS for the trial
-                    onsetIndex = find(trialData.response.timebase == p.Results.windowOnset);
-                    offsetIndex = find(trialData.response.timebase == p.Results.windowOffset);
-                    baselineOnsetIndex = find(trialData.response.timebase == p.Results.baselineOnset);
-                    baselineOffsetIndex = find(trialData.response.timebase == p.Results.baselineOffset);
+                    
+                    [~, onsetIndex ]  = min(abs(trialData.response.timebase-p.Results.windowOnset));
+                    [~, offsetIndex ]  = min(abs(trialData.response.timebase-p.Results.windowOffset));
+                    [~, baselineOnsetIndex ]  = min(abs(trialData.response.timebase-p.Results.baselineOnset));
+                    [~, baselineOffsetIndex ]  = min(abs(trialData.response.timebase-p.Results.baselineOffset));
+
                     
                     voltages.left = trialData.response.values.left(onsetIndex:offsetIndex);
                     voltages.right = trialData.response.values.right(onsetIndex:offsetIndex);
