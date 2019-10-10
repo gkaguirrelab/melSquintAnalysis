@@ -86,6 +86,15 @@ for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
         trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).left = [];
         trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).right = [];
+        
+        normalizedByTrialTrialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).left = [];
+        normalizedByTrialTrialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).right = [];
+    end
+    for session = 1:4
+        
+        baselineRMSAccumulator.(['Session', num2str(session)]).(stimuli{ss}).left = [];
+        baselineRMSAccumulator.(['Session', num2str(session)]).(stimuli{ss}).right = [];
+        
     end
 end
 if isempty(p.Results.sessions)
@@ -142,8 +151,8 @@ for ss = 1:length(sessionIDs)
         acquisition = str2num(acquisition);
         acquisitions = [acquisitions, acquisition];
     end
-    
-    
+
+
     for aa = acquisitions
         stimulusDataFile = fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', str2num(sessionNumber),aa));
         if exist(stimulusDataFile)
@@ -197,41 +206,22 @@ for ss = 1:length(sessionIDs)
                     voltages.left = trialData.response.values.left(onsetIndex:offsetIndex);
                     voltages.right = trialData.response.values.right(onsetIndex:offsetIndex);
                     
-                    numberOfIndicesEvoked = offsetIndex - onsetIndex + 1;
-                    numberOfIndicesBaseline = baselineOffsetIndex - baselineOnsetIndex + 1;
-                    
-                    counter = 1;
-                    startingEvokedIndex = onsetIndex;
-                    
-                    RMSEvokedPooledAcrossBootstraps = [];
+
                     if (p.Results.normalize)
-                        % determine number of baseline indices
-                        nBaselineIndices = baselineOffsetIndex - baselineOnsetIndex + 1;
-                        
-                        for ii = 1:p.Results.nBootstraps
-                            
-                            bootstrapIndices = randi([onsetIndex offsetIndex], 1, nBaselineIndices);
-                            
-                            voltages.left = trialData.response.values.left(bootstrapIndices);
-                            voltages.right = trialData.response.values.right(bootstrapIndices);
-                            
-                            RMS.left = (sum(((voltages.left).^2)))^(1/2);
-                            RMS.right = (sum(((voltages.right).^2)))^(1/2);
-                            
-                            RMSEvokedPooledAcrossBootstraps(1,ii) = RMS.left;
-                            RMSEvokedPooledAcrossBootstraps(2,ii) = RMS.right;
-                            
-                        end
 
                         
-                        RMS.left = mean(RMSEvokedPooledAcrossBootstraps(1,:));
-                        RMS.right = mean(RMSEvokedPooledAcrossBootstraps(2,:));
+
+                        
+                        RMS.left = (mean(((voltages.left).^2)))^(1/2);
+                        RMS.right = (mean(((voltages.right).^2)))^(1/2);
                         
                         baselineVoltages.left = trialData.response.values.left(baselineOnsetIndex:baselineOffsetIndex);
                         baselineVoltages.right = trialData.response.values.right(baselineOnsetIndex:baselineOffsetIndex);
                         
-                        baselineRMS.left = (sum(((baselineVoltages.left).^2)))^(1/2);
-                        baselineRMS.right = (sum(((baselineVoltages.right).^2)))^(1/2);
+                        baselineRMS.left = (mean(((baselineVoltages.left).^2)))^(1/2);
+                        baselineRMS.right = (mean(((baselineVoltages.right).^2)))^(1/2);
+                        
+                        
                     else
                         voltages.left = trialData.response.values.left(onsetIndex:offsetIndex);
                         voltages.right = trialData.response.values.right(onsetIndex:offsetIndex);
@@ -255,8 +245,16 @@ for ss = 1:length(sessionIDs)
                     % pool the results
                     nItems = length((trialStruct.(directionName).(['Contrast', contrast]).left));
                     if (p.Results.normalize)
-                        trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left - baselineRMS.left)/(baselineRMS.left);
-                        trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right - baselineRMS.right)/(baselineRMS.right);
+                        
+                        trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left);
+                        trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right);
+                        
+                        
+                        normalizedByTrialTrialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left - baselineRMS.left)/(baselineRMS.left);
+                        normalizedByTrialTrialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right - baselineRMS.right)/(baselineRMS.right);
+                        
+                        baselineRMSAccumulator.(['Session', num2str(sessionNumber)]).(directionName).left(end+1) = baselineRMS.left;
+                        baselineRMSAccumulator.(['Session', num2str(sessionNumber)]).(directionName).right(end+1) = baselineRMS.right;
                     else
                         trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = RMS.left;
                         trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = RMS.right;
@@ -268,7 +266,26 @@ for ss = 1:length(sessionIDs)
             end
         end
     end
+    
+    if p.Results.normalize
+        for stimulus = 1:length(stimuli)
+            meanBaselineRMS.left = mean(baselineRMSAccumulator.(['Session', num2str(sessionNumber)]).(stimuli{stimulus}).left);
+            meanBaselineRMS.right = mean(baselineRMSAccumulator.(['Session', num2str(sessionNumber)]).(stimuli{stimulus}).right);
+            for contrast = 1:length(contrasts)
+                
+                normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left = (trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left - meanBaselineRMS.left)./meanBaselineRMS.left;
+                normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right = (trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right - meanBaselineRMS.right)./meanBaselineRMS.right;
+
+            end
+        end
+    end
+    
 end
+
+if p.Results.normalize
+   trialStruct = normalizedBySessionTrialStruct; 
+end
+
 %% make median RMS struct
 for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
