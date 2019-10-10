@@ -89,6 +89,9 @@ for ss = 1:length(stimuli)
         
         normalizedByTrialTrialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).left = [];
         normalizedByTrialTrialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).right = [];
+        
+        normalizedBySessionTrialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).left = [];
+        normalizedBySessionTrialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).right = [];
     end
     for session = 1:4
         
@@ -148,6 +151,14 @@ for ss = 1:length(sessionIDs)
     availableAcquisitions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, '*acquisition*_emg.mat'));
     
     acquisitions = [];
+    
+    for stimulus = 1:length(stimuli)
+        for cc = 1:length(contrasts)
+            trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{cc})]).left = [];
+            trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{cc})]).right = [];
+        end
+    end
+    
     for aa = 1:length(availableAcquisitions)
         acquisitionLongName = availableAcquisitions(aa).name;
         acquisitionLongName = strsplit(acquisitionLongName, '_emg.mat');
@@ -253,6 +264,9 @@ for ss = 1:length(sessionIDs)
                         trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left);
                         trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right);
                         
+                        trialStructBySession.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left);
+                        trialStructBySession.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right);
+
                         
                         normalizedByTrialTrialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left - baselineRMS.left)/(baselineRMS.left);
                         normalizedByTrialTrialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right - baselineRMS.right)/(baselineRMS.right);
@@ -277,8 +291,8 @@ for ss = 1:length(sessionIDs)
             meanBaselineRMS.right = mean(baselineRMSAccumulator.(['Session', num2str(sessionNumber)]).(stimuli{stimulus}).right);
             for contrast = 1:length(contrasts)
                 
-                normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left = (trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left - meanBaselineRMS.left)./meanBaselineRMS.left;
-                normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right = (trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right - meanBaselineRMS.right)./meanBaselineRMS.right;
+                normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left = [normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left, (trialStructBySession.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left - meanBaselineRMS.left)./meanBaselineRMS.left];
+                normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right = [normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right, (trialStructBySession.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right - meanBaselineRMS.right)./meanBaselineRMS.right];
                 
                 pooledSTDs.normalizedBySession(end+1) = std(normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left);
                 pooledSTDs.normalizedBySession(end+1) = std(normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right);
