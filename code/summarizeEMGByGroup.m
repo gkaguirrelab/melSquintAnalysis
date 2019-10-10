@@ -6,7 +6,7 @@ load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLA
 
 subjectIDs = fieldnames(subjectListStruct);
 
-calculateRMS = true;
+calculateRMS = false;
 
 %% Pool results
 controlRMS = [];
@@ -38,22 +38,22 @@ for ss = 1:length(subjectIDs)
     
     if calculateRMS
         calculateRMSforEMG(subjectIDs{ss}, 'sessions', subjectListStruct.(subjectIDs{ss}), 'makePlots', true);
-        calculateRMSforEMG(subjectIDs{ss}, 'sessions', subjectListStruct.(subjectIDs{ss}), 'makePlots', true, 'normalize', true);
+        calculateRMSforEMG(subjectIDs{ss}, 'sessions', subjectListStruct.(subjectIDs{ss}), 'makePlots', true, 'normalize', false);
         
     end
     close all;
     for stimulus = 1:length(stimuli)
         for contrast = 1:length(contrasts)
             if strcmp(group, 'c')
-                load(fullfile(resultsDir, 'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS.mat']));
+                load(fullfile(resultsDir, 'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS_normalized.mat']));
                 controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmean([medianRMS.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).left, medianRMS.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).right]);
                 controlSubjects{end+1} = subjectIDs{ss};
             elseif strcmp(group, 'mwa')
-                load(fullfile(resultsDir, 'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS.mat']));
+                load(fullfile(resultsDir, 'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS_normalized.mat']));
                 mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmean([medianRMS.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).left, medianRMS.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).right]);
                 mwaSubjects{end+1} = subjectIDs{ss};
             elseif strcmp(group, 'mwoa')
-                load(fullfile(resultsDir,  'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS.mat']));
+                load(fullfile(resultsDir,  'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS_normalized.mat']));
                 mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmean([medianRMS.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).left, medianRMS.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).right]);
                 mwoaSubjects{end+1} = subjectIDs{ss};
             else
