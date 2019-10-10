@@ -133,7 +133,7 @@ for ss = 1:nStimuli
     legend('boxoff')
     
     % add line for pulse onset
-    line([1.5,  5.5], [-0.5, -0.5], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
+    line([1.5,  5.5], [-0.1, -0.1], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
     
     % spruce up axes
     
