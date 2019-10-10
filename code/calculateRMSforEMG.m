@@ -97,6 +97,10 @@ for ss = 1:length(stimuli)
         
     end
 end
+
+ pooledSTDs.normalizedBySession = [];
+ pooledSTDs.normalizedByTrial = [];
+
 if isempty(p.Results.sessions)
     sessions = [];
     for ss = 1:potentialNumberOfSessions
@@ -275,7 +279,15 @@ for ss = 1:length(sessionIDs)
                 
                 normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left = (trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left - meanBaselineRMS.left)./meanBaselineRMS.left;
                 normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right = (trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right - meanBaselineRMS.right)./meanBaselineRMS.right;
+                
+                pooledSTDs.normalizedBySession(end+1) = std(normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left);
+                pooledSTDs.normalizedBySession(end+1) = std(normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right);
 
+                
+                pooledSTDs.normalizedByTrial(end+1) = std(normalizedByTrialTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left);
+                pooledSTDs.normalizedByTrial(end+1) = std(normalizedByTrialTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right);
+
+                
             end
         end
     end
