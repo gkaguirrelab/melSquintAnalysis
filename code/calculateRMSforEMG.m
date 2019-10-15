@@ -154,8 +154,8 @@ for ss = 1:length(sessionIDs)
     
     for stimulus = 1:length(stimuli)
         for cc = 1:length(contrasts)
-            trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{cc})]).left = [];
-            trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{cc})]).right = [];
+            trialStructBySession.(stimuli{stimulus}).(['Contrast', num2str(contrasts{cc})]).left = [];
+            trialStructBySession.(stimuli{stimulus}).(['Contrast', num2str(contrasts{cc})]).right = [];
         end
     end
     
@@ -264,8 +264,8 @@ for ss = 1:length(sessionIDs)
                         trialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left);
                         trialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right);
                         
-                        trialStructBySession.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left);
-                        trialStructBySession.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right);
+                        trialStructBySession.(directionName).(['Contrast', contrast]).left(end+1) = (RMS.left);
+                        trialStructBySession.(directionName).(['Contrast', contrast]).right(end+1) = (RMS.right);
 
                         
                         normalizedByTrialTrialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left - baselineRMS.left)/(baselineRMS.left);
