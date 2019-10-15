@@ -28,6 +28,13 @@ controlSubjects = [];
 mwaSubjects = [];
 mwoaSubjects = [];
 
+useNormalized = true;
+
+if useNormalized
+   saveStem = '_normalized';
+else
+    saveStem = '';
+end
 
 for ss = 1:length(subjectIDs)
     
@@ -45,15 +52,15 @@ for ss = 1:length(subjectIDs)
     for stimulus = 1:length(stimuli)
         for contrast = 1:length(contrasts)
             if strcmp(group, 'c')
-                load(fullfile(resultsDir, 'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS_normalized.mat']));
+                load(fullfile(resultsDir, 'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS', saveStem, '.mat']));
                 controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmean([medianRMS.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).left, medianRMS.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).right]);
                 controlSubjects{end+1} = subjectIDs{ss};
             elseif strcmp(group, 'mwa')
-                load(fullfile(resultsDir, 'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS_normalized.mat']));
+                load(fullfile(resultsDir, 'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS', saveStem, '.mat']));
                 mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmean([medianRMS.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).left, medianRMS.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).right]);
                 mwaSubjects{end+1} = subjectIDs{ss};
             elseif strcmp(group, 'mwoa')
-                load(fullfile(resultsDir,  'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS_normalized.mat']));
+                load(fullfile(resultsDir,  'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS', saveStem, '.mat']));
                 mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmean([medianRMS.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).left, medianRMS.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast}), '_median']).right]);
                 mwoaSubjects{end+1} = subjectIDs{ss};
             else
@@ -166,7 +173,7 @@ for stimulus = 1:length(stimuli)
     end
 end
 
-plotSpreadResults(EMG, 'yLims', [0 6], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', 'groupAverage.pdf'))
+plotSpreadResults(EMG, 'yLims', [0 6], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['groupAverage', saveStem, '.pdf']))
 
 
 
@@ -178,5 +185,5 @@ for stimulus = 1:length(stimuli)
     end
 end
 
-plotSpreadResults(EMG, 'yLims', [0 6], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', 'groupAverage_combinedMigraineurs.pdf'))
+plotSpreadResults(EMG, 'yLims', [0 6], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['groupAverage_combinedMigraineurs', saveStem, '.pdf']))
 
