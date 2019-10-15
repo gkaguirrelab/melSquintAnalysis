@@ -586,7 +586,7 @@ for ss = 1:length(subjectIDs)
 end
 
 
-
+%% plot percent persistent and total response amplitdue
 percentPersistent = [];
 totalResponseAmplitude = [];
 for stimulus = 1:length(stimuli)
