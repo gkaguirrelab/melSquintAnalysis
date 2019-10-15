@@ -8,6 +8,7 @@ p.addParameter('contrasts',{100, 200, 400});
 p.addParameter('stimuli',{'LightFlux', 'Melanopsin', 'LMS'});
 p.addParameter('yLabel', 'Discomfort Ratings', @ischar);
 p.addParameter('yLims', [-0.5 10], @isnumeric);
+p.addParameter('extremeValueMultiplier', 1.07, @isnumeric);
 p.addParameter('saveName', [], @ischar);
 
 
@@ -35,6 +36,7 @@ for stimulus = 1:length(stimuli)
         nObservationsPerGroup(end+1) = length(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{end})]));
     end
     data = nan(nGroups*length(contrasts), max(nObservationsPerGroup));
+    extremeData = data;
     
     
     for contrast = 1:length(contrasts)
@@ -55,6 +57,16 @@ for stimulus = 1:length(stimuli)
         end
         
     end
+    
+    % find values that are outside of the inputted yLims
+    originalData = data;
+    [i,j]=find(data > p.Results.yLims(2));
+    for ii = 1:length(i)
+        data(i(ii), j(ii)) = NaN;
+        extremeData(i(ii), j(ii)) = p.Results.yLims(2)*p.Results.extremeValueMultiplier;
+    end
+    
+    
     
     categoryIdx = repmat([0:nGroups-1], max(nObservationsPerGroup), size(data,1)/nGroups);
     
@@ -100,7 +112,8 @@ for stimulus = 1:length(stimuli)
     end
     
     plotSpread(data', 'categoryIdx', categoryIdx(:), 'categoryMarkers', categoryMarkers, 'xValues', xValues, 'categoryColors', categoryColors, 'showMM', 0, 'categoryLabels', groupNames)
-    
+    plotSpread(extremeData', 'categoryIdx', categoryIdx(:), 'categoryMarkers', categoryMarkers, 'xValues', xValues, 'categoryColors', categoryColors, 'showMM', 0, 'categoryLabels', groupNames)
+
     axesCellArray = [];
     legendText = [];
     for ii = 1:nGroups
@@ -132,8 +145,22 @@ for stimulus = 1:length(stimuli)
     xlabel('Contrast')
     ylabel(p.Results.yLabel)
     title(stimuli{stimulus})
-    ylim(p.Results.yLims)
+    
+    % adjust yLims if there are extreme data
+    if sum(sum(isnan(extremeData))) == size(extremeData,1) * size(extremeData,2)
+    
+        ylim(p.Results.yLims)
+        yticklabels(yticks);
+        
+    else
+                yTicksNotToDisplay = find(yticks > p.Results.yLims(2));
+        yTicksToDisplay = yticks;
+        yTicksToDisplay(yTicksNotToDisplay) = NaN;
+        yticklabels(yticks);
+        ylim([p.Results.yLims(1), (p.Results.yLims(2)*p.Results.extremeValueMultiplier - p.Results.yLims(2)*1.05 + p.Results.yLims(2)*p.Results.extremeValueMultiplier)])
+    end
     xlim([0.5 3.5])
+    line([0.5 3.5], [p.Results.yLims(2)*1.05, p.Results.yLims(2)*1.05], 'LineStyle', '--', 'Color', 'k');
     
     if stimulus == length(stimuli)
         if nGroups == 2
