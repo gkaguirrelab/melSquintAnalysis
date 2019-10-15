@@ -317,7 +317,7 @@ for stimulus = 1:length(stimuli)
     end
 end
 
-plotSpreadResults(EMG, 'yLims', [0 6], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['groupAverage', saveStem, '.pdf']))
+plotSpreadResults(EMG, 'yLims', [-.5 1.5], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['groupAverage', saveStem, '.pdf']))
 
 
 
@@ -329,5 +329,5 @@ for stimulus = 1:length(stimuli)
     end
 end
 
-plotSpreadResults(EMG, 'yLims', [0 6], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['groupAverage_combinedMigraineurs', saveStem, '.pdf']))
+plotSpreadResults(EMG, 'yLims', [-.5 1.5], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['groupAverage_combinedMigraineurs', saveStem, '.pdf']))
 
