@@ -7,7 +7,8 @@ stimuli = {'Melanopsin', 'LightFlux', 'LMS'};
 contrasts = {100, 200, 400};
 
 %%
-plotFig = figure; hold on;
+plotFig = figure; 
+subplot(1,3,1); hold on;
 for stimulus = 1:length(stimuli)
     
     if stimulus == 1
@@ -19,9 +20,16 @@ for stimulus = 1:length(stimuli)
     end
     
     for contrast = 1:length(contrasts)
-        %plot(median(mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), median(mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'b', 'Marker', plotSymbol)
-        plot(median(mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), median(mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'r', 'Marker', plotSymbol)
-       % plot(median(controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), median(controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'k', 'Marker', plotSymbol)
+        if contrast == 1
+           markerSize = 6; 
+        elseif contrast == 2
+            markerSize = 10;
+        elseif contrast == 3
+            markerSize = 14;
+        end
+        plot(median(mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), median(mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'b', 'Marker', plotSymbol, 'MarkerSize', markerSize)
+        plot(median(mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), median(mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'r', 'Marker', plotSymbol, 'MarkerSize', markerSize)
+        plot(median(controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), median(controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'k', 'Marker', plotSymbol, 'MarkerSize', markerSize)
         
         
     end
@@ -31,7 +39,7 @@ ylabel('RMS % Change from Baseline')
 xlabel('Discomfort Rating')
 
 %%
-plotFig = figure; hold on;
+subplot(1,3,2); hold on;
 for stimulus = 1:length(stimuli)
     
     if stimulus == 1
@@ -43,9 +51,16 @@ for stimulus = 1:length(stimuli)
     end
     
     for contrast = 1:length(contrasts)
-        plot(median(mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(mwaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'b', 'Marker', plotSymbol)
-        plot(median(mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(mwoaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'r', 'Marker', plotSymbol)
-        plot(median(controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'k', 'Marker', plotSymbol)
+                if contrast == 1
+           markerSize = 6; 
+        elseif contrast == 2
+            markerSize = 10;
+        elseif contrast == 3
+            markerSize = 14;
+        end
+        plot(median(mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(mwaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'b', 'Marker', plotSymbol, 'MarkerSize', markerSize)
+        plot(median(mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(mwoaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'r', 'Marker', plotSymbol, 'MarkerSize', markerSize)
+        plot(median(controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'k', 'Marker', plotSymbol, 'MarkerSize', markerSize)
         
         
     end
@@ -55,7 +70,7 @@ ylabel('Pupil Constriction')
 xlabel('Discomfort Rating')
 
 %%
-plotFig = figure; hold on;
+subplot(1,3,3); hold on;
 for stimulus = 1:length(stimuli)
     
     if stimulus == 1
@@ -67,9 +82,16 @@ for stimulus = 1:length(stimuli)
     end
     
     for contrast = 1:length(contrasts)
-        plot(median(mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(mwaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'b', 'Marker', plotSymbol)
-        plot(median(mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(mwoaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'r', 'Marker', plotSymbol)
-        plot(median(controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'k', 'Marker', plotSymbol)
+                if contrast == 1
+           markerSize = 6; 
+        elseif contrast == 2
+            markerSize = 10;
+        elseif contrast == 3
+            markerSize = 14;
+        end
+        plot(median(mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(mwaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'b', 'Marker', plotSymbol, 'MarkerSize', markerSize)
+        plot(median(mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(mwoaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'r', 'Marker', plotSymbol, 'MarkerSize', markerSize)
+        plot(median(controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'Color', 'k', 'Marker', plotSymbol, 'MarkerSize', markerSize)
         
         
     end
@@ -91,9 +113,16 @@ for stimulus = 1:length(stimuli)
         plotSymbol = '+';
     end
     for contrast = 1:length(contrasts)
-        scatter3(median(mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), median(mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(mwaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'MarkerFaceColor', 'b', 'MarkerEdgeColor', 'b', 'Marker', plotSymbol)
-        scatter3(median(mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), median(mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(mwoaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'MarkerFaceColor', 'r',  'MarkerEdgeColor', 'r','Marker', plotSymbol)
-        scatter3(median(controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), median(controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), 'MarkerFaceColor', 'k',  'MarkerEdgeColor', 'k','Marker', plotSymbol)
+                if contrast == 1
+           markerSize = 10; 
+        elseif contrast == 2
+            markerSize = 20;
+        elseif contrast == 3
+            markerSize = 40;
+        end
+        scatter3(median(mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), median(mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(mwaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), markerSize, 'MarkerFaceColor', 'b', 'MarkerEdgeColor', 'b', 'Marker', plotSymbol)
+        scatter3(median(mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), median(mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(mwoaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), markerSize, 'MarkerFaceColor', 'r',  'MarkerEdgeColor', 'r','Marker', plotSymbol)
+        scatter3(median(controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), median(controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), -median(controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])), markerSize, 'MarkerFaceColor', 'k',  'MarkerEdgeColor', 'k','Marker', plotSymbol)
     end
 end
 xlabel('Discomfort Rating')
