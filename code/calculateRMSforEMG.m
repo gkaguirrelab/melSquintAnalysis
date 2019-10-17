@@ -340,7 +340,7 @@ else
     saveName = [subjectID, '_EMGMedianRMS.mat'];
 end
 
-save(fullfile(p.Results.savePath, 'medianStructs', saveName), 'medianRMS');
+save(fullfile(p.Results.savePath, 'medianStructs', saveName), 'medianRMS', 'baselineRMSAccumulator');
 %% Plot to summarize
 makePlots = p.Results.makePlots;
 if makePlots
