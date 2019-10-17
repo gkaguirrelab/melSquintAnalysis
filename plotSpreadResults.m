@@ -1,4 +1,4 @@
-function plotSpreadResults(resultsStruct, varargin)
+function [ha, plotFig] = plotSpreadResults(resultsStruct, varargin)
 
 %% Parse the input
 
@@ -10,6 +10,7 @@ p.addParameter('yLabel', 'Discomfort Ratings', @ischar);
 p.addParameter('yLims', [-0.5 10], @isnumeric);
 p.addParameter('extremeValueMultiplier', 1.07, @isnumeric);
 p.addParameter('saveName', [], @ischar);
+p.addParameter('markerSize', 12, @isnumeric);
 
 
 p.parse(varargin{:});
@@ -121,7 +122,7 @@ for stimulus = 1:length(stimuli)
             plot([1:length(contrasts)], [nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast100), ...
                 nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast200), ...
                 nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400)], ...
-                '*', 'Color', categoryColors{ii}, 'MarkerSize', 12);
+                '*', 'Color', categoryColors{ii}, 'MarkerSize', p.Results.markerSize);
             ax.(['ax', num2str(ii)]) = plot([1:length(contrasts)], [nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast100), ...
                 nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast200), ...
                 nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400)], ...
@@ -129,7 +130,7 @@ for stimulus = 1:length(stimuli)
             axesCellArray{end+1} = ax.(['ax', num2str(ii)]);
             legendText{end+1} = [groupNames{ii}, ', N = ', num2str(length(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400))];
         elseif length(contrasts) == 1
-            ax.(['ax', num2str(ii)]) = plot(xValues(ii), nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400), '*', 'Color', categoryColors{ii}, 'MarkerSize', 12);
+            ax.(['ax', num2str(ii)]) = plot(xValues(ii), nanmedian(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400), '*', 'Color', categoryColors{ii}, 'MarkerSize', p.Results.markerSize);
             legendText{end+1} = [groupNames{ii}, ', N = ', num2str(length(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).Contrast400))];
             
         end
@@ -159,7 +160,11 @@ for stimulus = 1:length(stimuli)
         yticklabels(yticks);
         ylim([p.Results.yLims(1), (p.Results.yLims(2)*p.Results.extremeValueMultiplier - p.Results.yLims(2)*1.05 + p.Results.yLims(2)*p.Results.extremeValueMultiplier)])
     end
-    xlim([0.5 3.5])
+    if length(contrasts) == 3
+        xlim([0.5 3.5])
+    elseif length(contrasts) == 1
+        xlim([0.5 1.5])
+    end
     line([0.5 3.5], [p.Results.yLims(2)*1.05, p.Results.yLims(2)*1.05], 'LineStyle', '--', 'Color', 'k');
     
     if stimulus == length(stimuli)
