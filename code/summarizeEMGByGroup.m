@@ -33,7 +33,7 @@ controlSubjects = [];
 mwaSubjects = [];
 mwoaSubjects = [];
 
-useNormalized = true;
+useNormalized = false;
 
 if useNormalized
    saveStem = '_normalized';
@@ -316,8 +316,12 @@ for stimulus = 1:length(stimuli)
         EMG.Controls.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = controlRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
     end
 end
-
-plotSpreadResults(EMG, 'yLims', [-.5 1.5], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['groupAverage', saveStem, '.pdf']))
+if useNormalized
+    yLims = [-.5 1.5];
+else
+    yLims = [0 4];
+end
+plotSpreadResults(EMG, 'yLims', yLims, 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['groupAverage', saveStem, '.pdf']))
 
 
 
@@ -329,5 +333,5 @@ for stimulus = 1:length(stimuli)
     end
 end
 
-plotSpreadResults(EMG, 'yLims', [-.5 1.5], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['groupAverage_combinedMigraineurs', saveStem, '.pdf']))
+plotSpreadResults(EMG, 'yLims', yLims, 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['groupAverage_combinedMigraineurs', saveStem, '.pdf']))
 
