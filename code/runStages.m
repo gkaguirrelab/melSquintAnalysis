@@ -61,13 +61,13 @@ end
 
 pathParams.session = sessionID;
 % first look for a trial specific
-if exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']))
-    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']));
-elseif exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']))
-    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']));
-elseif exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, ['fitParams.mat']));
+if exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']))
+    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject,  pathParams.experimentName, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']));
+elseif exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject,  pathParams.experimentName, pathParams.session, acquisitionFolderName, ['fitParams.mat']))
+    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject,  pathParams.experimentName, pathParams.session, acquisitionFolderName, ['fitParams.mat']));
+elseif exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject,  pathParams.experimentName, pathParams.session, ['fitParams.mat']));
 
-    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, ['fitParams.mat']));
+    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject,  pathParams.experimentName, pathParams.session, ['fitParams.mat']));
 else
     fitParams = getDefaultParams;
 end
