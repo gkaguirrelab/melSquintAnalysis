@@ -22,7 +22,7 @@ end
 %%
 resultsDir = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'EMG');
 
-for ss = 1:45%length(subjectIDs)
+for ss = 1:length(subjectIDs)
     
     load(fullfile(resultsDir, 'medianStructs', [subjectIDs{ss}, '_EMGMedianRMS', saveStem, '.mat']));
     group = linkMELAIDToGroup(subjectIDs{ss});
@@ -59,7 +59,7 @@ for stimulus = 1:length(stimuli)
    
 end
 
-[ha, plotFig] = plotSpreadResults(baselineEMG, 'contrasts', {400}, 'yLims', [0 0.3], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['baselineRMS_groupAverage', saveStem, '.pdf']), 'markerSize', 20)
+[ha, plotFig] = plotSpreadResults(baselineEMG, 'contrasts', {400}, 'yLims', [0 0.3], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['baselineRMS_groupAverage', saveStem, '.pdf']), 'markerSize', 20, 'nDecimals', 4)
 for axis = 1:3
    axes(ha(axis));
    xticklabels('');
@@ -75,7 +75,7 @@ for stimulus = 1:length(stimuli)
  
 end
 
-[ha, plotFig] = plotSpreadResults(baselineEMG, 'contrasts', {400}, 'yLims', [0 0.3], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['baselineRMS_groupAverage_combinedMigraineurs', saveStem, '.pdf']), 'markerSize', 20)
+[ha, plotFig] = plotSpreadResults(baselineEMG, 'contrasts', {400}, 'yLims', [0 0.3], 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['baselineRMS_groupAverage_combinedMigraineurs', saveStem, '.pdf']), 'markerSize', 20, 'nDecimals', 4)
 for axis = 1:3
    axes(ha(axis));
    xticklabels('');
