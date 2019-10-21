@@ -11,6 +11,7 @@ p.addParameter('yLims', [-0.5 10], @isnumeric);
 p.addParameter('extremeValueMultiplier', 1.07, @isnumeric);
 p.addParameter('saveName', [], @ischar);
 p.addParameter('markerSize', 12, @isnumeric);
+p.addParameter('nDecimals', 2, @isnumeric);
 
 
 p.parse(varargin{:});
@@ -53,8 +54,13 @@ for stimulus = 1:length(stimuli)
         end
         fprintf('\tContrast: %s%%\n', num2str(contrasts{contrast}));
         for ii = 1:nGroups
-            fprintf('\t\tMedian value for %s: %4.2f\n', groupNames{ii}, median(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])));
-            
+            if p.Results.nDecimals == 2
+                fprintf('\t\tMedian value for %s: %4.2f\n', groupNames{ii}, median(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])));
+            elseif p.Results.nDecimals == 3
+                fprintf('\t\tMedian value for %s: %4.3f\n', groupNames{ii}, median(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])));
+            elseif p.Results.nDecimals == 4
+                fprintf('\t\tMedian value for %s: %4.4f\n', groupNames{ii}, median(resultsStruct.(groupNames{ii}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])));
+            end
         end
         
     end
