@@ -24,18 +24,20 @@ skipStageByNumber = setdiff(1:11, stagesToRun);
 [ defaultFitParams, cameraParams, pathParams, sceneParams ] = getDefaultParams('approach', 'Squint','Protocol', p.Results.Protocol);
 
 pathParams.subject = subjectID;
-if isnumeric(sessionID)
-    sessionDir = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, ['2*session_', num2str(sessionID)]));
-    sessionID = sessionDir(end).name;
-end
-pathParams.session = sessionID;
-pathParams.protocol = 'SquintToPulse';
-
 if strcmp(p.Results.Protocol, 'Deuteranopes')
     pathParams.experimentName = p.Results.experimentNumber;
 else
     pathParams.experimentName = [];
 end
+
+if isnumeric(sessionID)
+    sessionDir = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.experimentName, ['2*session_', num2str(sessionID)]));
+    sessionID = sessionDir(end).name;
+end
+pathParams.session = sessionID;
+pathParams.protocol = 'SquintToPulse';
+
+
 
 
 [pathParams.runNames, subfolders] = getTrialList(pathParams, 'Protocol', p.Results.Protocol);

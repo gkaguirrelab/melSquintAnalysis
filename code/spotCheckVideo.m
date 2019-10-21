@@ -5,6 +5,7 @@ p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('approach', 'Squint' ,@isstr);
 p.addParameter('protocol', 'SquintToPulse' ,@isstr);
+p.addParameter('experimentNumber', [] ,@isstr);
 p.addParameter('skipParamsAdjustment', false, @islogical);
 p.addParameter('processVideo', false, @islogical);
 p.addParameter('openVideo', true, @islogical);
@@ -13,13 +14,21 @@ p.addParameter('openPlot', false, @islogical);
 p.parse(varargin{:})
 
 %% if sessionID is given out a number, figure out the appropriate string
+
+
 [ defaultFitParams, cameraParams, pathParams ] = getDefaultParams(varargin{:});
 pathParams.subject = subjectID;
 pathParams.protocol = p.Results.protocol;
+if isempty(p.Results.experimentNumber)
+    pathParams.experimentName = [];
+else
+    pathParams.experimentName = p.Results.experimentNumber;
+end
 if isnumeric(sessionID)
-    sessionDir = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, ['2*session_', num2str(sessionID)]));
+    sessionDir = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.experimentName, ['2*session_', num2str(sessionID)]));
     sessionID = sessionDir(end).name;
 end
+
 
 %% Load up the current params for this video
 acquisitionFolderName = sprintf('videoFiles_acquisition_%02d', acquisitionNumber);
@@ -33,12 +42,12 @@ end
 
 pathParams.session = sessionID;
 % first look for a trial specific
-if exist((fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat'])))
-    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']));
-elseif exist((fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat'])))
-    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']));
+if exist((fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat'])))
+    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']));
+elseif exist((fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName, pathParams.session, acquisitionFolderName, ['fitParams.mat'])))
+    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName, pathParams.session, acquisitionFolderName, ['fitParams.mat']));
 else
-    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, ['fitParams.mat']));
+    load(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName,  pathParams.session, ['fitParams.mat']));
 end
 % if no trial-specific params exist, get the acquisition-specific params
 if ~isfield(fitParams, 'smallObjThresh')
@@ -50,7 +59,7 @@ end
 
 
 
-grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, acquisitionFolderName, videoName);
+grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.experimentName, pathParams.session, acquisitionFolderName, videoName);
 processedVideoName = strrep(grayVideoName, 'MELA_data', 'MELA_processing');
 processedVideoName = strrep(processedVideoName, '.mp4', '_fitStage6.avi');
 
@@ -59,7 +68,7 @@ if p.Results.openVideo
 end
 
 if p.Results.openPlot
-    plotFile = fullfile(pathParams.dataOutputDirBase, pathParams.subject, 'allTrials', [pathParams.session, '_a', num2str(acquisitionNumber), '_t', num2str(trialNumber), '_radiusSmoothed.png']);
+    plotFile = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName, 'allTrials', [pathParams.session, '_a', num2str(acquisitionNumber), '_t', num2str(trialNumber), '_radiusSmoothed.png']);
     [recordedErrorFlag, consoleOutput] = system(['open ''' plotFile '''']);
 end
 
