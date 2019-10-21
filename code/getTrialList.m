@@ -27,12 +27,12 @@ end
 
 counter = 1;
 if strcmp(pathParams.Protocol, 'SquintToPulse') || strcmp(p.Results.Protocol, 'Deuteranopes')
-    potentialCalibrationVideos = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, 'pupilCalibration', '*post.mp4'));
+    potentialCalibrationVideos = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.experimentName, pathParams.session, 'pupilCalibration', '*post.mp4'));
     if ~isempty(potentialCalibrationVideos)
         calibrationRunName = [potentialCalibrationVideos(end).name];
         calibrationSubfolder = 'pupilCalibration';
     else
-        potentialCalibrationVideos = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, 'pupilCalibration', '*.mp4'));
+        potentialCalibrationVideos = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.experimentName, pathParams.session, 'pupilCalibration', '*.mp4'));
         calibrationRunName = [potentialCalibrationVideos(end).name];
         calibrationSubfolder = 'pupilCalibration';
     end

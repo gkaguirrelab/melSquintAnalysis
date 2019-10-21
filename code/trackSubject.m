@@ -4,6 +4,7 @@ function trackSubject(subjectID, sessionID, varargin)
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('approach', 'Squint' ,@isstr);
+p.addParameter('experimentNumber', [] ,@isstr);
 p.addParameter('Protocol', 'SquintToPulse' ,@isstr);
 p.addParameter('resume', false, @islogical);
 p.addParameter('skipProcessing', false, @islogical);
@@ -12,14 +13,27 @@ p.parse(varargin{:})
 
 [ defaultFitParams, ~, pathParams, ~ ] = getDefaultParams('approach', 'Squint','Protocol', p.Results.Protocol);
 
+
+if strcmp(p.Results.Protocol, 'Deuteranopes')
+    pathParams.experimentName = p.Results.experimentNumber;
+else
+    pathParams.experimentName = [];
+end
+
 if isnumeric(sessionID)
-    sessionDir = dir(fullfile(pathParams.dataSourceDirFull, subjectID, ['2*session_', num2str(sessionID)]));
-    sessionID = sessionDir(end).name;
+    if strcmp(p.Results.Protocol, 'Deuteranopes')
+        sessionDir = dir(fullfile(pathParams.dataSourceDirFull, subjectID, pathParams.experimentName, ['2*session_', num2str(sessionID)]));
+        sessionID = sessionDir(end).name;
+    else
+        sessionDir = dir(fullfile(pathParams.dataSourceDirFull, subjectID, p.Results.experimentNumber, ['2*session_', num2str(sessionID)]));
+        sessionID = sessionDir(end).name;
+    end
 end
 
 pathParams.subject = subjectID;
 pathParams.Protocol = p.Results.Protocol;
 pathParams.session = sessionID;
+
 
 
 
@@ -37,8 +51,12 @@ if ~p.Results.resume
         fitParams = defaultFitParams;
         [runNamesList, subfoldersList] = getTrialList(pathParams, varargin{:});
         
-        grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfoldersList{tt}, runNamesList{tt});
-        
+        if strcmp(p.Results.Protocol, 'Deuteranopes')
+                    grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.experimentName, pathParams.session, subfoldersList{tt}, runNamesList{tt});
+
+        else
+            grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfoldersList{tt}, runNamesList{tt});
+        end
         [initialParams] = estimatePipelineParamsGUI(grayVideoName, 'SquintToPulse', 'pupilRangeContractor', 0.5, 'pupilRangeDilator', 2, 'pupilMaskDilationFactor', 3, varargin{:});
         
         % incorporate new initialParams
@@ -50,9 +68,9 @@ if ~p.Results.resume
 
         % save the new params        
         if ~exist(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, subfoldersList{tt}), 'dir')
-            mkdir(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, subfoldersList{tt}));
+            mkdir(fullfile(pathParams.dataOutputDirBase, subjectID, pathParams.experimentName, sessionID, subfoldersList{tt}));
         end
-        save(fullfile(pathParams.dataOutputDirBase, subjectID, sessionID, subfoldersList{tt}, 'fitParams.mat'),'fitParams', '-v7.3');
+        save(fullfile(pathParams.dataOutputDirBase, subjectID, pathParams.experimentName, sessionID, subfoldersList{tt}, 'fitParams.mat'),'fitParams', '-v7.3');
     end
 else
     pathParams.resume = true;
