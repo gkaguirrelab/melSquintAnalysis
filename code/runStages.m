@@ -4,6 +4,7 @@ function runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesT
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('Protocol', 'SquintToPulse' ,@isstr);
+p.addParameter('experimentNumber', [], @isstr);
 
 p.parse(varargin{:})
 %% Summary of stages
@@ -29,6 +30,13 @@ if isnumeric(sessionID)
 end
 pathParams.session = sessionID;
 pathParams.protocol = 'SquintToPulse';
+
+if strcmp(p.Results.Protocol, 'Deuteranopes')
+    pathParams.experimentName = p.Results.experimentNumber;
+else
+    pathParams.experimentName = [];
+end
+
 
 [pathParams.runNames, subfolders] = getTrialList(pathParams, 'Protocol', p.Results.Protocol);
 
@@ -73,10 +81,10 @@ end
     
 
 %% Fine tune params
-pathParams.grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.session, subfolders{((acquisitionNumber-1)*10)+trialNumber}, pathParams.runNames{((acquisitionNumber-1)*10)+trialNumber});
+pathParams.grayVideoName = fullfile(pathParams.dataSourceDirFull, pathParams.subject, pathParams.experimentName, pathParams.session, subfolders{((acquisitionNumber-1)*10)+trialNumber}, pathParams.runNames{((acquisitionNumber-1)*10)+trialNumber});
 
 
-pathParams.dataOutputDirFull = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfolders{((acquisitionNumber-1)*10)+trialNumber});
+pathParams.dataOutputDirFull = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName, pathParams.session, subfolders{((acquisitionNumber-1)*10)+trialNumber});
 runName = strsplit(pathParams.runNames{((acquisitionNumber-1)*10)+trialNumber}, '.');
 pathParams.runName = runName{1};
 

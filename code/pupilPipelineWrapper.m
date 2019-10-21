@@ -38,7 +38,7 @@ for rr = firstRunIndex:length(pathParams.runNames)
     
     
     
-    if strcmp(p.Results.Protocol, 'SquintToPulse')
+    if strcmp(p.Results.Protocol, 'SquintToPulse') || strcmp(p.Results.Protocol, 'Deuteranopes')
         acquisitionNumber = ceil(rr/10);
         trialNumber = rr - (acquisitionNumber-1)*10;
     elseif strcmp(p.Results.Protocol, 'Screening')
@@ -52,6 +52,6 @@ for rr = firstRunIndex:length(pathParams.runNames)
     stagesToRun = setdiff(1:11, [1 7 8 9 10 11]);
     stagesToWriteToVideo = [6];
     
-    runStages(pathParams.subject, pathParams.session, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, varargin{:});
+    runStages(pathParams.subject, pathParams.session, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, 'experimentNumber', pathParams.experimentName, varargin{:});
     
 end

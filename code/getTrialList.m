@@ -5,8 +5,8 @@ p = inputParser; p.KeepUnmatched = true;
 p.addParameter('approach', 'Squint' ,@isstr);
 p.addParameter('Protocol', 'SquintToPulse' ,@isstr);
 
-p.parse(varargin{:})
 
+p.parse(varargin{:})
 
 
 
