@@ -5,7 +5,8 @@ function [ significance ] = evaluateSignificanceOfMedianDifference(sampleOne, sa
 %% Parse input
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('makePlot',false,@islogical);
-p.addParameter('nSimulations',10000,@isnumeric);
+p.addParameter('sidedness',1,@isnumeric);
+p.addParameter('nSimulations',100000,@isnumeric);
 p.addParameter('outDir','permutationTesting',@isnchar);
 
 p.parse(varargin{:});
@@ -54,8 +55,17 @@ for nn = 1:nSimulations
     result = [result, median(firstGroup) - median(secondGroup)];
 end
 
+if p.Results.sidedness == 1
 observedMedianDifference = median(sampleOne) - median(sampleTwo);
+
 numberOfPermutationsLessThanObserved = result < observedMedianDifference;
+elseif p.Results.sidedness == 2
+    
+    observedMedianDifference = abs(median(sampleOne) - median(sampleTwo));
+    numberOfPermutationsLessThanObserved = abs(result) < observedMedianDifference;
+    
+end
+
 significance = 1-(sum(numberOfPermutationsLessThanObserved)/length(result)); % in units of %
 
 
