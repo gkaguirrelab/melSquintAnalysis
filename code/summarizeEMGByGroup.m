@@ -33,7 +33,7 @@ controlSubjects = [];
 mwaSubjects = [];
 mwoaSubjects = [];
 
-useNormalized = false;
+useNormalized = true;
 
 if useNormalized
    saveStem = '_normalized';
@@ -335,3 +335,24 @@ end
 
 plotSpreadResults(EMG, 'yLims', yLims, 'yLabel', 'EMG RMS', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', ['groupAverage_combinedMigraineurs', saveStem, '.pdf']))
 
+%% Use label permutation testing to understand significance of group differences between MwA and MwoA
+stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
+contrasts = {100, 200, 400};
+
+fprintf('<strong>For comparison of MwA vs. MwoA</strong>\n', stimuli{stimulus});
+
+for stimulus = 1:length(stimuli)
+            fprintf('<strong>Stimulus type: %s</strong>\n', stimuli{stimulus});
+
+    for contrast = 1:length(contrasts)
+                fprintf('\tContrast: %s%%\n', num2str(contrasts{contrast}));
+
+        [ significance ] = evaluateSignificanceOfMedianDifference(mwaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), mwoaRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]), '~/Desktop', 'sidedness', 2);
+        
+        fprintf('\t\tP-value: %4.4f\n', significance);
+
+        
+        
+    end
+    
+end
