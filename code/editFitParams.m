@@ -3,6 +3,7 @@ function editFitParams(subjectID, sessionID, acquisitionNumber, varargin)
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('trialNumber',[],@isnumeric);
+p.addParameter('experimentName',[],@ischar);
 p.addParameter('paramName', []);
 p.addParameter('paramValue', []);
 p.addParameter('Protocol', 'SquintToPulse', @ischar);
@@ -16,13 +17,19 @@ p.parse(varargin{:});
 
 pathParams.subject = subjectID;
 if isnumeric(sessionID)
-    sessionDir = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, ['2*session_', num2str(sessionID)]));
+    sessionDir = dir(fullfile(pathParams.dataSourceDirFull, pathParams.subject, p.Results.experimentName, ['2*session_', num2str(sessionID)]));
     sessionID = sessionDir(end).name;
 end
 pathParams.session = sessionID;
 pathParams.protocol = 'SquintToPulse';
 
-[pathParams.runNames, ~] = getTrialList(pathParams);
+if strcmp(p.Results.Protocol, 'Deuteranopes')
+    pathParams.experimentName = p.Results.experimentName;
+else
+    pathParams.experimentName = [];
+end
+
+[pathParams.runNames, ~] = getTrialList(pathParams, 'Protocol', p.Results.Protocol);
 
 %%  Load the fitParams we have to work with
 
@@ -33,27 +40,27 @@ else
 end
 
 if isempty(p.Results.trialNumber)
-    fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']);
+    fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, p.Results.experimentName, pathParams.session, acquisitionFolderName, ['fitParams.mat']);
     if ~exist(fitParamsLoadName)   
         warning('FitParams not saved for acquisition. Loading fitParams for the session.')
-        fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, ['fitParams.mat']);
+        fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, p.Results.experimentName, pathParams.session, ['fitParams.mat']);
     end
-    fitParamsSaveName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']);
+    fitParamsSaveName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, p.Results.experimentName, pathParams.session, acquisitionFolderName, ['fitParams.mat']);
 else
     if acquisitionNumber ~= 7 && ~strcmp(acquisitionNumber, 'pupilCalibration')
         runName = sprintf('trial_%03d', p.Results.trialNumber);
     else
         runName = pathParams.runNames{end};
     end
-    fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']);
+    fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pp.Results.experimentName, athParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']);
     if ~exist(fitParamsLoadName)
         warning('FitParams not saved for that trial. Loading fitParams for the acquisition, but will still save for the trial')
-        fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams.mat']);
+        fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, p.Results.experimentName, pathParams.session, acquisitionFolderName, ['fitParams.mat']);
         if ~exist(fitParamsLoadName)
-            fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, 'fitParams.mat');
+            fitParamsLoadName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, p.Results.experimentName, pathParams.session, 'fitParams.mat');
         end
     end
-    fitParamsSaveName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']);
+    fitParamsSaveName = fullfile(pathParams.dataOutputDirBase, pathParams.subject, p.Results.experimentName, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']);
 
 end
 load(fitParamsLoadName);
