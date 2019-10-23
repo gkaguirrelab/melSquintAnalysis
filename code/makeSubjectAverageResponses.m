@@ -70,6 +70,7 @@ p.addParameter('debugSpikeRemover',false,@islogical);
 p.addParameter('debugNumberOfNaNValuesPerTrial', false, @islogical);
 p.addParameter('sessions', {}, @iscell);
 p.addParameter('Protocol', 'SquintToPulse', @ischar);
+p.addParameter('experimentName', [], @ischar);
 p.addParameter('protocolShortName', 'StP', @ischar);
 p.addParameter('contrasts', {100, 200, 400}, @iscell);
 p.addParameter('stimuli', {'Melanopsin', 'LMS', 'LightFlux'}, @iscell);
@@ -108,7 +109,7 @@ p.addParameter('yLims', [-0.8 0.1], @isnumeric);
 p.parse(varargin{:});
 
 %% Find the data
-analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', subjectID);
+analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', subjectID, p.Results.experimentName);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 
 % figure out the number of completed sessions
@@ -186,12 +187,12 @@ for ss = 1:length(sessionIDs)
     sessionNumber = strsplit(sessionIDs{ss}, 'session_');
     sessionNumber = sessionNumber{2};
     for aa = 1:6
-        system(['touch -a "', fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_pupil.mat', str2num(sessionNumber),p.Results.protocolShortName, aa)), '"']);
-        system(['touch -a "', fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)), '"']);
+        system(['touch -a "', fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_pupil.mat', str2num(sessionNumber),p.Results.protocolShortName, aa)), '"']);
+        system(['touch -a "', fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)), '"']);
         
-        acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_pupil.mat', str2num(sessionNumber), p.Results.protocolShortName, aa)));
-        if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)))
-            stimulusData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)));
+        acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_pupil.mat', str2num(sessionNumber), p.Results.protocolShortName, aa)));
+        if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)))
+            stimulusData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)));
             
             for tt = 1:10
                 if tt ~= 1
@@ -576,10 +577,10 @@ end
 % save out plots
 print(plotFig, fullfile(analysisBasePath, ['averageResponse_', p.Results.fitLabel]), '-dpdf', '-fillpage')
 
-if ~exist(fullfile(analysisBasePath, '..', 'averageResponsePlots'), 'dir')
-    mkdir(fullfile(analysisBasePath, '..', 'averageResponsePlots'));
+if ~exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots'), 'dir')
+    mkdir(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots'));
 end
-print(plotFig, fullfile(analysisBasePath, '..', 'averageResponsePlots', [subjectID, '_averageResponse_', p.Results.fitLabel]), '-dpdf', '-fillpage')
+print(plotFig, fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots', [subjectID, '_averageResponse_', p.Results.fitLabel]), '-dpdf', '-fillpage')
 
 close(plotFig)
 
