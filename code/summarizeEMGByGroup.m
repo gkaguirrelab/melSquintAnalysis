@@ -317,7 +317,7 @@ for stimulus = 1:length(stimuli)
     end
 end
 if useNormalized
-    yLims = [-.5 1.5];
+    yLims = [-.5 1.25];
 else
     yLims = [0 4];
 end
