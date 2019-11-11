@@ -59,15 +59,18 @@ if p.Results.sidedness == 1
 observedMedianDifference = median(sampleOne) - median(sampleTwo);
 
 numberOfPermutationsLessThanObserved = result < observedMedianDifference;
+numberOfPermutationsGreaterThanObserved = (result) >= observedMedianDifference;
+
 elseif p.Results.sidedness == 2
     
     observedMedianDifference = abs(median(sampleOne) - median(sampleTwo));
     numberOfPermutationsLessThanObserved = abs(result) < observedMedianDifference;
-    
+    numberOfPermutationsGreaterThanObserved = abs(result) >= observedMedianDifference;
+
 end
 
-significance = 1-(sum(numberOfPermutationsLessThanObserved)/length(result)); % in units of %
-
+%significance = 1-(sum(numberOfPermutationsLessThanObserved)/length(result)); % in units of %
+significance = (sum(numberOfPermutationsGreaterThanObserved)/length(result));
 
 %% plot the results if specified
 if p.Results.makePlot
