@@ -141,3 +141,101 @@ for group = 1:length(groups)
 end
 
 %% Check whether sex differences can account for our group results
+sexColumn = find(contains(columnNames, 'Sex'));
+
+stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
+contrasts = {100, 200, 400};
+
+
+
+for stimulus = 1:length(stimuli)
+    for contrast = 1:length(contrasts)
+        controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male = [];
+        mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male = [];
+        mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male = [];
+        
+        controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female = [];
+        mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female = [];
+        mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female = [];
+    end
+end
+
+for ss = 1:length(subjectIDs)
+    subjectRow = find(contains(surveyTable{:,1}, subjectIDs{ss}));
+    sex = (cell2mat(surveyTable{subjectRow,sexColumn}));
+    
+    group = linkMELAIDToGroup(subjectIDs{ss});
+    
+    analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectIDs{ss});
+    fileName = 'audioTrialStruct_final.mat';
+    load(fullfile(analysisBasePath, fileName));
+    
+    
+    for stimulus = 1:length(stimuli)
+        for contrast = 1:length(contrasts)
+            if strcmp(group, 'c')
+                controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).(sex)(end+1) = nanmedian(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+            elseif strcmp(group, 'mwa')
+                mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).(sex)(end+1) = nanmedian(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                
+            elseif strcmp(group, 'mwoa')
+                mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).(sex)(end+1) = nanmedian(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+            else
+                fprintf('Subject %s has group %s\n', subjectIDs{ss}, group);
+            end
+        end
+    end
+end
+
+plotFig = figure;
+for stimulus = 1:length(stimuli)
+    subplot(1,3,stimulus);
+    data = nan(6,20);
+    
+    for contrast = 1:length(contrasts)
+        data(contrast*2 - 1,1:length(controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male)) = controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male;
+        data(contrast*2,1:length(controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female)) = controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female;
+
+    end
+    
+    categoryIdx = [ones(1,20); 2*ones(1,20); ones(1,20); 2*ones(1,20); ones(1,20); 2*ones(1,20)]';
+    
+    xValues = [0.8 1.2 1.8 2.2 2.8 3.2];
+    categoryColors = {'b', [1 0.4 0.6]};
+    
+    plotSpread(data', 'categoryIdx', categoryIdx(:), 'categoryMarkers', {'o', 'o'}, 'xValues', xValues, 'categoryColors', categoryColors, 'showMM', 3)
+    
+     xticks([1:3])
+     xticklabels({'100%', '200%', '400%'})
+     xlabel('Contrast')
+     ylabel('Discomfort Rating')
+     title(stimuli{stimulus})
+    
+end
+ set(plotFig, 'Position', [-1811 170 1025 767], 'Units', 'pixels');
+% 
+% Want to get towards some kind of significance test, but label permutation
+% as I currently have written it requires equal size samples in both
+% groups...
+
+ stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
+contrasts = {100, 200, 400};
+
+fprintf('<strong>For comparison of Males vs. Females</strong>\n', stimuli{stimulus});
+
+for stimulus = 1:length(stimuli)
+    fprintf('<strong>Stimulus type: %s</strong>\n', stimuli{stimulus});
+    
+    for contrast = 1:length(contrasts)
+        fprintf('\tContrast: %s%%\n', num2str(contrasts{contrast}));
+        
+        [ significance ] = evaluateSignificanceOfMedianDifference([controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male, NaN, NaN, NaN, NaN, NaN, NaN], controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female, '~/Desktop', 'sidedness', 2);
+        
+        fprintf('\t\tP-value: %4.4f\n', significance);
+        
+        
+        
+    end
+end
+    
+
