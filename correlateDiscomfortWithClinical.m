@@ -6,6 +6,8 @@ subjectIDs = fieldnames(subjectListStruct);
 
 pathToSurveyData = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'surveyMelanopsinAnalysis', 'MELA_ScoresSurveyData_Squint.xlsx');
 surveyTable = readtable(pathToSurveyData);
+columnNames = surveyTable.Properties.VariableNames;
+
 
 %% Correlate VDS with discomfort rating
 stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
@@ -17,7 +19,6 @@ mwaVDS = [];
 mwoaVDS = [];
 
 
-columnNames = surveyTable.Properties.VariableNames;
 VDSColumn = find(contains(columnNames, 'VDS'));
 
 for ss = 1:length(subjectIDs)
@@ -137,6 +138,7 @@ for group = 1:length(groups)
         
     end
     set(gcf, 'Position', [91 403 1149 575]);
+    export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'compareResponses', ['VDSvsDiscomfort_', groups{group}, '.pdf']));
     
 end
 
@@ -150,13 +152,13 @@ contrasts = {100, 200, 400};
 
 for stimulus = 1:length(stimuli)
     for contrast = 1:length(contrasts)
-        controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male = [];
-        mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male = [];
-        mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male = [];
+        controlDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male = [];
+        mwaDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male = [];
+        mwoaDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male = [];
         
-        controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female = [];
-        mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female = [];
-        mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female = [];
+        controlDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female = [];
+        mwaDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female = [];
+        mwoaDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female = [];
     end
 end
 
@@ -174,12 +176,12 @@ for ss = 1:length(subjectIDs)
     for stimulus = 1:length(stimuli)
         for contrast = 1:length(contrasts)
             if strcmp(group, 'c')
-                controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).(sex)(end+1) = nanmedian(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                controlDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).(sex)(end+1) = nanmedian(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
             elseif strcmp(group, 'mwa')
-                mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).(sex)(end+1) = nanmedian(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                mwaDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).(sex)(end+1) = nanmedian(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
                 
             elseif strcmp(group, 'mwoa')
-                mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).(sex)(end+1) = nanmedian(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                mwoaDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).(sex)(end+1) = nanmedian(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
             else
                 fprintf('Subject %s has group %s\n', subjectIDs{ss}, group);
             end
@@ -193,9 +195,9 @@ for stimulus = 1:length(stimuli)
     data = nan(6,20);
     
     for contrast = 1:length(contrasts)
-        data(contrast*2 - 1,1:length(controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male)) = controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male;
-        data(contrast*2,1:length(controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female)) = controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female;
-
+        data(contrast*2 - 1,1:length(controlDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male)) = controlDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male;
+        data(contrast*2,1:length(controlDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female)) = controlDiscomfortBySex.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female;
+        
     end
     
     categoryIdx = [ones(1,20); 2*ones(1,20); ones(1,20); 2*ones(1,20); ones(1,20); 2*ones(1,20)]';
@@ -205,37 +207,41 @@ for stimulus = 1:length(stimuli)
     
     plotSpread(data', 'categoryIdx', categoryIdx(:), 'categoryMarkers', {'o', 'o'}, 'xValues', xValues, 'categoryColors', categoryColors, 'showMM', 3)
     
-     xticks([1:3])
-     xticklabels({'100%', '200%', '400%'})
-     xlabel('Contrast')
-     ylabel('Discomfort Rating')
-     title(stimuli{stimulus})
+    xticks([1:3])
+    xticklabels({'100%', '200%', '400%'})
+    xlabel('Contrast')
+    ylabel('Discomfort Rating')
+    title(stimuli{stimulus})
     
 end
- set(plotFig, 'Position', [-1811 170 1025 767], 'Units', 'pixels');
-% 
+set(plotFig, 'Position', [-1811 170 1025 767], 'Units', 'pixels');
+
+export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'compareResponses', ['discomfortBySex.pdf']));
+
+
+%
 % Want to get towards some kind of significance test, but label permutation
 % as I currently have written it requires equal size samples in both
 % groups...
 
- stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
-contrasts = {100, 200, 400};
-
-fprintf('<strong>For comparison of Males vs. Females</strong>\n', stimuli{stimulus});
-
-for stimulus = 1:length(stimuli)
-    fprintf('<strong>Stimulus type: %s</strong>\n', stimuli{stimulus});
-    
-    for contrast = 1:length(contrasts)
-        fprintf('\tContrast: %s%%\n', num2str(contrasts{contrast}));
-        
-        [ significance ] = evaluateSignificanceOfMedianDifference([controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male, NaN, NaN, NaN, NaN, NaN, NaN], controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female, '~/Desktop', 'sidedness', 2);
-        
-        fprintf('\t\tP-value: %4.4f\n', significance);
-        
-        
-        
-    end
-end
-    
+%  stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
+% contrasts = {100, 200, 400};
+%
+% fprintf('<strong>For comparison of Males vs. Females</strong>\n', stimuli{stimulus});
+%
+% for stimulus = 1:length(stimuli)
+%     fprintf('<strong>Stimulus type: %s</strong>\n', stimuli{stimulus});
+%
+%     for contrast = 1:length(contrasts)
+%         fprintf('\tContrast: %s%%\n', num2str(contrasts{contrast}));
+%
+%         [ significance ] = evaluateSignificanceOfMedianDifference([controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Male, NaN, NaN, NaN, NaN, NaN, NaN], controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).Female, '~/Desktop', 'sidedness', 2);
+%
+%         fprintf('\t\tP-value: %4.4f\n', significance);
+%
+%
+%
+%     end
+% end
+%
 
