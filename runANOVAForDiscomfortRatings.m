@@ -79,13 +79,16 @@ for ss = 1:20
             
             
           coeffs = polyfit(x, y, 1);
-          slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = stimuli{stimulus};
-          slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 2} = groups{group};
-          slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = coeffs(1);
           
-          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = stimuli{stimulus};
-          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 2} = groups{group};
-          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = coeffs(2);
+          slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = ss+(group-1)*20;
+          slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 2} = stimuli{stimulus};
+          slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = groups{group};
+          slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 4} = coeffs(1);
+
+          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = ss+(group-1)*20;
+          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 2} = stimuli{stimulus};
+          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = groups{group};
+          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 4} = coeffs(2);
           
           anovaTable((ss-1)*3+rowAdjuster+(stimulus-1)*60, 1) = stimulus;
           anovaTable((ss-1)*3+rowAdjuster+(stimulus-1)*60, 2) = group;
@@ -131,6 +134,8 @@ for stimulus = 1:length(stimuli)
     xticklabels({'100%', '200%', '400%'});
     xlabel('Contrast')
     ylabel('Discomfort')
+    ylim([-0.5 10.5]);
+    yticks([0:1:10])
    
 
 end
@@ -138,8 +143,8 @@ end
 export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'discomfortFitLines.png'));
  
 % save out csv files
-slopeCellArray = vertcat({'Stimulus', 'Group', 'Slope'}, slopeCellArray);
-interceptCellArray = vertcat({'Stimulus', 'Group', 'Intercept'}, interceptCellArray);
+slopeCellArray = vertcat({'SubjectID', 'Stimulus', 'Group', 'Slope'}, slopeCellArray);
+interceptCellArray = vertcat({'SubjectID', 'Stimulus', 'Group', 'Intercept'}, interceptCellArray);
 
 cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'slopes.csv'), slopeCellArray);
 cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'intercepts.csv'), interceptCellArray);
