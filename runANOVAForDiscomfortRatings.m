@@ -10,12 +10,22 @@ controlDiscomfort = [];
 mwaDiscomfort = [];
 mwoaDiscomfort = [];
 
+
+
 stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
 contrasts = {100, 200, 400};
 
 
 
 for stimulus = 1:length(stimuli)
+    slope.controls.(stimuli{stimulus}) = [];
+    slope.mwa.(stimuli{stimulus}) = [];
+    slope.mwoa.(stimuli{stimulus}) = [];
+    
+    intercept.controls.(stimuli{stimulus}) = [];
+    intercept.mwa.(stimuli{stimulus}) = [];
+    intercept.mwoa.(stimuli{stimulus}) = [];
+
     for contrast = 1:length(contrasts)
         controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
         mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
@@ -79,6 +89,11 @@ for ss = 1:20
             
             
           coeffs = polyfit(x, y, 1);
+          
+          slope.(groups{group}).(stimuli{stimulus})(end+1) = coeffs(1);
+          intercept.(groups{group}).(stimuli{stimulus})(end+1) = coeffs(2);
+
+          
           slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = stimuli{stimulus};
           slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 2} = groups{group};
           slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = coeffs(1);
@@ -144,6 +159,7 @@ interceptCellArray = vertcat({'Stimulus', 'Group', 'Intercept'}, interceptCellAr
 cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'slopes.csv'), slopeCellArray);
 cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'intercepts.csv'), interceptCellArray);
 
+% intercepts and slopes by group
 %% get all discomfort ratings responses
 generateMatrix = false;
 
