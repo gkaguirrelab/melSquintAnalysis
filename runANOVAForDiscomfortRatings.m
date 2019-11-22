@@ -105,10 +105,16 @@ for ss = 1:20
           slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = groups{group};
           slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 4} = coeffs(1);
           
+          slopeWithZeroInterceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = ss+(group-1)*20;
+          slopeWithZeroInterceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 2} = stimuli{stimulus};
+          slopeWithZeroInterceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = groups{group};
+          slopeWithZeroInterceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 4} = fitWithZeroIntercept.Coefficients.Estimate;
+          
+          
           interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = ss+(group-1)*20;
-          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = stimuli{stimulus};
-          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 2} = groups{group};
-          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = coeffs(2);
+          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 2} = stimuli{stimulus};
+          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = groups{group};
+          interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 4} = coeffs(2);
           
           anovaTable((ss-1)*3+rowAdjuster+(stimulus-1)*60, 1) = stimulus;
           anovaTable((ss-1)*3+rowAdjuster+(stimulus-1)*60, 2) = group;
@@ -116,6 +122,7 @@ for ss = 1:20
           anovaTable((ss-1)*3+rowAdjuster+(stimulus-1)*60, 4) = coeffs(2);
           anovaTable((ss-1)*3+rowAdjuster+(stimulus-1)*60, 5) = fitWithZeroIntercept.Coefficients.Estimate;
 
+          
           subplot(1,3,stimulus); hold on;
           fittedX = linspace(min(x), max(x), 200);
           fittedY = polyval(coeffs, fittedX);
@@ -127,51 +134,75 @@ for ss = 1:20
    
 end
 
+useZeroIntercept = false;
 for stimulus = 1:length(stimuli)
     
     subplot(1,3,stimulus); hold on;
     
-    controlSlopeMean = median(anovaTable(1:3:60+(stimulus-1)*60, 3));
-    mwaSlopeMean = median(anovaTable(2:3:60+(stimulus-1)*60, 3));
-    mwoaSlopeMean = median(anovaTable(3:3:60+(stimulus-1)*60, 3));
-    
-    controlInterceptMean = median(anovaTable(1:3:60+(stimulus-1)*60, 4));
-    mwaInterceptMean = median(anovaTable(2:3:60+(stimulus-1)*60, 4));
-    mwoaInterceptMean = median(anovaTable(3:3:60+(stimulus-1)*60, 4));
-    
-    fittedX = linspace(min(x), max(x), 200);
-    fittedY = polyval([controlSlopeMean, controlInterceptMean], fittedX);
-    plot(fittedX, fittedY, 'LineWidth', 5, 'Color', 'k');
-    
-    fittedX = linspace(min(x), max(x), 200);
-    fittedY = polyval([mwaSlopeMean, mwaInterceptMean], fittedX);
-    plot(fittedX, fittedY, 'LineWidth', 5, 'Color', 'b');
-    
-    fittedX = linspace(min(x), max(x), 200);
-    fittedY = polyval([mwoaSlopeMean, mwoaInterceptMean], fittedX);
-    plot(fittedX, fittedY, 'LineWidth', 5, 'Color', 'r');
+    if ~useZeroIntercept
+        controlSlopeMean = median(anovaTable(1:3:60+(stimulus-1)*60, 3));
+        mwaSlopeMean = median(anovaTable(2:3:60+(stimulus-1)*60, 3));
+        mwoaSlopeMean = median(anovaTable(3:3:60+(stimulus-1)*60, 3));
+        
+        controlInterceptMean = median(anovaTable(1:3:60+(stimulus-1)*60, 4));
+        mwaInterceptMean = median(anovaTable(2:3:60+(stimulus-1)*60, 4));
+        mwoaInterceptMean = median(anovaTable(3:3:60+(stimulus-1)*60, 4));
+        
+        fittedX = linspace(min(x), max(x), 200);
+        fittedY = polyval([controlSlopeMean, controlInterceptMean], fittedX);
+        plot(fittedX, fittedY, 'LineWidth', 5, 'Color', 'k');
+        
+        fittedX = linspace(min(x), max(x), 200);
+        fittedY = polyval([mwaSlopeMean, mwaInterceptMean], fittedX);
+        plot(fittedX, fittedY, 'LineWidth', 5, 'Color', 'b');
+        
+        fittedX = linspace(min(x), max(x), 200);
+        fittedY = polyval([mwoaSlopeMean, mwoaInterceptMean], fittedX);
+        plot(fittedX, fittedY, 'LineWidth', 5, 'Color', 'r');
+        
+    else
+        medianSlopeControls = median(slopeWithZeroIntercept.controls.(stimuli{stimulus}));
+        medianSlopeMwa = median(slopeWithZeroIntercept.mwa.(stimuli{stimulus}));
+        medianSlopeMwoa = median(slopeWithZeroIntercept.mwoa.(stimuli{stimulus}));
+        
+        xNew = 0:100;
+        
+        plot(xNew, xNew*medianSlopeControls, 'LineWidth', 5, 'Color', 'k');
+        plot(xNew, xNew*medianSlopeMwa, 'LineWidth', 5, 'Color', 'b');
+        plot(xNew, xNew*medianSlopeMwoa, 'LineWidth', 5, 'Color', 'r');
+
+    end
 
     title(stimuli{stimulus})
     xticks(x);
     xticklabels({'100%', '200%', '400%'});
     xlabel('Contrast')
     ylabel('Discomfort')
+    xlim([x(1) - 0.1, x(3) + 0.1]);
     ylim([-0.5 10.5]);
     yticks([0:1:10])
    
 
 end
 
-export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'discomfortFitLines.png'));
- 
+if ~useZeroIntercept
+    export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'discomfortFitLines.png'));
+else
+    export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'discomfortFitLines_zeroIntercept.png'));
+end
+
 % save out csv files
 slopeCellArray = vertcat({'SubjectID', 'Stimulus', 'Group', 'Slope'}, slopeCellArray);
+slopeWithZeroInterceptCellArray = vertcat({'SubjectID', 'Stimulus', 'Group', 'SlopeWithZeroIntercept'}, slopeWithZeroInterceptCellArray);
 interceptCellArray = vertcat({'SubjectID', 'Stimulus', 'Group', 'Intercept'}, interceptCellArray);
 
+cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'slopesWithZeroIntercept.csv'), slopeWithZeroInterceptCellArray);
 cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'slopes.csv'), slopeCellArray);
 cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'intercepts.csv'), interceptCellArray);
 
-% intercepts and slopes by group
+% example ANOVA command:
+% anovan(anovaTable(:,3), anovaTable(:,1:2), 'varnames', {'Stimulus', 'Group'}, 'model', 'interaction')
+
 %% get all discomfort ratings responses
 generateMatrix = false;
 
