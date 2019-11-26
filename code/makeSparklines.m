@@ -115,13 +115,16 @@ for stimulus = 1:length(stimuli)
     
     
     axis off
-    set(gcf, 'Renderer', 'painters')
-    print(plotFig, fullfile('~/Desktop',['sparkline_', stimuli{stimulus}]), '-dpdf')
-    
     
     text(500, 1, 'Controls', 'FontSize', 20, 'FontName', 'Helvetica Neue', 'HorizontalAlignment', 'Center');
     text(1700, 1, 'MwA', 'FontSize', 20, 'FontName', 'Helvetica Neue', 'HorizontalAlignment', 'Center');
     text(2900, 1, 'MwoA', 'FontSize', 20, 'FontName', 'Helvetica Neue', 'HorizontalAlignment', 'Center');
+    
+    set(gcf, 'Renderer', 'painters')
+    print(plotFig, fullfile('~/Desktop',['sparkline_', stimuli{stimulus}]), '-dpdf')
+    
+    
+    
 end
 
 
