@@ -94,10 +94,25 @@ end
 plotSpreadResults(discomfortRatings,  'stimuli', stimuli, 'yLims', [-0.5, 10], 'yLabel', 'Discomfort Ratings', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'compareCombinedMigraineursAndControls_allStimuli.pdf'))
 
 %% comparing migaineurs to headache free controls
-for stimulus = 1:length(stimuli)
-    for contrast = 1:length(contrasts)
-        groupAveragePupilResponses.(groupName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = nanmean(pooledResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
-        groupAveragePupilResponses.(groupName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM']) = (nanstd(pooledResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])))/(sqrt(size(pooledResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1)));
+for groupNumber = 1:4
+    if groupNumber == 1
+        pooledResponses = controlPupilResponses;
+        color = 'k';
+        groupName = 'Control';
+    elseif groupNumber == 2
+        pooledResponses = mwoaPupilResponses;
+        color = 'r';
+        groupName = 'MwoA';
+    elseif groupNumber == 3
+        pooledResponses = mwaPupilResponses;
+        color = 'b';
+        groupName = 'MwA';
+    end
+    for stimulus = 1:length(stimuli)
+        for contrast = 1:length(contrasts)
+            groupAveragePupilResponses.(groupName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = nanmean(pooledResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+            groupAveragePupilResponses.(groupName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM']) = (nanstd(pooledResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])))/(sqrt(size(pooledResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1)));
+        end
     end
 end
 
@@ -183,6 +198,7 @@ export_fig(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'm
 print(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'averageResponsePlots', ['compareCombinedMigrainuersAndControls.pdf']), '-dpdf', '-fillpage')
 close all
 
+%%
 plotFig = figure; hold on;
 %[ha, pos] = tight_subplot(nStimuli,1, 0.01);
 
@@ -241,7 +257,7 @@ export_fig(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'm
 print(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'averageResponsePlots', ['compareMigraineGroupsAndControls.pdf']), '-dpdf', '-fillpage')
 close all
 
-% same plots, without SEM
+%% same plots, without SEM
 for stimulus = 1:length(stimuli)
     for contrast = 1:length(contrasts)
         groupAveragePupilResponses.(groupName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = nanmean(pooledResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
@@ -331,18 +347,21 @@ export_fig(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'm
 print(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'averageResponsePlots', ['compareCombinedMigrainuersAndControls_noSEM.pdf']), '-dpdf', '-fillpage')
 close all
 
+%%
 plotFig = figure; hold on;
 %[ha, pos] = tight_subplot(nStimuli,1, 0.01);
 
 for ss = 1:nStimuli
-    if ss == 1
+    if ss == 2
         yLims = [-0.4 0.3];
-        
-    elseif ss == 2
-        yLims = [-0.65 0.05];
-        
+        yOffset = .70;
     elseif ss == 3
+        yLims = [-0.65 0.05];
+        yOffset = 1.22;
+        
+    elseif ss == 1
         yLims = [-0.675 0.025];
+        yOffset = 0;
     end
     % pick the right subplot for the right stimuli
     %subplot(nStimuli,1,ss)
@@ -358,18 +377,18 @@ for ss = 1:nStimuli
         lineProps.col{1} = colorPalette.LMS{cc};
         
         % plot
-        axis.(['ax', num2str(cc)]) = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.Control.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), 0*groupAveragePupilResponses.Control.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps, 1);
+        axis.(['ax', num2str(cc)]) = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.Control.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting)-yOffset, 0*groupAveragePupilResponses.Control.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps, 1);
         lineProps.col{1} = 'r';
-        axis.(['ax', num2str(cc)]) = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.MwoA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), 0*groupAveragePupilResponses.MwoA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps, 1);
+        axis.(['ax', num2str(cc)]) = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.MwoA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting)-yOffset, 0*groupAveragePupilResponses.MwoA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps, 1);
         
         lineProps.col{1} = 'b';
-        axis.(['ax', num2str(cc)]) = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.MwA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), 0*groupAveragePupilResponses.MwA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps, 1);
+        axis.(['ax', num2str(cc)]) = mseb(timebase(1:end-nTimePointsToSkipPlotting)-plotShift, groupAveragePupilResponses.MwA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting)-yOffset, 0*groupAveragePupilResponses.MwA.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps, 1);
 
         
         legendText{cc} = ([num2str(contrasts{cc}), '% Contrast, N = ', num2str(size(pooledResponses.(stimuli{stimulus}).(['Contrast', num2str(400)]),1))]);
         
         
-        legend(legendText, 'Location', 'SouthEast')
+        legend(legendText{3}, 'Location', 'SouthEast')
         legend('boxoff')
     end
     % add line for pulse onset
@@ -383,9 +402,15 @@ for ss = 1:nStimuli
     ylabel('Pupil Area (% Change)')
     
 end
+
+    ylim([-2 0.1])
+    xlim(xLims)
+    xlabel('Time (s)')
+    ylabel('Pupil Area (% Change)')
+    
 export_fig(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'averageResponsePlots', ['compareMigraineGroupsAndControls_unstretched_noSEM.pdf']), '-painters')
 print(plotFig, fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'averageResponsePlots', ['compareMigraineGroupsAndControls_noSEM.pdf']), '-dpdf', '-fillpage')
-close all
+%close all
 
 
 %% Plot average response by group

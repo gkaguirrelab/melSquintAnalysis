@@ -26,6 +26,8 @@ elseif nGroups == 1
 end
 stimuli = p.Results.stimuli;
 contrasts = p.Results.contrasts;
+useExtremeYLims = false;
+
 
 
 plotFig = figure; hold on;
@@ -160,7 +162,8 @@ for stimulus = 1:length(stimuli)
         yticklabels(yticks);
         
     else
-                yTicksNotToDisplay = find(yticks > p.Results.yLims(2));
+        useExtremeYLims = true;
+        yTicksNotToDisplay = find(yticks > p.Results.yLims(2));
         yTicksToDisplay = yticks;
         yTicksToDisplay(yTicksNotToDisplay) = NaN;
         yticklabels(yticks);
@@ -183,13 +186,22 @@ for stimulus = 1:length(stimuli)
         legend('boxoff')
     end
     
-    savePath = fileparts(p.Results.saveName);
-    if ~exist(savePath, 'dir')
-        mkdir(savePath)
-    end
-    set(plotFig, 'Position', [-1811 170 1025 767], 'Units', 'pixels');
-    export_fig(plotFig, fullfile(p.Results.saveName));
+
     
 end
+
+for stimulus = 1:length(p.Results.stimuli)
+    axes(ha(stimulus));
+    if useExtremeYLims
+        ylim([p.Results.yLims(1), (p.Results.yLims(2)*p.Results.extremeValueMultiplier - p.Results.yLims(2)*1.05 + p.Results.yLims(2)*p.Results.extremeValueMultiplier)])
+    end
+
+end
+savePath = fileparts(p.Results.saveName);
+if ~exist(savePath, 'dir')
+    mkdir(savePath)
+end
+set(plotFig, 'Position', [-1811 170 1025 767], 'Units', 'pixels');
+export_fig(plotFig, fullfile(p.Results.saveName));
 
 end
