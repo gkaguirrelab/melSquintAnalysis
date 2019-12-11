@@ -22,7 +22,7 @@ if ~pathParams.resume
 else
     sessions = [];
     for rr = 1:length(pathParams.runNames)
-        if ~exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, subfolders{rr}, [pathParams.runNames{rr}(1:end-4), '_pupil.mat']), 'file')
+        if ~exist(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName, pathParams.session, subfolders{rr}, [pathParams.runNames{rr}(1:end-4), '_pupil.mat']), 'file')
             firstRunIndex = rr;
             break
         end
