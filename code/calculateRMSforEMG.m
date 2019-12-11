@@ -195,7 +195,11 @@ for ss = 1:length(sessionIDs)
                     % adjust timebase for the delay in issuing the
                     % beginning recording command and the actual beginning
                     % of data recording
-                    trialData.response.timebase = trialData.response.timebase + p.Results.delayInSecs;
+                    
+                    if trialData.response.timebase(1) == 0
+                        trialData.response.timebase = trialData.response.timebase + p.Results.delayInSecs;
+                    end
+                        
                     
                     
                     % center the voltages at 0. we've noticed that for whatever
