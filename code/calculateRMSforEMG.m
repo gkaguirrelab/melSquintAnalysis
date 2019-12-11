@@ -60,6 +60,11 @@ function [ medianRMS, trialStruct ] = calculateRMSforEMG(subjectID, varargin)
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('makePlots',false,@islogical);
+p.addParameter('protocol','SquintToPulse',@ischar);
+p.addParameter('stimuli',{'LightFlux', 'Melanopsin', 'LMS'},@iscell);
+p.addParameter('contrasts',{100, 200, 400},@iscell);
+p.addParameter('protocolShortName','StP',@ischar);
+p.addParameter('experimentName',[],@ischar);
 p.addParameter('makeDebugPlots',false,@islogical);
 p.addParameter('normalize',true,@islogical);
 p.addParameter('delayInSecs',1.1,@isnumeric);
@@ -74,14 +79,14 @@ p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPa
 % Parse and check the parameters
 p.parse(varargin{:});
 %% Find the data
-analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
+analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles/', subjectID);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 % figure out the number of completed sessions
-potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, '2*session*'));
+potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles', subjectID, p.Results.experimentName, '2*session*'));
 potentialNumberOfSessions = length(potentialSessions);
 % initialize outputStruct
-stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
-contrasts = {100, 200, 400};
+stimuli = p.Results.stimuli;
+contrasts = p.Results.contrasts;
 for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
         trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).left = [];
@@ -101,8 +106,8 @@ for ss = 1:length(stimuli)
     end
 end
 
- pooledSTDs.normalizedBySession = [];
- pooledSTDs.normalizedByTrial = [];
+pooledSTDs.normalizedBySession = [];
+pooledSTDs.normalizedByTrial = [];
 
 if isempty(p.Results.sessions)
     sessions = [];
@@ -111,7 +116,7 @@ if isempty(p.Results.sessions)
         for aa = 1:6
             trials = [];
             for tt = 1:10
-                if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d.mp4', tt)), 'file');
+                if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles', subjectID, p.Results.experimentName, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d.mp4', tt)), 'file');
                     trials = [trials, tt];
                 end
             end
@@ -128,7 +133,7 @@ if isempty(p.Results.sessions)
     % get session IDs
     sessionIDs = [];
     for ss = numberOfCompletedSessions
-        potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sprintf('*session_%d*', ss)));
+        potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles', subjectID, p.Results.experimentName, sprintf('*session_%d*', ss)));
         % in the event of more than one entry for a given session (which would
         % happen if something weird happened with a session and it was
         % restarted on a different day), it'll grab the later dated session,
@@ -148,7 +153,7 @@ sessionIDs = sessionIDs(~cellfun('isempty',sessionIDs));
 for ss = 1:length(sessionIDs)
     sessionNumber = strsplit(sessionIDs{ss}, 'session_');
     sessionNumber = sessionNumber{2};
-    availableAcquisitions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, '*acquisition*_emg.mat'));
+    availableAcquisitions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, '*acquisition*_emg.mat'));
     
     acquisitions = [];
     
@@ -166,12 +171,12 @@ for ss = 1:length(sessionIDs)
         acquisition = str2num(acquisition);
         acquisitions = [acquisitions, acquisition];
     end
-
-
+    
+    
     for aa = acquisitions
-        stimulusDataFile = fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', str2num(sessionNumber),aa));
+        stimulusDataFile = fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName, aa));
         if exist(stimulusDataFile)
-            acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_emg.mat', str2num(sessionNumber),aa)));
+            acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_emg.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)));
             stimulusData = load(stimulusDataFile);
             
             if p.Results.makeDebugPlots
@@ -216,16 +221,16 @@ for ss = 1:length(sessionIDs)
                     [~, offsetIndex ]  = min(abs(trialData.response.timebase-p.Results.windowOffset));
                     [~, baselineOnsetIndex ]  = min(abs(trialData.response.timebase-p.Results.baselineOnset));
                     [~, baselineOffsetIndex ]  = min(abs(trialData.response.timebase-p.Results.baselineOffset));
-
+                    
                     
                     voltages.left = trialData.response.values.left(onsetIndex:offsetIndex);
                     voltages.right = trialData.response.values.right(onsetIndex:offsetIndex);
                     
-
+                    
                     if (p.Results.normalize)
-
                         
-
+                        
+                        
                         
                         RMS.left = (mean(((voltages.left).^2)))^(1/2);
                         RMS.right = (mean(((voltages.right).^2)))^(1/2);
@@ -252,11 +257,14 @@ for ss = 1:length(sessionIDs)
                     directionNameSplit = strsplit(directionNameLong, ' ');
                     if strcmp(directionNameSplit{1}, 'Light')
                         directionName = 'LightFlux';
+                    elseif strcmp(directionNameSplit{1}, 'L+S')
+                        directionName = 'LS';
                     else
                         directionName = directionNameSplit{1};
                     end
                     contrastLong = strsplit(directionNameLong, '%');
-                    contrast = contrastLong{1}(end-2:end);
+                    contrastLong = strsplit(contrastLong{1}, ' ');
+                    contrast = contrastLong{end};
                     % pool the results
                     nItems = length((trialStruct.(directionName).(['Contrast', contrast]).left));
                     if (p.Results.normalize)
@@ -266,7 +274,7 @@ for ss = 1:length(sessionIDs)
                         
                         trialStructBySession.(directionName).(['Contrast', contrast]).left(end+1) = (RMS.left);
                         trialStructBySession.(directionName).(['Contrast', contrast]).right(end+1) = (RMS.right);
-
+                        
                         
                         normalizedByTrialTrialStruct.(directionName).(['Contrast', contrast]).left(nItems+1) = (RMS.left - baselineRMS.left)/(baselineRMS.left);
                         normalizedByTrialTrialStruct.(directionName).(['Contrast', contrast]).right(nItems+1) = (RMS.right - baselineRMS.right)/(baselineRMS.right);
@@ -296,11 +304,11 @@ for ss = 1:length(sessionIDs)
                 
                 pooledSTDs.normalizedBySession(end+1) = std(normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left);
                 pooledSTDs.normalizedBySession(end+1) = std(normalizedBySessionTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right);
-
+                
                 
                 pooledSTDs.normalizedByTrial(end+1) = std(normalizedByTrialTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).left);
                 pooledSTDs.normalizedByTrial(end+1) = std(normalizedByTrialTrialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).right);
-
+                
                 
             end
         end
@@ -309,7 +317,7 @@ for ss = 1:length(sessionIDs)
 end
 
 if p.Results.normalize
-   trialStruct = normalizedBySessionTrialStruct; 
+    trialStruct = normalizedBySessionTrialStruct;
 end
 
 %% make median RMS struct
@@ -344,59 +352,43 @@ save(fullfile(p.Results.savePath, 'medianStructs', saveName), 'medianRMS', 'base
 %% Plot to summarize
 makePlots = p.Results.makePlots;
 if makePlots
+    
+    trialStructForPlotting = trialStruct;
+    
+    
+    
     plotFig = figure;
-    melAxis1 = subplot(3,2,1);
-    data = horzcat( trialStruct.Melanopsin.Contrast100.left', trialStruct.Melanopsin.Contrast200.left',  trialStruct.Melanopsin.Contrast400.left');
-    plotSpread(data, 'distributionColors', {[220/255, 237/255, 200/255], [66/255, 179/255, 213/255], [26/255, 35/255, 126/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
-    title('Melanopsin, Left')
-    xlabel('Contrast')
-    ylabel('RMS')
-    %ylim([0 4]);
-    melAxis2 = subplot(3,2,2);
-    data = horzcat( trialStruct.Melanopsin.Contrast100.right', trialStruct.Melanopsin.Contrast200.right',  trialStruct.Melanopsin.Contrast400.right');
-    plotSpread(data, 'distributionColors', {[220/255, 237/255, 200/255], [66/255, 179/255, 213/255], [26/255, 35/255, 126/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
-    title('Melanopsin, Right')
-    xlabel('Contrast')
-    ylabel('RMS')
-    %ylim([0 4]);
-    linkaxes([melAxis1, melAxis2]);
+    for stimulus = 1:length(stimuli)
+        
+        if strcmp(stimuli{stimulus}, 'Melanopsin')
+            colors = {[220/255, 237/255, 200/255], [66/255, 179/255, 213/255], [26/255, 35/255, 126/255]};
+        elseif strcmp(stimuli{stimulus}, 'LMS') || strcmp(stimuli{stimulus}, 'LS')
+            grayColorMap = colormap(gray);
+            colors = {grayColorMap(50,:), grayColorMap(25,:), grayColorMap(1,:)};
+        elseif strcmp(stimuli{stimulus}, 'LightFlux')
+            colors = {[254/255, 235/255, 101/255], [228/255, 82/255, 27/255], [77/255, 52/255, 47/255]};
+        end
+        
+        axis.(['axis', num2str(stimulus)]) = subplot(3,2,(stimulus-1)*2+1);
+        data = horzcat( trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{1})]).left', trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{2})]).left',  trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{3})]).left');
+        plotSpread(data, 'distributionColors', colors, 'xNames', {num2str(contrasts{1}), num2str(contrasts{2}), num2str(contrasts{3})}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+        title([stimuli{stimulus}, ', Left'])
+        xlabel('Contrast')
+        ylabel('RMS')
+        %ylim([0 4]);
+        axis.(['axis', num2str(stimulus+1)]) = subplot(3,2,(stimulus-1)*2+2);
+        data = horzcat( trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{1})]).right', trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{2})]).right',  trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{3})]).right');
+        plotSpread(data, 'distributionColors', colors, 'xNames', {num2str(contrasts{1}), num2str(contrasts{2}), num2str(contrasts{3})}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+        title([stimuli{stimulus}, ', Right'])
+        xlabel('Contrast')
+        ylabel('RMS')
+        %ylim([0 4]);
+        linkaxes([axis.(['axis', num2str(stimulus)]), axis.(['axis', num2str(stimulus+1)])]);
+        
+        
+    end
     
-    
-    grayColorMap = colormap(gray);
-    lmsAxis1 = subplot(3,2,3);
-    data = horzcat( trialStruct.LMS.Contrast100.left', trialStruct.LMS.Contrast200.left',  trialStruct.LMS.Contrast400.left');
-    plotSpread(data, 'distributionColors', {grayColorMap(50,:), grayColorMap(25,:), grayColorMap(1,:)}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
-    title('LMS, Left')
-    xlabel('Contrast')
-    ylabel('RMS')
-    %ylim([0 4]);
-    lmsAxis2= subplot(3,2,4);
-    data = horzcat( trialStruct.LMS.Contrast100.right', trialStruct.LMS.Contrast200.right',  trialStruct.LMS.Contrast400.right');
-    plotSpread(data, 'distributionColors', {grayColorMap(50,:), grayColorMap(25,:), grayColorMap(1,:)}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
-    title('LMS, Right')
-    xlabel('Contrast')
-    ylabel('RMS')
-    %ylim([0 4]);
-    linkaxes([lmsAxis1, lmsAxis2]);
-    
-    
-    lightFluxAxis1 = subplot(3,2,5);
-    data = horzcat( trialStruct.LightFlux.Contrast100.left', trialStruct.LightFlux.Contrast200.left',  trialStruct.LightFlux.Contrast400.left');
-    plotSpread(data, 'distributionColors', {[254/255, 235/255, 101/255], [228/255, 82/255, 27/255], [77/255, 52/255, 47/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
-    title('Light Flux, Left')
-    xlabel('Contrast')
-    ylabel('RMS')
-    %ylim([0 4]);
-    lightFluxAxis2 = subplot(3,2,6);
-    data = horzcat( trialStruct.LightFlux.Contrast100.right', trialStruct.LightFlux.Contrast200.right',  trialStruct.LightFlux.Contrast400.right');
-    plotSpread(data, 'distributionColors', {[254/255, 235/255, 101/255], [228/255, 82/255, 27/255], [77/255, 52/255, 47/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
-    title('Light Flux, Right')
-    xlabel('Contrast')
-    ylabel('RMS')
-    %ylim([0 4]);
-    linkaxes([lightFluxAxis1, lightFluxAxis2]);
-    
-    analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
+    analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles/', subjectID, p.Results.experimentName);
     
     if p.Results.normalize
         saveName = 'EMG_RMS_normalized';
@@ -406,30 +398,29 @@ if makePlots
     
     print(plotFig, fullfile(analysisBasePath, saveName), '-dpdf', '-fillpage')
     print(plotFig, fullfile(p.Results.savePath, 'plots', [subjectID, '_', saveName]), '-dpdf', '-fillpage')
-
+    
     %close(plotFig)
-    
     plotFig = figure;
-    melAxCombined = subplot(3,1,1);
-    data = horzcat( nanmean([trialStruct.Melanopsin.Contrast100.left; trialStruct.Melanopsin.Contrast100.right])', nanmean([trialStruct.Melanopsin.Contrast200.left; trialStruct.Melanopsin.Contrast200.right])',  nanmean([trialStruct.Melanopsin.Contrast400.left; trialStruct.Melanopsin.Contrast400.right])');
-    plotSpread(data, 'distributionColors', {[220/255, 237/255, 200/255], [66/255, 179/255, 213/255], [26/255, 35/255, 126/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
-    title('Melanopsin')
-    xlabel('Contrast')
-    ylabel('RMS')
     
-    lmsAxCombined = subplot(3,1,2);
-    data = horzcat( nanmean([trialStruct.LMS.Contrast100.left; trialStruct.LMS.Contrast100.right])', nanmean([trialStruct.LMS.Contrast200.left; trialStruct.LMS.Contrast200.right])',  nanmean([trialStruct.LMS.Contrast400.left; trialStruct.LMS.Contrast400.right])');
-    plotSpread(data, 'distributionColors', {grayColorMap(50,:), grayColorMap(25,:), grayColorMap(1,:)}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
-    title('LMS')
-    xlabel('Contrast')
-    ylabel('RMS')
-    
-    lightFluxAxCombined = subplot(3,1,3);
-    data = horzcat( nanmean([trialStruct.LightFlux.Contrast100.left; trialStruct.LightFlux.Contrast100.right])', nanmean([trialStruct.LightFlux.Contrast200.left; trialStruct.LightFlux.Contrast200.right])',  nanmean([trialStruct.LightFlux.Contrast400.left; trialStruct.LightFlux.Contrast400.right])');
-    plotSpread(data, 'distributionColors', {[254/255, 235/255, 101/255], [228/255, 82/255, 27/255], [77/255, 52/255, 47/255]}, 'xNames', {'100%', '200%', '400%'}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
-    title('LightFlux')
-    xlabel('Contrast')
-    ylabel('RMS')
+    for stimulus = 1:length(stimuli)
+        
+        if strcmp(stimuli{stimulus}, 'Melanopsin')
+            colors = {[220/255, 237/255, 200/255], [66/255, 179/255, 213/255], [26/255, 35/255, 126/255]};
+        elseif strcmp(stimuli{stimulus}, 'LMS') || strcmp(stimuli{stimulus}, 'LS')
+            grayColorMap = colormap(gray);
+            colors = {grayColorMap(50,:), grayColorMap(25,:), grayColorMap(1,:)};
+        elseif strcmp(stimuli{stimulus}, 'LightFlux')
+            colors = {[254/255, 235/255, 101/255], [228/255, 82/255, 27/255], [77/255, 52/255, 47/255]};
+        end
+        
+        ax.(['axis', num2str(stimulus)]) = subplot(3,1,stimulus);
+        data = horzcat( nanmean([trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{1})]).left; trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{1})]).right])', nanmean([trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{2})]).left; trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{2})]).right])',  nanmean([trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{3})]).left; trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{3})]).right])');
+        plotSpread(data, 'distributionColors', colors, 'xNames', {num2str(contrasts{1}), num2str(contrasts{2}), num2str(contrasts{3})}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
+        title(stimuli{stimulus})
+        xlabel('Contrast')
+        ylabel('RMS')
+        
+    end
     
     if p.Results.normalize
         saveName = [subjectID, '_EMG_RMS_leftRightCombined_normalized'];
@@ -437,7 +428,14 @@ if makePlots
         saveName = [subjectID, '_EMG_RMS_leftRightCombined'];
     end
     print(plotFig, fullfile(analysisBasePath, saveName), '-dpdf', '-fillpage')
-    print(plotFig, fullfile(p.Results.savePath, 'plots', saveName), '-dpdf', '-fillpage')
-
+    if isempty(p.Results.experimentName)
+        print(plotFig, fullfile(p.Results.savePath, 'plots', saveName), '-dpdf', '-fillpage')
+    else
+        if ~exist(fullfile(p.Results.savePath, 'Deuteranopes', p.Results.experimentName, 'plots'))
+            mkdir(fullfile(p.Results.savePath, 'Deuteranopes', p.Results.experimentName, 'plots'))
+        end
+        print(plotFig, fullfile(p.Results.savePath, 'Deuteranopes', p.Results.experimentName, 'plots', saveName), '-dpdf', '-fillpage')
+    end
+    
 end
 end % end function
