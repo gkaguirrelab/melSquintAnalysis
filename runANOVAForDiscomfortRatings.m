@@ -10,6 +10,10 @@ controlDiscomfort = [];
 mwaDiscomfort = [];
 mwoaDiscomfort = [];
 
+controlSubjects = [];
+mwaSubjects = [];
+mwoaSubjects = [];
+
 
 
 stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
@@ -18,6 +22,7 @@ contrasts = {100, 200, 400};
 slopeWithZeroInterceptCellArray = [];
 interceptCellArray = [];
 slopeCellArray = [];
+meanRatingCellArray = [];
 
 
 for stimulus = 1:length(stimuli)
@@ -54,13 +59,15 @@ for ss = 1:length(subjectIDs)
             if strcmp(group, 'c')
                 load(fullfile(analysisBasePath, fileName));
                 controlDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmedian(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                controlSubjects{end+1} = subjectIDs{ss};
             elseif strcmp(group, 'mwa')
                 load(fullfile(analysisBasePath, fileName));
                 mwaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmedian(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
-                
+                mwaSubjects{end+1} = subjectIDs{ss};
             elseif strcmp(group, 'mwoa')
                 load(fullfile(analysisBasePath, fileName));
                 mwoaDiscomfort.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmedian(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                mwoaSubjects{end+1} = subjectIDs{ss};
             else
                 fprintf('Subject %s has group %s\n', subjectIDs{ss}, group);
             end
@@ -92,14 +99,17 @@ for group = 1:length(groups)
                 y = [controlDiscomfort.(stimuli{stimulus}).Contrast100(ss), controlDiscomfort.(stimuli{stimulus}).Contrast200(ss), controlDiscomfort.(stimuli{stimulus}).Contrast400(ss)];
                 rowAdjuster = 1;
                 color = 'k';
+                subjectID = controlSubjects{ss};
             elseif strcmp(groups{group}, 'mwa')
                 y = [mwaDiscomfort.(stimuli{stimulus}).Contrast100(ss), mwaDiscomfort.(stimuli{stimulus}).Contrast200(ss), mwaDiscomfort.(stimuli{stimulus}).Contrast400(ss)];
                 rowAdjuster = 2;
                 color = 'b';
+                subjectID = mwaSubjects{ss};
             elseif strcmp(groups{group}, 'mwoa')
                 y = [mwoaDiscomfort.(stimuli{stimulus}).Contrast100(ss), mwoaDiscomfort.(stimuli{stimulus}).Contrast200(ss), mwoaDiscomfort.(stimuli{stimulus}).Contrast400(ss)];
                 rowAdjuster = 3;
                 color = 'r';
+                subjectID = mwoaSubjects{ss};
             end
             
             
@@ -130,24 +140,24 @@ for group = 1:length(groups)
             intercept.(groups{group}).(stimuli{stimulus})(end+1) = coeffs(2);
             slopeWithZeroIntercept.(groups{group}).(stimuli{stimulus})(end+1) = fitWithZeroIntercept.Coefficients.Estimate;
             
-            slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = ['MELA_', num2str(ss+(group-1)*20)];
+            slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = subjectID;
             slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 2} = stimuli{stimulus};
             slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = groups{group};
             slopeCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 4} = coeffs(1);
             
-            slopeWithZeroInterceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = ['MELA_', num2str(ss+(group-1)*20)];
+            slopeWithZeroInterceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = subjectID;
             slopeWithZeroInterceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 2} = stimuli{stimulus};
             slopeWithZeroInterceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = groups{group};
             slopeWithZeroInterceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 4} = fitWithZeroIntercept.Coefficients.Estimate;
             
             
-            interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = ['MELA_', num2str(ss+(group-1)*20)];
+            interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = subjectID;
             interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 2} = stimuli{stimulus};
             interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = groups{group};
             interceptCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 4} = coeffs(2);
             
             
-            meanRatingCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = ['MELA_', num2str(ss+(group-1)*20)];
+            meanRatingCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 1} = subjectID;
             meanRatingCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 2} = stimuli{stimulus};
             meanRatingCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 3} = groups{group};
             meanRatingCellArray{(ss-1)*3+rowAdjuster+(stimulus-1)*60, 4} = coeffs(1)*x(2) + coeffs(2);
@@ -240,10 +250,10 @@ slopeWithZeroInterceptCellArray = vertcat({'SubjectID', 'Stimulus', 'Group', 'Sl
 interceptCellArray = vertcat({'SubjectID', 'Stimulus', 'Group', 'Intercept'}, interceptCellArray);
 meanRatingCellArray = vertcat({'SubjectID', 'Stimulus', 'Group', 'MeanRating'}, meanRatingCellArray);
 
-cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'slopesWithZeroIntercept.csv'), slopeWithZeroInterceptCellArray);
-cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'slopes.csv'), slopeCellArray);
-cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'intercepts.csv'), interceptCellArray);
-cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'meanRating.csv'), meanRatingCellArray);
+cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'discomfort_slopesWithZeroIntercept.csv'), slopeWithZeroInterceptCellArray);
+cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'discomfort_slopes.csv'), slopeCellArray);
+cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'discomfort_intercepts.csv'), interceptCellArray);
+cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'discomfort_meanRating.csv'), meanRatingCellArray);
 
 
 % example ANOVA command:
