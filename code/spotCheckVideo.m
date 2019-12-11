@@ -262,7 +262,8 @@ line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisF
                 fprintf('\t8. pupilRange: %g %g\n', fitParams.pupilRange(:));
                 fprintf('\t9.pickLargestCircle: %g %g\n', fitParams.pickLargestCircle);
                 fprintf('\t10. smallObjThresh: %g\n', fitParams.smallObjThresh);
-                fprintf('\t11. Choose new frames to test\n');
+                fprintf('\t11. glintFrameMask: %g\n', fitParams.glintFrameMask);
+                fprintf('\t12. Choose new frames to test\n');
                 
                 
                 choice = input('\nYour choice: ', 's');
@@ -294,6 +295,8 @@ line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisF
                     case '10'
                         fitParams.smallObjThresh = input('Enter new smallObjThresh:       ');
                     case '11'
+                        fitParams.glintFrameMask = input('Enter new glintFrameMask:       ');
+                    case '12'
                         framesToCheck = GetWithDefault('Test on which frames: ', '');
                         framesToCheck = str2num(framesToCheck);
                 end
@@ -309,7 +312,8 @@ line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisF
                 fprintf('\tpupilRange: %g %g\n', fitParams.pupilRange(:));
                 fprintf('\pickLargestCircle: %g %g\n', fitParams.pickLargestCircle);
                 fprintf('\tsmallObjThresh: %g\n', fitParams.smallObjThresh);
-                
+                fprintf('\tglintFrameMask: %g\n', fitParams.glintFrameMask);
+
                 
                 
                 
@@ -365,10 +369,15 @@ line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisF
     
     % save out new params
     % save according to trial number
-    save(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']), 'fitParams', '-v7.3')
+    save(fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName, pathParams.session, acquisitionFolderName, ['fitParams_', runName, '.mat']), 'fitParams', '-v7.3')
     
     % prep command for ease of use
-    newCommand = ['spotCheckVideo(''', pathParams.subject, ''', ''' pathParams.session, ''', ', num2str(acquisitionNumber), ', ', num2str(trialNumber), ', ''skipParamsAdjustment'', true, ''processVideo'', true, ''openVideo'', false);'];
+    if isempty(pathParams.experimentName)
+        newCommand = ['spotCheckVideo(''', pathParams.subject, ''', ''' pathParams.session, ''', ', num2str(acquisitionNumber), ', ', num2str(trialNumber), ', ''skipParamsAdjustment'', true, ''processVideo'', true, ''openVideo'', false);'];
+    else
+        newCommand = ['spotCheckVideo(''', pathParams.subject, ''', ''' pathParams.session, ''', ', num2str(acquisitionNumber), ', ', num2str(trialNumber), ', ''skipParamsAdjustment'', true, ''processVideo'', true, ''openVideo'', false, ''experimentNumber'', ''' pathParams.experimentName, ''', ''Protocol'', ''', p.Results.protocol, ''');'];
+
+    end
     system(['echo "', newCommand, '" >> ', '~/Documents/MATLAB/projects/melSquintAnalysis/code/newlySpotchecked.m']);
 end
 %% Process the video, if desired
@@ -386,7 +395,7 @@ if p.Results.processVideo
     
     pathParams.grayVideoName = grayVideoName;
     
-    pathParams.dataOutputDirFull = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.session, sprintf('videoFiles_acquisition_%02d', acquisitionNumber));
+    pathParams.dataOutputDirFull = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName, pathParams.session, sprintf('videoFiles_acquisition_%02d', acquisitionNumber));
     [extension, runName] = fileparts(grayVideoName);
     pathParams.runName = runName;
     
@@ -409,6 +418,9 @@ if p.Results.processVideo
     if ~isfield(fitParams, 'threshold')
         fitParams.threshold = defaultFitParams.threshold;
     end
+    
+    fitParams.skipStageByNumber = [fitParams.skipStageByNumber, 12];
+    fitParams.skipStageByNumber = unique(fitParams.skipStageByNumber);
     
     runVideoPipeline(pathParams,...
         'skipStageByNumber', fitParams.skipStageByNumber,...
