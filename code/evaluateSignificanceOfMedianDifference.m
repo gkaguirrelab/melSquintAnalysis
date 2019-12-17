@@ -1,4 +1,4 @@
-function [ significance ] = evaluateSignificanceOfMedianDifference(sampleOne, sampleTwo, dropboxAnalysisDir, varargin)
+function [ significance ] = evaluateSignificanceOfMedianDifference(sampleOne, sampleTwo, varargin)
 
 % the variable significance reflects the probability of observing the
 % actual median difference or greater, in units of %
