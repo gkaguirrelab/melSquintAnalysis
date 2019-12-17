@@ -271,7 +271,7 @@ for stimulus = 1:length(stimuli)
     end
 end
 
-plotSpreadResults(slopes, 'contrasts', {400}, 'yLims', [-0.5, 10], 'yLabel', 'Discomfort Rating Slopes', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'groupAverage_slopes.pdf'))
+plotSpreadResults(slopes, 'contrasts', {400}, 'yLims', [-1, 12], 'yLabel', 'Discomfort Rating Slopes', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'groupAverage_slopes.pdf'))
 
 
 intercepts = [];
