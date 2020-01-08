@@ -1,4 +1,4 @@
-function [slope, intercept, meanRating] = fitLineToDiscomfortRatings(varargin)
+function [slope, intercept, meanRating] = fitLineToDiscomfortRatings(responseModality, varargin)
 
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
@@ -11,11 +11,14 @@ p.parse(varargin{:});
 
 %% Load in the discomfort ratings
 
-[ discomfortRatingsStruct, subjectIDsStruct ] = loadDiscomfortRatings;
+if strcmp(responseModality, 'discomfortRatings')
+    [ discomfortRatingsStruct, subjectIDsStruct ] = loadDiscomfortRatings;
 
-mwaDiscomfort = discomfortRatingsStruct.mwaDiscomfort;
-mwoaDiscomfort = discomfortRatingsStruct.mwoaDiscomfort;
-controlDiscomfort = discomfortRatingsStruct.controlDiscomfort;
+    mwaResult = discomfortRatingsStruct.mwaDiscomfort;
+    mwoaResult = discomfortRatingsStruct.mwoaDiscomfort;
+    controlResult = discomfortRatingsStruct.controlDiscomfort;
+    
+end
 
 %% Make linear model fits across contrast levels for each stimulus type and each subject
 % pre-allocate some variables
@@ -65,17 +68,17 @@ for group = 1:length(groups)
             % for specific stimulus type, for specific subject, concatenate
             % discomfort ratings across contrast levels
             if strcmp(groups{group}, 'controls')
-                y = [controlDiscomfort.(stimuli{stimulus}).Contrast100(ss), controlDiscomfort.(stimuli{stimulus}).Contrast200(ss), controlDiscomfort.(stimuli{stimulus}).Contrast400(ss)];
+                y = [controlResult.(stimuli{stimulus}).Contrast100(ss), controlResult.(stimuli{stimulus}).Contrast200(ss), controlResult.(stimuli{stimulus}).Contrast400(ss)];
                 rowAdjuster = 1;
                 color = 'k';
                 subjectID = controlSubjects{ss};
             elseif strcmp(groups{group}, 'mwa')
-                y = [mwaDiscomfort.(stimuli{stimulus}).Contrast100(ss), mwaDiscomfort.(stimuli{stimulus}).Contrast200(ss), mwaDiscomfort.(stimuli{stimulus}).Contrast400(ss)];
+                y = [mwaResult.(stimuli{stimulus}).Contrast100(ss), mwaResult.(stimuli{stimulus}).Contrast200(ss), mwaResult.(stimuli{stimulus}).Contrast400(ss)];
                 rowAdjuster = 2;
                 color = 'b';
                 subjectID = mwaSubjects{ss};
             elseif strcmp(groups{group}, 'mwoa')
-                y = [mwoaDiscomfort.(stimuli{stimulus}).Contrast100(ss), mwoaDiscomfort.(stimuli{stimulus}).Contrast200(ss), mwoaDiscomfort.(stimuli{stimulus}).Contrast400(ss)];
+                y = [mwoaResult.(stimuli{stimulus}).Contrast100(ss), mwoaResult.(stimuli{stimulus}).Contrast200(ss), mwoaResult.(stimuli{stimulus}).Contrast400(ss)];
                 rowAdjuster = 3;
                 color = 'r';
                 subjectID = mwoaSubjects{ss};
@@ -95,7 +98,7 @@ for group = 1:length(groups)
                 xticks(x);
                 xticklabels({'100%', '200%', '400%'});
                 xlabel('Contrast')
-                ylabel('Discomfort')
+                ylabel(responseModality)
                 xlim([x(1) - 0.1, x(3) + 0.1]);
                 ylim([-0.5 10.5]);
                 yticks([0:1:10])
@@ -135,7 +138,7 @@ for group = 1:length(groups)
         end
         
         if p.Results.makePlots
-            subjectPlotSavePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'subjectFits');
+            subjectPlotSavePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, 'subjectFits');
             if ~exist(subjectPlotSavePath, 'dir')
                 mkdir(subjectPlotSavePath);
             end
@@ -194,7 +197,7 @@ if p.Results.makePlots
         
         
     end
-    export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'discomfortFitLines.png'));
+    export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, 'discomfortFitLines.png'));
     
     % summarize model params across subjects
     slopes = [];
@@ -207,7 +210,7 @@ if p.Results.makePlots
         end
     end
     
-    plotSpreadResults(slopes, 'contrasts', {400}, 'yLims', [-1, 12], 'yLabel', 'Discomfort Rating Slopes', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'groupAverage_slopes.pdf'))
+    plotSpreadResults(slopes, 'contrasts', {400}, 'yLims', [-1, 12], 'yLabel', [responseModality,' Slopes'], 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, 'groupAverage_slopes.pdf'))
     
     
     intercepts = [];
@@ -219,7 +222,7 @@ if p.Results.makePlots
         end
     end
     
-    plotSpreadResults(intercepts, 'contrasts', {400}, 'yLims', [-20, 5], 'yLabel', 'Discomfort Rating Slopes', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'groupAverage_intercepts.pdf'))
+    plotSpreadResults(intercepts, 'contrasts', {400}, 'yLims', [-20, 5], 'yLabel', [responseModality, ' Intercepts'], 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, 'groupAverage_intercepts.pdf'))
     
     meanRatings = [];
     for stimulus = 1:length(stimuli)
@@ -230,7 +233,7 @@ if p.Results.makePlots
         end
     end
     
-    plotSpreadResults(meanRatings, 'contrasts', {400}, 'yLims', [-0.5, 10], 'yLabel', 'Mean Discomfort Rating', 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'groupAverage_meanRating.pdf'))
+    plotSpreadResults(meanRatings, 'contrasts', {400}, 'yLims', [-0.5, 10], 'yLabel', ['Mean ', responseModality], 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, 'groupAverage_meanRating.pdf'))
     
     
 end
@@ -241,9 +244,9 @@ if p.Results.makeCSV
     interceptCellArray = vertcat({'SubjectID', 'Stimulus', 'Group', 'Intercept'}, interceptCellArray);
     meanRatingCellArray = vertcat({'SubjectID', 'Stimulus', 'Group', 'MeanRating'}, meanRatingCellArray);
     
-    cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'discomfort_slopes.csv'), slopeCellArray);
-    cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'discomfort_intercepts.csv'), interceptCellArray);
-    cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'discomfort_meanRating.csv'), meanRatingCellArray);
+    cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, 'slopes.csv'), slopeCellArray);
+    cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, 'intercepts.csv'), interceptCellArray);
+    cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, 'meanRating.csv'), meanRatingCellArray);
     
 end
 

@@ -1,6 +1,9 @@
-%% get model fit params
-[slope, intercept, meanRating] = fitLineToDiscomfortRatings('makePlots', false, 'makeCSV', false);
+function runMixedEffectsANOVA(responseModality, responseMetric)
 
+%% get model fit params
+if strcmp(responseModality, 'discomfortRatings')
+    [slope, intercept, meanRating] = fitLineToDiscomfortRatings('makePlots', false, 'makeCSV', false);
+end
 %% Create the design matrix
 %     - first column  (i.e., X(:,1)) : all dependent variable values
 %     - second column (i.e., X(:,2)) : between-subjects factor (e.g., subject group) level codes (ranging from 1:L where 
@@ -8,7 +11,15 @@
 %     - third column  (i.e., X(:,3)) : within-subjects factor (e.g., condition/task) level codes (ranging from 1:L where 
 %         L is the # of levels for the within-subjects factor)
 %     - fourth column (i.e., X(:,4)) : subject codes (ranging from 1:N where N is the total number of subjects)
-result = meanRating;
+
+% grab the result of choice
+if strcmp(responseMetric, 'slope')
+    result = slope;
+elseif strcmp(responseMetric, 'intercept')
+    result = intercept;
+elseif strcmp(responseMetric, 'meanRating')
+    result = meanRating;
+end
 % First column: all dependent variables:
 stimuli = {'Melanopsin', 'LightFlux', 'LMS'};
 groups = {'controls', 'mwa', 'mwoa'};
@@ -44,4 +55,4 @@ for group = 1:length(groups)
 end
 
 %% Run mixed effects ANOVA
-[SSQs, DFs, MSQs, Fs, Ps]=mixed_between_within_anova(designMatrix)
+[SSQs, DFs, MSQs, Fs, Ps]=mixed_between_within_anova(designMatrix);
