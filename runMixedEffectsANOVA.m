@@ -1,9 +1,9 @@
 function runMixedEffectsANOVA(responseModality, responseMetric)
 
 %% get model fit params
-if strcmp(responseModality, 'discomfortRatings')
-    [slope, intercept, meanRating] = fitLineToDiscomfortRatings('makePlots', false, 'makeCSV', false);
-end
+
+[slope, intercept, meanRating] = fitLineToResponseModality(responseModality, 'makePlots', false, 'makeCSV', false);
+
 %% Create the design matrix
 %     - first column  (i.e., X(:,1)) : all dependent variable values
 %     - second column (i.e., X(:,2)) : between-subjects factor (e.g., subject group) level codes (ranging from 1:L where 
