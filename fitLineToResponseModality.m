@@ -11,7 +11,11 @@ p.parse(varargin{:});
 
 %% Load in the discomfort ratings
 
-if strcmp(responseModality, 'discomfortRatings')
+if strcmp(responseModality, 'discomfortRating')
+    responseModality = 'discomfortRatings';
+end
+
+if strcmp(responseModality, 'discomfortRatings') || strcmp(responseModality, 'discomfortRating')
     [ discomfortRatingsStruct, subjectIDsStruct ] = loadDiscomfortRatings;
 
     mwaResult = discomfortRatingsStruct.mwaDiscomfort;
