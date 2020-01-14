@@ -4,7 +4,7 @@ function runStages(subjectID, sessionID, acquisitionNumber, trialNumber, stagesT
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('Protocol', 'SquintToPulse' ,@isstr);
-p.addParameter('experimentNumber', [], @isstr);
+p.addParameter('experimentNumber', []);
 
 p.parse(varargin{:})
 %% Summary of stages
