@@ -43,6 +43,59 @@ for ss = 1:length(subjectIDs)
     
 end
 
+%% Plot VDS vs. mean discomfort rating
+[ slope, intercept, meanRating ] = fitLineToResponseModality('discomfortRating', 'makePlots', false, 'makeCSV', false);
+
+plotFig = figure;
+sgtitle('VDS')
+
+for stimulus = 1:length(stimuli)
+    subplot(1,3,stimulus); hold on;
+    title(stimuli{stimulus});
+    
+    plot(meanRating.controls.(stimuli{stimulus}), controlVDS, 'o', 'Color', 'k');
+    x = meanRating.controls.(stimuli{stimulus});
+    y = controlVDS;
+    coeffs = polyfit(x, y, 1);
+    fittedX = linspace(min(x), max(x), 200);
+    fittedY = polyval(coeffs, fittedX);
+    ax.ax1 = plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'k');
+    controlR = corr2(x, y);
+
+    plot(meanRating.mwa.(stimuli{stimulus}), mwaVDS, 'o', 'Color', 'b');
+    x = meanRating.mwa.(stimuli{stimulus});
+    y = mwaVDS;
+    coeffs = polyfit(x, y, 1);
+    fittedX = linspace(min(x), max(x), 200);
+    fittedY = polyval(coeffs, fittedX);
+    ax.ax2 = plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'b');
+    mwaR = corr2(x, y);
+
+
+    plot(meanRating.mwoa.(stimuli{stimulus}), mwoaVDS, 'o', 'Color', 'r');
+    x = meanRating.mwoa.(stimuli{stimulus});
+    y = mwoaVDS;
+    coeffs = polyfit(x, y, 1);
+    fittedX = linspace(min(x), max(x), 200);
+    fittedY = polyval(coeffs, fittedX);
+    ax.ax3 = plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'r');
+    mwoaR = corr2(x, y);
+
+
+    xlabel('Discomfort Rating');
+    ylabel('VDS');
+    xlim([0 10]);
+    ylim([0 45]);
+    
+  
+        legend([ax.ax1, ax.ax2, ax.ax3], ['Controls, r = ' num2str(controlR)], ['MwA, r = ' num2str(mwaR)], ['MwoA, r = ' num2str(mwoaR)], 'Location', 'NorthWest');
+    
+    
+    
+end
+set(gcf, 'Position', [91 403 1149 575]);
+
+%% plot VDS for discomfort, all groups together
 plotFig = figure;
 sgtitle('VDS')
 
@@ -87,6 +140,7 @@ for stimulus = 1:length(stimuli)
 end
 set(gcf, 'Position', [91 403 1149 575]);
 
+%% Plot VDS vs. discomfort, separate plots for each group
 groups = {'Controls', 'MwA', 'MwoA'};
 for group = 1:length(groups)
     plotFig = figure;
