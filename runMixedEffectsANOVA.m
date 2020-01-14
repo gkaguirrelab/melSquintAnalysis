@@ -140,6 +140,8 @@ end
 
 stimulusByGroupTable = array2table(stimulusByGroupTable);
 stimulusByGroupTable.Properties.VariableNames = {'Group', 'Comparison', 'Difference', 't_Statistic', 'p_Value', 'CI_95'};
+writetable(stimulusByGroupTable, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, ['stimulusByGroup_', responseMetric, '_postHoc.csv']))
+
 
 % group by stimulus
 posthocTable = multcompare(rm,'Group', 'By', 'Stimulus');
@@ -198,6 +200,6 @@ end
 
 groupByStimulusTable = array2table(groupByStimulusTable);
 groupByStimulusTable.Properties.VariableNames = {'Stimulus', 'Comparison', 'Difference', 't_Statistic', 'p_Value', 'CI_95'};
-
+writetable(groupByStimulusTable, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, ['groupBystimulus_', responseMetric, '_postHoc.csv']))
 
 end
