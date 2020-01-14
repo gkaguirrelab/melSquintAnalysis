@@ -115,7 +115,7 @@ for group = 1:3
         
         yErrorNeg = [(median(response.(stimuli{stimulus}).Contrast100) - prctile(response.(stimuli{stimulus}).Contrast100, 25)), (median(response.(stimuli{stimulus}).Contrast200) - prctile(response.(stimuli{stimulus}).Contrast200, 25)), (median(response.(stimuli{stimulus}).Contrast400) - prctile(response.(stimuli{stimulus}).Contrast400, 25))];
         yErrorPos = [(prctile(response.(stimuli{stimulus}).Contrast100, 75) - median(response.(stimuli{stimulus}).Contrast100)), (prctile(response.(stimuli{stimulus}).Contrast200, 75) - median(response.(stimuli{stimulus}).Contrast200)), (prctile(response.(stimuli{stimulus}).Contrast400, 75) - median(response.(stimuli{stimulus}).Contrast400))];
-
+        
         errorbar(x+xOffset, y, yErrorNeg, yErrorPos, 'Color', color, 'CapSize', 0);
         plot(x+xOffset,y, '*', 'MarkerSize', 20, 'Color', color);
         
@@ -145,9 +145,9 @@ x = [log10(100), log10(200), log10(400)];
 counter = 1;
 [ha, pos] = tight_subplot(3,3, 0.04);
 
-for group = 1:length(groups)
-
-    for stimulus = 1:length(stimuli)
+for stimulus = 1:length(stimuli)
+    
+    for group = 1:length(groups)
         
         if strcmp(groups{group}, 'control')
             color = 'k';
@@ -158,43 +158,52 @@ for group = 1:length(groups)
         end
         
         
-        axes(ha(counter)); hold on;        
+        axes(ha(counter)); hold on;
         result = discomfortRatingsStruct.([groups{group}, 'Discomfort']);
         data = [result.(stimuli{stimulus}).Contrast100; result.(stimuli{stimulus}).Contrast200; result.(stimuli{stimulus}).Contrast400];
         
         plotSpread(data', 'xValues', x, 'xNames', {'100%', '200%', '400%'}, 'distributionColors', color)
-        set(findall(gcf,'type','line'),'markerSize',13) 
+        set(findall(gcf,'type','line'),'markerSize',13)
         yticks([0 5 10])
         
-        if stimulus == 1
-            ylabel('Discomfort Rating')
+        if group  == 1
+            if stimulus == 1
+                ylabel({'{\bf\fontsize{15} Light Flux}'; 'Discomfort Rating'})
+            elseif stimulus == 2
+                ylabel({'{\bf\fontsize{15} Melanopsin}'; 'Discomfort Rating'})
+                
+            elseif stimulus == 3
+                ylabel({'{\bf\fontsize{15} LMS}'; 'Discomfort Rating'})
+                
+            end
+            
             ylim([0 10.5]);
             yticks([0 5 10]);
             yticklabels([0 5 10]);
         end
-
+        
         
         counter = counter + 1;
-
-
+        
+        
         
     end
 end
 
 % add titles to the columns
 axes(ha(1));
-title(stimuli{1});
+title({'\fontsize{15} Controls'});
 axes(ha(2));
-title(stimuli{2});
+title({'\fontsize{15} MwA'});
 axes(ha(3));
-title(stimuli{3});
+title({'\fontsize{15} MwoA'});
 
-           
+
 % add medians
 counter = 1;
-for group = 1:length(groups)
+for stimulus = 1:length(stimuli)
     
-    for stimulus = 1:length(stimuli)
+    for group = 1:length(groups)
         
         if strcmp(groups{group}, 'control')
             color = 'k';
@@ -204,7 +213,7 @@ for group = 1:length(groups)
             color = 'r';
         end
         
-                axes(ha(counter)); hold on;        
+        axes(ha(counter)); hold on;
         result = discomfortRatingsStruct.([groups{group}, 'Discomfort']);
         
         plot(x, [median(result.(stimuli{stimulus}).Contrast100), median(result.(stimuli{stimulus}).Contrast200), median(result.(stimuli{stimulus}).Contrast400)], '.', 'Color', color, 'MarkerSize', 25)
@@ -214,9 +223,10 @@ end
 
 % add line fits
 counter = 1;
-for group = 1:length(groups)
+for stimulus = 1:length(stimuli)
     
-    for stimulus = 1:length(stimuli)
+    for group = 1:length(groups)
+        
         
         if strcmp(groups{group}, 'control')
             color = 'k';
@@ -250,7 +260,7 @@ for ii = 1:length(test)
         hMarkers.EdgeColorData(4) = 75;
     end
 end
-set(gcf, 'Position', [600 558 760 420]);
+set(gcf, 'Position', [600 558 1060 620]);
 set(gcf, 'Renderer', 'painters');
 
 export_fig(gcf, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'summary_groupxstimulus.pdf'))
