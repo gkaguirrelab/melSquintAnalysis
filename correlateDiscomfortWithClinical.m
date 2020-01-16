@@ -43,14 +43,89 @@ for ss = 1:length(subjectIDs)
     
 end
 
+%% wrangle up omnibus summary metric for discomfort ratings
+% for each subject, pool all trials together, and grab median values across
+% trials
+
+stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
+contrasts = {100, 200, 400};
+
+omnibusDiscomfort.mwa = [];
+omnibusDiscomfort.mwoa = [];
+omnibusDiscomfort.controls = [];
+
+
+for ss = 1:length(subjectIDs)
+    group = linkMELAIDToGroup(subjectIDs{ss});
+    
+    analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectIDs{ss});
+    fileName = 'audioTrialStruct_final.mat';
+    
+    load(fullfile(analysisBasePath, fileName));
+    
+    trialAccumulator = [];
+    
+    for stimulus = 1:length(stimuli)
+        for contrast = 1:length(contrasts)
+            trialAccumulator = [trialAccumulator, trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])];
+            
+        end
+    end
+    
+    if strcmp(group, 'c')
+        omnibusDiscomfort.controls(end+1) = nanmedian(trialAccumulator);
+    elseif strcmp(group, 'mwa')
+        omnibusDiscomfort.mwa(end+1) = nanmedian(trialAccumulator);
+    elseif strcmp(group, 'mwoa')
+        omnibusDiscomfort.mwoa(end+1) = nanmedian(trialAccumulator);
+    end
+end
+
+plotFig = figure; hold on;
+plot(omnibusDiscomfort.controls, controlVDS, 'o', 'Color', 'k');
+x = omnibusDiscomfort.controls;
+y = controlVDS;
+coeffs = polyfit(x, y, 1);
+fittedX = linspace(min(x), max(x), 200);
+fittedY = polyval(coeffs, fittedX);
+ax.ax1 = plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'k');
+controlR = corr2(x, y);
+
+plot(omnibusDiscomfort.mwa, mwaVDS, 'o', 'Color', 'b');
+x = omnibusDiscomfort.mwa;
+y = mwaVDS;
+coeffs = polyfit(x, y, 1);
+fittedX = linspace(min(x), max(x), 200);
+fittedY = polyval(coeffs, fittedX);
+ax.ax2 = plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'b');
+mwaR = corr2(x, y);
+
+
+plot(omnibusDiscomfort.mwoa, mwoaVDS, 'o', 'Color', 'r');
+x = omnibusDiscomfort.mwoa;
+y = mwoaVDS;
+coeffs = polyfit(x, y, 1);
+fittedX = linspace(min(x), max(x), 200);
+fittedY = polyval(coeffs, fittedX);
+ax.ax3 = plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'r');
+mwoaR = corr2(x, y);
+
+xlabel('Omnibus Discomfort Rating')
+ylabel('VDS')
+legend([ax.ax1, ax.ax2, ax.ax3], ['Controls, r = ' num2str(controlR)], ['MwA, r = ' num2str(mwaR)], ['MwoA, r = ' num2str(mwoaR)], 'Location', 'NorthWest');
+
+
 %% Plot VDS vs. mean discomfort rating
+
+stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
+
 [ slope, intercept, meanRating ] = fitLineToResponseModality('discomfortRating', 'makePlots', false, 'makeCSV', false);
 
 plotFig = figure;
 sgtitle('VDS')
 
 for stimulus = 1:length(stimuli)
-    subplot(1,3,stimulus); hold on;
+    subplot(2,3,stimulus); hold on;
     title(stimuli{stimulus});
     
     plot(meanRating.controls.(stimuli{stimulus}), controlVDS, 'o', 'Color', 'k');
@@ -82,7 +157,7 @@ for stimulus = 1:length(stimuli)
     mwoaR = corr2(x, y);
 
 
-    xlabel('Discomfort Rating');
+    xlabel('Mean Discomfort Rating');
     ylabel('VDS');
     xlim([0 10]);
     ylim([0 45]);
@@ -93,7 +168,52 @@ for stimulus = 1:length(stimuli)
     
     
 end
-set(gcf, 'Position', [91 403 1149 575]);
+
+for stimulus = 1:length(stimuli)
+    subplot(2,3,stimulus+3); hold on;
+    title(stimuli{stimulus});
+    
+    plot(slope.controls.(stimuli{stimulus}), controlVDS, 'o', 'Color', 'k');
+    x = slope.controls.(stimuli{stimulus});
+    y = controlVDS;
+    coeffs = polyfit(x, y, 1);
+    fittedX = linspace(min(x), max(x), 200);
+    fittedY = polyval(coeffs, fittedX);
+    ax.ax1 = plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'k');
+    controlR = corr2(x, y);
+
+    plot(slope.mwa.(stimuli{stimulus}), mwaVDS, 'o', 'Color', 'b');
+    x = slope.mwa.(stimuli{stimulus});
+    y = mwaVDS;
+    coeffs = polyfit(x, y, 1);
+    fittedX = linspace(min(x), max(x), 200);
+    fittedY = polyval(coeffs, fittedX);
+    ax.ax2 = plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'b');
+    mwaR = corr2(x, y);
+
+
+    plot(slope.mwoa.(stimuli{stimulus}), mwoaVDS, 'o', 'Color', 'r');
+    x = slope.mwoa.(stimuli{stimulus});
+    y = mwoaVDS;
+    coeffs = polyfit(x, y, 1);
+    fittedX = linspace(min(x), max(x), 200);
+    fittedY = polyval(coeffs, fittedX);
+    ax.ax3 = plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'r');
+    mwoaR = corr2(x, y);
+
+
+    xlabel('Slope');
+    ylabel('VDS');
+    xlim([-1 12]);
+    ylim([0 45]);
+    
+  
+        legend([ax.ax1, ax.ax2, ax.ax3], ['Controls, r = ' num2str(controlR)], ['MwA, r = ' num2str(mwaR)], ['MwoA, r = ' num2str(mwoaR)], 'Location', 'NorthWest');
+    
+    
+    
+end
+%set(gcf, 'Position', [91 403 1149 575]);
 
 %% plot VDS for discomfort, all groups together
 plotFig = figure;
