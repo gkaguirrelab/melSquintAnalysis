@@ -137,8 +137,8 @@ export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), '
 stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
 groups = {'control', 'mwa', 'mwoa'};
 
-%[ discomfortRatingsStruct ] = loadDiscomfortRatings;
-%[ slope, intercept, meanRating ] = fitLineToResponseModality('discomfortRatings', 'makePlots', false, 'makeCSV', false);
+[ discomfortRatingsStruct ] = loadDiscomfortRatings;
+[ slope, intercept, meanRating ] = fitLineToResponseModality('discomfortRatings', 'makePlots', false, 'makeCSV', false);
 
 x = [log10(100), log10(200), log10(400)];
 
@@ -177,11 +177,11 @@ for stimulus = 1:length(stimuli)
                 
             end
             
-            ylim([0 10.5]);
+           
             yticks([0 5 10]);
             yticklabels([0 5 10]);
         end
-        
+         ylim([0 10.5]);
         
         counter = counter + 1;
         
