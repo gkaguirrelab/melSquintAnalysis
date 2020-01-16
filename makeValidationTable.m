@@ -74,7 +74,7 @@ for ss = 1:length(subjectIDs)
 end
 
 validationTable = array2table(validationTable);
-validationTable.Properties.VariableNames = {'SubjectID', 'SessionID', 'MelanopsinContrast', 'SConeContrast', 'LMinusMContrast', 'LMSContrast', 'BackgroundLuminance', 'Chromaticity', 'LMSContrast', 'SConeContrast', 'LMinusMContrast', 'MelanopsinContrast', 'BackgroundLuminance', 'Chromaticity', 'LMSContrast', 'MelanopsinContrast', 'SConeContrast', 'LMinusMContrast', 'BackgroundLuminaince', 'Chromaticity'};
+validationTable.Properties.VariableNames = {'SubjectID', 'SessionID', 'MelanopsinContrast_Melanopsin', 'SConeContrast_Melanopsin', 'LMinusMContrast_Melanopsin', 'LMSContrast_Melanopsin', 'BackgroundLuminance_Melanopsin', 'Chromaticityv', 'LMSContrast_LMS', 'SConeContrast_LMS', 'LMinusMContrast_LMS', 'MelanopsinContrast_LMS', 'BackgroundLuminance_LMS', 'Chromaticity_LMS', 'LMSContrast_LightFlux', 'MelanopsinContrast_LightFlux', 'SConeContrast_LightFlux', 'LMinusMContrast_LightFlux', 'BackgroundLuminance_LightFlux', 'Chromaticity_LightFlux'};
 
 writetable(validationTable, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'stimuli', 'validationsBySession.csv'));
 end
