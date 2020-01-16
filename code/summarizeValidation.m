@@ -43,14 +43,20 @@ function validation = summarizeValidation(DirectionObject, varargin)
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('whichValidationPrefix','all',@ischar);
 p.addParameter('plot','on',@ischar);
+p.addParameter('validationIndices', [], @isnumeric)
 p.parse(varargin{:});
 
-potentialValidations = length(DirectionObject.describe.validation);
-validationIndices = [];
-for ii = 1:potentialValidations
-    if contains(DirectionObject.describe.validation(ii).label, p.Results.whichValidationPrefix) || strcmp(p.Results.whichValidationPrefix, 'all')
-        validationIndices = [validationIndices, ii];
+if isempty(p.Results.validationIndices)
+    potentialValidations = length(DirectionObject.describe.validation);
+    validationIndices = [];
+    for ii = 1:potentialValidations
+        if contains(DirectionObject.describe.validation(ii).label, p.Results.whichValidationPrefix) || strcmp(p.Results.whichValidationPrefix, 'all')
+            validationIndices = [validationIndices, ii];
+        end
     end
+else
+    
+    validationIndices = p.Results.validationIndices;
 end
 
 % Return empty array if nothing found
