@@ -1,9 +1,16 @@
-function transcriptionWrapper(subjectNumber)
+function transcriptionWrapper(subjectID, experimentNumber)
 
-load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', 'subjectListStruct.mat'));
+if experimentNumber == 1
+    contrasts = {100, 200, 400};
+    experimentName = 'experiment_1';
+elseif experimentNumber == 2
+    contrasts = {400, 800, 1200};
+    experimentName = 'experiment_2';
+end
 
-subjectIDs = fieldnames(subjectListStruct);
+stimuli = {'LightFlux', 'Melanopsin', 'LS'};
 
-transcribeAudioResponses(subjectIDs{subjectNumber}, 'sessions', subjectListStruct.(subjectIDs{subjectNumber}));
+    transcribeAudioResponses(subjectID, 'experimentNumber', experimentName, 'stimuli', stimuli, 'contrasts', contrasts', 'Protocol', 'Deuteranopes');
+
 
 end

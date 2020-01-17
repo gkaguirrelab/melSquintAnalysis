@@ -78,7 +78,11 @@ p.addParameter('nTrials',10,@isnumeric);
 p.addParameter('nAcquisitions',6,@isnumeric);
 p.addParameter('nSessions',4,@isnumeric);
 p.addParameter('sessions', {}, @iscell);
-
+p.addParameter('contrasts', {100, 200, 400}, @iscell);
+p.addParameter('stimuli', {'LightFlux', 'Melanopsin', 'LMS'}, @iscell);
+p.addParameter('protocol', 'SquintToPulse', @ischar);
+p.addParameter('experimentNumber', [], @ischar);
+p.addParameter('allowRepeatSessionNumbers', true, @islogical);
 
 
 p.addParameter('confidenceInterval', [10 90], @isnumeric);
@@ -87,9 +91,18 @@ p.addParameter('confidenceInterval', [10 90], @isnumeric);
 % Parse and check the parameters
 p.parse(varargin{:});
 
+contrasts = p.Results.contrasts;
+stimuli = p.Results.stimuli;
+
+if strcmp(p.Results.protocol, 'SquintToPulse')
+    protocolShortName = 'StP';
+elseif strcmp(p.Results.protocol, 'Deuteranopes')
+    protocolShortName = 'Deuteranopes';
+end
+
 
 %% Find the data
-analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
+analysisBasePath = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'Experiments/OLApproach_Squint', p.Results.protocol, 'DataFiles/', subjectID, p.Results.experimentNumber);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 % figure out filename of trialStruct
 if (p.Results.repeat)
@@ -99,12 +112,10 @@ else
 end
 
 % figure out the number of completed sessions
-potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, '2*session*'));
+potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint', p.Results.protocol, 'DataFiles', subjectID, p.Results.experimentNumber, '2*session*'));
 potentialNumberOfSessions = length(potentialSessions);
 
 % initialize outputStruct
-stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
-contrasts = {100, 200, 400};
 for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
         trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]) = [];
@@ -118,12 +129,13 @@ trialStruct.metaData.index = [];
 
 if isempty(p.Results.sessions)
     sessions = [];
+    sessionIDs = [];
     for ss = 1:potentialNumberOfSessions
         acquisitions = [];
         for aa = 1:6
             trials = [];
             for tt = 1:10
-                if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d.mp4', tt)), 'file');
+                if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint', p.Results.protocol, 'DataFiles', subjectID, p.Results.experimentNumber, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d.mp4', tt)), 'file');
                     trials = [trials, tt];
                 end
             end
@@ -133,25 +145,29 @@ if isempty(p.Results.sessions)
         end
         if isequal(acquisitions, 1:6)
             sessions = [sessions, ss];
+            if p.Results.allowRepeatSessionNumbers
+                sessionIDs{end+1} = potentialSessions(ss).name;
+            end
         end
     end
     
     completedSessions = sessions;
     % get session IDs
-    sessionIDs = [];
-    for ss = completedSessions
-        potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sprintf('*session_%d*', ss)));
-        % in the event of more than one entry for a given session (which would
-        % happen if something weird happened with a session and it was
-        % restarted on a different day), it'll grab the later dated session,
-        % which should always be the one we want
-        for ii = 1:length(potentialSessions)
-            if ~strcmp(potentialSessions(ii).name(1), 'x')
-                sessionIDs{ss} = potentialSessions(ii).name;
+    if ~p.Results.allowRepeatSessionNumbers
+        for ss = completedSessions
+            potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint', p.Results.protocol, 'DataFiles', subjectID, p.Results.experimentNumber, sprintf('*session_%d*', ss)));
+            % in the event of more than one entry for a given session (which would
+            % happen if something weird happened with a session and it was
+            % restarted on a different day), it'll grab the later dated session,
+            % which should always be the one we want
+            for ii = 1:length(potentialSessions)
+                if ~strcmp(potentialSessions(ii).name(1), 'x')
+                    sessionIDs{ss} = potentialSessions(ii).name;
+                end
             end
         end
+        sessionIDs = sessionIDs(~cellfun('isempty',sessionIDs));
     end
-    sessionIDs = sessionIDs(~cellfun('isempty',sessionIDs));
     
     nSessions = length(sessionIDs);
 else
@@ -214,7 +230,7 @@ for ii = 1:totalTrials
     sessionNumber = sessionNumber{2};
     sessionNumber = str2num(sessionNumber);
     
-    acquisitionDataFile = fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', sessionNumber,aa));
+    acquisitionDataFile = fullfile(dataBasePath, 'Experiments/OLApproach_Squint', p.Results.protocol, 'DataFiles', subjectID, p.Results.experimentNumber, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', sessionNumber,protocolShortName, aa));
     if exist(acquisitionDataFile)
         acquisitionData = load(acquisitionDataFile);
         
@@ -238,21 +254,24 @@ for ii = 1:totalTrials
         trialAccumulator(counter).audio = trialData.response.values(firstIndex:secondIndex);
         
         
-        
+        % figure out the stimulus and contrast
         directionNameLong = acquisitionData.trialList(tt).modulationData.modulationParams.direction;
         directionNameSplit = strsplit(directionNameLong, ' ');
         if strcmp(directionNameSplit{1}, 'Light')
             directionName = 'LightFlux';
+        elseif strcmp(directionNameSplit{1}, 'L+S')
+            directionName = 'LS';
         else
             directionName = directionNameSplit{1};
         end
         contrastLong = strsplit(directionNameLong, '%');
-        contrast = contrastLong{1}(end-2:end);
+        contrastLong = strsplit(contrastLong{1}, ' ');
+        contrast = contrastLong{end};
         % pool the results
         nItems = length((trialStruct.(directionName).(['Contrast', contrast])));
         trialAccumulator(counter).stimulus =[directionName, '_Contrast' contrast];
         
-        counter = counter + 1
+        counter = counter + 1;
     end
     
     
@@ -268,7 +287,7 @@ for ii = startingIndex:totalTrials
     sessionNumber = sessionNumber{2};
     sessionNumber = str2num(sessionNumber);
     
-    %acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', ss,aa)));
+    %acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint', p.Results.protocol, 'DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', ss,aa)));
     
     
     fprintf('Session %d, Acquisition %d, Trial %d\n', sessionNumber, aa, tt);
