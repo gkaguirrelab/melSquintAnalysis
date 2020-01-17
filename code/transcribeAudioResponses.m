@@ -405,7 +405,7 @@ if makePlots
             colors = {[254/255, 235/255, 101/255], [228/255, 82/255, 27/255], [77/255, 52/255, 47/255]};
         end
         
-        axis.(['axis', num2str(stimulus)]) = subplot(3,2,(stimulus-1)*2+1);
+        axis.(['axis', num2str(stimulus)]) = subplot(3,1,stimulus);
         data = horzcat( trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{1})])', trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{2})])',  trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{3})])');
         plotSpread(data, 'distributionColors', colors, 'xNames', {num2str(contrasts{1}), num2str(contrasts{2}), num2str(contrasts{3})}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
         title([stimuli{stimulus}, ', Left'])
@@ -417,7 +417,7 @@ if makePlots
         
     end
     
-    analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles/', subjectID, p.Results.experimentName);
+    analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles/', subjectID, p.Results.experimentNumber);
 
     saveName = [subjectID, '_discomfortRatings.pdf'];
 
