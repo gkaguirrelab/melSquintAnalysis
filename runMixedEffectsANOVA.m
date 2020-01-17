@@ -81,7 +81,23 @@ dataTable.Group = categorical(dataTable.Group);
 wsVariable = table([0 1 2]', 'VariableNames', {'Stimulus'});
 
 rm = fitrm(dataTable, 'Melanopsin,LMS,LightFlux~Group', 'WithinDesign', wsVariable);
-ranovaTable = ranova(rm);
+
+% spit out some text about these ANOVA results
+% to find the within-subject effects:
+ranovatbl = ranova(rm);
+withinSubjectsFValue = table2array(ranovatbl(1,4));
+withinSubjectspValue = table2array(ranovatbl(1,5));
+interactionFValue = table2array(ranovatbl(2,4));
+interactionpValue = table2array(ranovatbl(2,5));
+fprintf('\n<strong>From Matlab functions: </strong>\n');
+fprintf('The effect of stimulus: F-value of %4.3f, p-value of %4.5f\n', withinSubjectsFValue, withinSubjectspValue);
+fprintf('The effect of interaction: F-value of %4.3f, p-value of %4.5f\n', interactionFValue, interactionpValue);
+
+% to find the between subject effects:
+anovatbl = anova(rm);
+betweenSubjectsFValue = table2array(anovatbl(2,6));
+betweenSubjectspValue = table2array(anovatbl(2,7));
+fprintf('The effect of group: F-value of %4.3f, p-value of %4.5f\n', betweenSubjectsFValue, betweenSubjectspValue);
 
 %% make summary table:
 posthocTable = multcompare(rm,'Stimulus', 'By', 'Group');
