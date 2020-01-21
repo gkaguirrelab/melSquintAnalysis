@@ -65,6 +65,7 @@ for ii = 1:length(groups)
     
     % Anonymous functions for the model
     myModel = @(k) ((k(1).*Mc).^k(2) + Lc.^k(2)).^(1/k(2));
+    myMedianModel = @(k) ((k(1).*median(McFull,2)).^k(2) + median(LcFull,2).^k(2)).^(1/k(2));    
     myLogLinFit = @(k,m) m(1).*log10(myModel(k))+m(2);
         
     %% Bootstrap
@@ -72,30 +73,26 @@ for ii = 1:length(groups)
         
         % Resample across columns (subjects) with replacement
         d = dVeridical(:,datasample(1:20,20));
-        
-        % Reshape d to a vector
+                
+        % Reshape the values into a vector
         d = reshape(d,1,180);
-        
-        % Objective function
-        myObj = @(p) sqrt(sum( (d - myLogLinFit(p(1:2),p(3:4))).^2 ));
+
+        % L1 objective function to optimize for the median
+        myObj = @(p) sum(abs( (d - myLogLinFit(p(1:2),p(3:4))) ));
         
         % Fit that sucker
         pB(ii,bb,:) = fmincon(myObj,[1 1 1 1],[],[],[],[],[0.1 1 0 -10],[2 5 Inf 10],[],options);
        
     end
     
-    % Obtain the median discomfort ratings across subjects
-    
-    
-    % Obtain the p values and plot these
+    % Obtain the median param values and plot these
     p = median(squeeze(pB(ii,:,:)));    
     subplot(1,3,ii)
-    h = scatter(log10(myModel(p(1:2))),d,'o','MarkerFaceColor',colors{ii},'MarkerEdgeColor','none');
+    h = scatter(log10(myModel(p(1:2))),reshape(dVeridical,1,180),'o','MarkerFaceColor',colors{ii},'MarkerEdgeColor','none');
     h.MarkerFaceAlpha = .2;
     hold on
     
     % Add the median discomfort ratings across subjects
-    myMedianModel = @(k) ((k(1).*median(McFull,2)).^k(2) + median(LcFull,2).^k(2)).^(1/k(2));    
     plot(log10(myMedianModel(p(1:2))),median(dVeridical,2),['o' colors{ii}],'MarkerSize',14)
     
     % Add the model fit line
