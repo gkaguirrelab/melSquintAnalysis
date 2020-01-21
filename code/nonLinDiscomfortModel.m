@@ -21,7 +21,7 @@ for ii = 1:length(groups)
     % Assemble the melanopsin and cone contrasts for each discomfort rating.
     % We treat light flux stimuli as having equal contrast on the mel and LMS
     % photoreceptor pools.
-    Mc = [ ...
+    McFull = [ ...
         repmat(100,1,20); ...
         repmat(200,1,20); ...
         repmat(400,1,20); ...
@@ -33,9 +33,9 @@ for ii = 1:length(groups)
         repmat(400,1,20); ...
         ];
     
-    Mc = reshape(Mc,1,180);
+    Mc = reshape(McFull,1,180);
     
-    Lc = [ ...
+    LcFull = [ ...
         repmat(0,1,20); ...
         repmat(0,1,20); ...
         repmat(0,1,20); ...
@@ -47,7 +47,7 @@ for ii = 1:length(groups)
         repmat(400,1,20); ...
         ];
     
-    Lc = reshape(Lc,1,180);
+    Lc = reshape(LcFull,1,180);
     
     % Assemble the discomfort ratings
     groupField = [groups{ii} 'Discomfort'];
@@ -84,11 +84,21 @@ for ii = 1:length(groups)
        
     end
     
+    % Obtain the median discomfort ratings across subjects
+    
+    
     % Obtain the p values and plot these
     p = median(squeeze(pB(ii,:,:)));    
     subplot(1,3,ii)
-    plot(log10(myModel(p(1:2))),d,['*' colors{ii}])
+    h = scatter(log10(myModel(p(1:2))),d,'o','MarkerFaceColor',colors{ii},'MarkerEdgeColor','none');
+    h.MarkerFaceAlpha = .2;
     hold on
+    
+    % Add the median discomfort ratings across subjects
+    myMedianModel = @(k) ((k(1).*median(McFull,2)).^k(2) + median(LcFull,2).^k(2)).^(1/k(2));    
+    plot(log10(myMedianModel(p(1:2))),median(dVeridical,2),['o' colors{ii}],'MarkerSize',14)
+    
+    % Add the model fit line
     refline(p(3),p(4))
     ylim([0 10]);
     title(groups{ii});
