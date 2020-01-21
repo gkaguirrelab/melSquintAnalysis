@@ -98,6 +98,7 @@ for ii = 1:length(groups)
     % Add the model fit line
     refline(p(3),p(4))
     ylim([0 10]);
+    xlim([1.5 3]);
     title(groups{ii});
     
 end
