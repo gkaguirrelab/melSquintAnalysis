@@ -67,7 +67,7 @@ function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(su
 
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('debugSpikeRemover',false,@islogical);
-p.addParameter('debugNumberOfNaNValuesPerTrial', false, @islogical);
+p.addParameter('debugNumberOfNaNValuesPerTrial', true, @islogical);
 p.addParameter('sessions', {}, @iscell);
 p.addParameter('Protocol', 'SquintToPulse', @ischar);
 p.addParameter('experimentName', [], @ischar);
@@ -81,7 +81,7 @@ p.addParameter('baselineWindowOffsetTime', 1.5, @isnumeric);
 p.addParameter('pulseOnset', 1.5, @isnumeric);
 p.addParameter('pulseOffset', 5.5, @isnumeric);
 p.addParameter('frameRate', 60, @isnumeric);
-p.addParameter('trialNaNThreshold', 0.2, @isnumeric); % meaning 20%
+p.addParameter('trialNaNThreshold', 0.25, @isnumeric); % meaning 25%
 
 % Parameters that may vary between subjects
 p.addParameter('blinkBufferFrames', [2 4], @isnumeric);

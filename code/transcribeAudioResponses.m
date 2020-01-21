@@ -408,7 +408,7 @@ if makePlots
         axis.(['axis', num2str(stimulus)]) = subplot(3,1,stimulus);
         data = horzcat( trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{1})])', trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{2})])',  trialStructForPlotting.(stimuli{stimulus}).(['Contrast', num2str(contrasts{3})])');
         plotSpread(data, 'distributionColors', colors, 'xNames', {num2str(contrasts{1}), num2str(contrasts{2}), num2str(contrasts{3})}, 'distributionMarkers', '*', 'showMM', 3, 'binWidth', 0.3)
-        title([stimuli{stimulus}, ', Left'])
+        title([stimuli{stimulus}])
         xlabel('Contrast')
         ylabel('Discomfort Ratings')
         ylim([0 10]);

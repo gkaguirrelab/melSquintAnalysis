@@ -85,11 +85,11 @@ if ~(p.Results.skipParamsAdjustment)
         counter = counter + 1;
     end
     fprintf('\t%d. Add additional parameter\n', counter);
-    
+    fprintf('\t%d. Use GUI\n', counter+1);
     
     choice = input('\nYour choice: ', 's');
     if ~isempty(choice)
-        if str2num(choice) ~= counter
+        if str2num(choice) ~= counter && str2num(choice) ~= counter + 1
             paramOfInterest = params{str2num(choice)};
             string = sprintf('Enter new %s:      \n', paramOfInterest);
             answer = input(string, 's');
@@ -103,7 +103,7 @@ if ~(p.Results.skipParamsAdjustment)
                 fitParams.(paramOfInterest) = str2num(answer);
             end
             
-        else
+        elseif str2num(choice) == counter
             paramName = input('Enter new param name:       ', 's');
             answer = input(sprintf('Enter %s:       ', paramName), 's');
             if strcmp(answer, 'true') || strcmp(answer, 'false')
@@ -115,7 +115,13 @@ if ~(p.Results.skipParamsAdjustment)
             else
                 fitParams.(paramName) = str2num(answer);
             end
-            
+        elseif str2num(choice) == counter + 1
+            % use the GUI
+            [initialParams] = estimatePipelineParamsGUI(grayVideoName, 'SquintToPulse', 'pupilRangeContractor', 0.5, 'pupilRangeDilator', 2, 'glintMaskPaddingFactor', 35, 'pupilMaskDilationFactor', 2, 'Protocol', p.Results.protocol);
+            initialParamsFieldNames = fieldnames(initialParams);
+            for ff = 1:length(initialParamsFieldNames)
+                fitParams.(initialParamsFieldNames{ff}) = initialParams.(initialParamsFieldNames{ff});
+            end
         end
         
         params = fieldnames(fitParams);
@@ -247,7 +253,6 @@ line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisF
         %% allow the user to adjust certain parameters, then test finding the pupil perimeter again
         adjustParamsChoice = GetWithDefault('>> Satisfied with these parameters? Enter ''y'' to proceed and exit, or ''n'' to manually adjust the parameters. [y/n]', 'y');
         if ~strcmp(adjustParamsChoice, 'y')
-            close all
             adjustParamsFlag = false;
             while ~adjustParamsFlag
                 
@@ -262,7 +267,7 @@ line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisF
                 fprintf('\t8. pupilRange: %g %g\n', fitParams.pupilRange(:));
                 fprintf('\t9.pickLargestCircle: %g %g\n', fitParams.pickLargestCircle);
                 fprintf('\t10. smallObjThresh: %g\n', fitParams.smallObjThresh);
-                fprintf('\t11. glintFrameMask: %g\n', fitParams.glintFrameMask);
+                fprintf('\t11. glintFrameMask: %g %g %g %g\n', fitParams.glintFrameMask(:));
                 fprintf('\t12. Choose new frames to test\n');
                 
                 
@@ -312,12 +317,14 @@ line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisF
                 fprintf('\tpupilRange: %g %g\n', fitParams.pupilRange(:));
                 fprintf('\pickLargestCircle: %g %g\n', fitParams.pickLargestCircle);
                 fprintf('\tsmallObjThresh: %g\n', fitParams.smallObjThresh);
-                fprintf('\tglintFrameMask: %g\n', fitParams.glintFrameMask);
+                fprintf('\tglintFrameMask: %g %g %g %g\n', fitParams.glintFrameMask(:));
 
                 
                 
                 
                 counter = 1;
+                                        
+                close all
                 for ii = framesToCheck
                     perimeter = [];
 %                     plotFig = figure;
@@ -359,7 +366,6 @@ line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisF
                         adjustParamsFlag = true;
                     case 'n'
                         adjustParamsFlag = false;
-                        close all
                 end
                 
                 
