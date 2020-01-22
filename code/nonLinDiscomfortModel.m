@@ -2,7 +2,7 @@ discomfortStruct = loadDiscomfortRatings();
 
 groups = {'control','mwa','mwoa'};
 colors = {'k','b','r'};
-params = {'melScale','mikowski','slope','intercept'};
+params = {'melScale','minkowski','slope','intercept'};
 BinWidths = [0.025,0.1,0.1,0.25];
 nBoots = 1000;
 figure
@@ -102,6 +102,8 @@ for ii = 1:length(groups)
     refline(p(3),p(4))
     ylim([0 10]);
     xlim([1.5 3]);
+    xticks([log10(50) log10(100) log10(200) log10(400) log10(800)])
+    xticklabels({'0.5','1','2','4','8'})
     title(groups{ii});
     
 end
