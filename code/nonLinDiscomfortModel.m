@@ -108,6 +108,10 @@ for ii = 1:length(groups)
     
 end
 
+% Convert the intercept into the response at log(200%)
+pB(:,:,4) = pB(:,:,4)+pB(:,:,3).*log10(200);
+params = {'melScale','minkowski','slope','amplitudeAt200'};
+
 % Plot a histogram of the parameter values by groups across bootstraps
 figure
 for pp=1:4
@@ -121,9 +125,9 @@ for pp=1:4
     outline = [params{pp} ' [95 CI] --- '];
     for ii = 1:3
         vals = sort(squeeze(pB(ii,:,pp)));
-        p = median(vals);
-        p95low = vals(round(nBoots*0.05));
-        p95hi = vals(round(nBoots*0.95));
+        p = median(vals);        
+        p95low = vals(round(nBoots*0.025));
+        p95hi = vals(round(nBoots*0.925));
         outline = sprintf([outline groups{ii} ': %2.2f [%2.2f - %2.2f]; '],p,p95low,p95hi);
     end
     fprintf([outline '\n']);
