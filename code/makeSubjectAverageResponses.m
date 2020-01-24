@@ -74,6 +74,8 @@ p.addParameter('experimentName', [], @ischar);
 p.addParameter('protocolShortName', 'StP', @ischar);
 p.addParameter('contrasts', {100, 200, 400}, @iscell);
 p.addParameter('stimuli', {'Melanopsin', 'LMS', 'LightFlux'}, @iscell);
+p.addParameter('saveNameSuffix', [], @ischar);
+
 
 % Fixed experimental parameters
 p.addParameter('baselineWindowOnsetTime', 1, @isnumeric);
@@ -513,7 +515,7 @@ for ss = 1:length(stimuli)
 end
 
 % save out trial responses
-fileName = ['trialStruct_', p.Results.fitLabel];
+fileName = ['trialStruct_', p.Results.fitLabel, p.Results.saveNameSuffix];
 save(fullfile(analysisBasePath, fileName), 'trialStruct', '-v7.3');
 
 
@@ -575,12 +577,12 @@ for ss = 1:nStimuli
 end
 
 % save out plots
-print(plotFig, fullfile(analysisBasePath, ['averageResponse_', p.Results.fitLabel]), '-dpdf', '-fillpage')
+print(plotFig, fullfile(analysisBasePath, ['averageResponse_', p.Results.fitLabel, p.Results.saveNameSuffix]), '-dpdf', '-fillpage')
 
 if ~exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots'), 'dir')
     mkdir(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots'));
 end
-print(plotFig, fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots', [subjectID, '_averageResponse_', p.Results.fitLabel]), '-dpdf', '-fillpage')
+print(plotFig, fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots', [subjectID, '_averageResponse_', p.Results.fitLabel, p.Results.saveNameSuffix]), '-dpdf', '-fillpage')
 
 close(plotFig)
 
