@@ -17,23 +17,26 @@ for ii = 1:length(specificSpreadsheets)
     partialListOfMELA_IDs = table(:,4);
     
     %% loop over mela_IDs
-    for subject = 1:length(
+    for subject = 1:height(partialListOfMELA_IDs)
         
         % for each MELA_ID, figure out what row we're in
-        
-        % for each MELA_ID, grab the genotype result for that row
-        
-        % make cell array to save out results
-        genotypeResultsCellArray{end+1, 1} = MELA_ID;
-        genotypeResultsCellArray{end+1, 2} = genotypeResult;
-    end
+        MELA_ID = table{subject, 4};
+        TF = contains(MELA_ID, 'MELA');
+        if TF == 1        
+            % for each MELA_ID, grab the genotype result for that row
+            genotypeResult = table{subject, 23};
+            % make cell array to save out results
+            genotypeResultsCellArray{end+1, 1} = MELA_ID;
+            genotypeResultsCellArray{end, 2} = genotypeResult;
+        end
+     end
     
 end
 
-% save out results
+%% Save out results
+savePathForTable = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), '..', 'MELA_subject', 'GeneticResults', 'GenotypesTable.csv');
 genotypeResultsTable = array2table(genotypeResultsCellArray);
 genotypeResultsTable.Properties.VariableNames = {'MELA_ID', 'GenotypeResult'};
-writetable(savePathForTable);
-
+writetable(genotypeResultsTable, savePathForTable);
 
 end
