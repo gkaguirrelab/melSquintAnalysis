@@ -163,13 +163,13 @@ for pp=1:4
         if ii>1
             df=20;
             controlVals = sort(squeeze(pB(1,:,pp)));
-            meanC = mean(controlVals);
-            meanV = mean(vals);
+            medC = median(controlVals);
+            medV = median(vals);
             sdC = sqrt(std(controlVals));
             sdV = sqrt(std(vals));
             sdPooled = sqrt( ((df-1)*sdC^2 + (df-1)*sdV^2)/(df*2-2) );
             se = sdPooled * sqrt( 1/df + 1/df);
-            t = (meanV - meanC)/se;
+            t = (medV - medC)/se;
             prob = 2*tpdf(t,df*2-2);
             outline = sprintf([outline groups{ii} '-control, p=%.2d; '],prob);
         end
