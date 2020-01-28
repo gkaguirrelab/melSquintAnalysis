@@ -69,6 +69,10 @@ end
 
 if p.Results.openPlot
     plotFile = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName, 'allTrials', [pathParams.session, '_a', num2str(acquisitionNumber), '_t', num2str(trialNumber), '_radiusSmoothed.png']);
+    
+    if ~exist(plotFile)
+        plotFile = fullfile(pathParams.dataOutputDirBase, pathParams.subject, pathParams.experimentName, 'allTrials', [pathParams.session, '_a', num2str(acquisitionNumber), '_t', num2str(trialNumber), '_initial.png']);
+    end
     [recordedErrorFlag, consoleOutput] = system(['open ''' plotFile '''']);
 end
 
@@ -213,13 +217,13 @@ if ~(p.Results.skipParamsAdjustment)
         counter = 1;
         for ii = framesToCheck
             perimeter = [];
-%             plotFig = figure;
-%             hold on
-%             
-%             %subplot(2, round(nFrames/2), counter)
-%             counter = counter + 1;
-%             string = [];
-%             string = (['Frame ', num2str(ii)]);
+            %             plotFig = figure;
+            %             hold on
+            %
+            %             %subplot(2, round(nFrames/2), counter)
+            %             counter = counter + 1;
+            %             string = [];
+            %             string = (['Frame ', num2str(ii)]);
             
             videoInObj.CurrentTime = (ii - 1)/(videoInObj.FrameRate);
             thisFrameDiagnostics = readFrame(videoInObj);
@@ -240,14 +244,14 @@ if ~(p.Results.skipParamsAdjustment)
                 'maskBox', fitParams.maskBox, ...
                 'pickLargestCircle', fitParams.pickLargestCircle, ...
                 'smallObjThresh', fitParams.smallObjThresh, 'displayMode', true);
-
- % top horizontal line
-
-line([0, size(thisFrameDiagnostics, 2)], [fitParams.glintFrameMask(1), fitParams.glintFrameMask(1)], 'Color', 'r')
-line([0, size(thisFrameDiagnostics, 2)], [(size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3)), (size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3))], 'Color', 'r')
-line([fitParams.glintFrameMask(4), fitParams.glintFrameMask(4)], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
-line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2))], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
-
+            
+            % top horizontal line
+            
+            line([0, size(thisFrameDiagnostics, 2)], [fitParams.glintFrameMask(1), fitParams.glintFrameMask(1)], 'Color', 'r')
+            line([0, size(thisFrameDiagnostics, 2)], [(size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3)), (size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3))], 'Color', 'r')
+            line([fitParams.glintFrameMask(4), fitParams.glintFrameMask(4)], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
+            line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2))], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
+            
         end
         
         %% allow the user to adjust certain parameters, then test finding the pupil perimeter again
@@ -318,22 +322,22 @@ line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisF
                 fprintf('\pickLargestCircle: %g %g\n', fitParams.pickLargestCircle);
                 fprintf('\tsmallObjThresh: %g\n', fitParams.smallObjThresh);
                 fprintf('\tglintFrameMask: %g %g %g %g\n', fitParams.glintFrameMask(:));
-
+                
                 
                 
                 
                 counter = 1;
-                                        
+                
                 close all
                 for ii = framesToCheck
                     perimeter = [];
-%                     plotFig = figure;
-%                     hold on
-%                     
-%                     %subplot(2, round(nFrames/2), counter)
-%                     counter = counter + 1;
-%                     string = [];
-%                     string = (['Frame ', num2str(ii)]);
+                    %                     plotFig = figure;
+                    %                     hold on
+                    %
+                    %                     %subplot(2, round(nFrames/2), counter)
+                    %                     counter = counter + 1;
+                    %                     string = [];
+                    %                     string = (['Frame ', num2str(ii)]);
                     
                     videoInObj.CurrentTime = (ii - 1)/(videoInObj.FrameRate);
                     thisFrameDiagnostics = readFrame(videoInObj);
@@ -354,11 +358,11 @@ line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisF
                         'maskBox', fitParams.maskBox, ...
                         'pickLargestCircle', fitParams.pickLargestCircle, ...
                         'smallObjThresh', fitParams.smallObjThresh, 'displayMode', true);
-line([0, size(thisFrameDiagnostics, 2)], [fitParams.glintFrameMask(1), fitParams.glintFrameMask(1)], 'Color', 'r')
-line([0, size(thisFrameDiagnostics, 2)], [(size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3)), (size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3))], 'Color', 'r')
-line([fitParams.glintFrameMask(4), fitParams.glintFrameMask(4)], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
-line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2))], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
-
+                    line([0, size(thisFrameDiagnostics, 2)], [fitParams.glintFrameMask(1), fitParams.glintFrameMask(1)], 'Color', 'r')
+                    line([0, size(thisFrameDiagnostics, 2)], [(size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3)), (size(thisFrameDiagnostics, 1) - fitParams.glintFrameMask(3))], 'Color', 'r')
+                    line([fitParams.glintFrameMask(4), fitParams.glintFrameMask(4)], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
+                    line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2))], [0, size(thisFrameDiagnostics, 1)], 'Color', 'r');
+                    
                 end
                 adjustParamsChoice = GetWithDefault('>> Satisfied with these parameters? Enter ''y'' to proceed and exit, or ''n'' to manually adjust the parameters. [y/n]', 'y');
                 switch adjustParamsChoice
@@ -382,7 +386,7 @@ line([(size(thisFrameDiagnostics, 2) - fitParams.glintFrameMask(2)), (size(thisF
         newCommand = ['spotCheckVideo(''', pathParams.subject, ''', ''' pathParams.session, ''', ', num2str(acquisitionNumber), ', ', num2str(trialNumber), ', ''skipParamsAdjustment'', true, ''processVideo'', true, ''openVideo'', false);'];
     else
         newCommand = ['spotCheckVideo(''', pathParams.subject, ''', ''' pathParams.session, ''', ', num2str(acquisitionNumber), ', ', num2str(trialNumber), ', ''skipParamsAdjustment'', true, ''processVideo'', true, ''openVideo'', false, ''experimentNumber'', ''' pathParams.experimentName, ''', ''Protocol'', ''', p.Results.protocol, ''');'];
-
+        
     end
     system(['echo "', newCommand, '" >> ', '~/Documents/MATLAB/projects/melSquintAnalysis/code/newlySpotchecked.m']);
 end
@@ -405,54 +409,63 @@ if p.Results.processVideo
     [extension, runName] = fileparts(grayVideoName);
     pathParams.runName = runName;
     
+     stagesToRun = setdiff(1:11, [1 7 8 9 10 11]);
+    stagesToWriteToVideo = [6];
     
-    if ~isfield(fitParams, 'expandPupilRange')
-        fitParams.expandPupilRange = defaultFitParams.expandPupilRange;
-    end
-    if ~isfield(fitParams, 'candidateThetas')
-        fitParams.candidateThetas = defaultFitParams.candidateThetas;
-    end
-    if ~isfield(fitParams, 'smallObjThresh')
-        fitParams.smallObjThresh = defaultFitParams.smallObjThresh;
-    end
-    if ~isfield(fitParams, 'extendBlinkWindow')
-        fitParams.extendBlinkWindow = defaultFitParams.extendBlinkWindow;
-    end
-    if ~isfield(fitParams, 'pickLargestCircle')
-        fitParams.pickLargestCircle = defaultFitParams.pickLargestCircle;
-    end
-    if ~isfield(fitParams, 'threshold')
-        fitParams.threshold = defaultFitParams.threshold;
-    end
-    
-    fitParams.skipStageByNumber = [fitParams.skipStageByNumber, 12];
-    fitParams.skipStageByNumber = unique(fitParams.skipStageByNumber);
-    
-    runVideoPipeline(pathParams,...
-        'skipStageByNumber', fitParams.skipStageByNumber,...
-        'useParallel', pathParams.useParallel,...
-        'verbose', pathParams.verbose, ...
-        'glintFrameMask',fitParams.glintFrameMask,'glintGammaCorrection', fitParams.glintGammaCorrection, 'numberOfGlints', fitParams.numberOfGlints, ...
-        'pupilRange', fitParams.pupilRange,'pupilFrameMask', fitParams.pupilFrameMask,'pupilCircleThresh', fitParams.pupilCircleThresh,'pupilGammaCorrection', fitParams.pupilGammaCorrection,'maskBox', fitParams.maskBox,...
-        'cutErrorThreshold', fitParams.cutErrorThreshold, 'badFrameErrorThreshold', fitParams.badFrameErrorThreshold,'glintPatchRadius', fitParams.glintPatchRadius, 'ellipseTransparentUB',fitParams.ellipseTransparentUB, ...
-        'ellipseTransparentLB',fitParams.ellipseTransparentLB, 'sceneParamsLB',sceneParams.LB, 'sceneParamsUB',sceneParams.UB, ...
-        'sceneParamsLBp',sceneParams.LBp,'sceneParamsUBp',sceneParams.UBp,...
-        'intrinsicCameraMatrix', cameraParams.intrinsicCameraMatrix, ...
-        'sensorResolution', cameraParams.sensorResolution, ...
-        'radialDistortionVector',cameraParams.radialDistortionVector, ...
-        'constraintTolerance', fitParams.constraintTolerance, ...
-        'eyeLaterality',pathParams.eyeLaterality, ...
-        'makeFitVideoByNumber',6, ...
-        'overwriteControlFile', fitParams.overwriteControlFile, ...
-        'minRadiusProportion', fitParams.minRadiusProportion, ...
-        'expandPupilRange', fitParams.expandPupilRange, ...
-        'candidateThetas', fitParams.candidateThetas, ...
-        'pickLargestCircle', fitParams.pickLargestCircle, ...
-        'smallObjThresh', fitParams.smallObjThresh, ...
-        'pickLargestCircle', fitParams.pickLargestCircle, ...
-        'extendBlinkWindow', fitParams.extendBlinkWindow, ...
-        'glintsMainDirection', 'both', 'threshold', fitParams.threshold, 'removeIsolatedGlints', true, 'glintFileName', fullfile(pathParams.dataOutputDirFull, [pathParams.runName '_glint.mat']));
+    runStages(pathParams.subject, pathParams.session, acquisitionNumber, trialNumber, stagesToRun, stagesToWriteToVideo, 'experimentNumber', pathParams.experimentName, varargin{:});
 
+    
+    
+%     if ~isfield(fitParams, 'expandPupilRange')
+%         fitParams.expandPupilRange = defaultFitParams.expandPupilRange;
+%     end
+%     if ~isfield(fitParams, 'candidateThetas')
+%         fitParams.candidateThetas = defaultFitParams.candidateThetas;
+%     end
+%     if ~isfield(fitParams, 'smallObjThresh')
+%         fitParams.smallObjThresh = defaultFitParams.smallObjThresh;
+%     end
+%     if ~isfield(fitParams, 'extendBlinkWindow')
+%         fitParams.extendBlinkWindow = defaultFitParams.extendBlinkWindow;
+%     end
+%     if ~isfield(fitParams, 'pickLargestCircle')
+%         fitParams.pickLargestCircle = defaultFitParams.pickLargestCircle;
+%     end
+%     if ~isfield(fitParams, 'threshold')
+%         fitParams.threshold = defaultFitParams.threshold;
+%     end
+%     if ~isfield(fitParams, 'glintZoneRadius')
+%         fitParams.glintZoneRadius = defaultFitParams.glintZoneRadius;
+%     end
+%     
+%     fitParams.skipStageByNumber = [fitParams.skipStageByNumber, 12];
+%     fitParams.skipStageByNumber = unique(fitParams.skipStageByNumber);
+%     
+%     runVideoPipeline(pathParams,...
+%         'skipStageByNumber', fitParams.skipStageByNumber,...
+%         'useParallel', pathParams.useParallel,...
+%         'verbose', pathParams.verbose, ...
+%         'glintFrameMask',fitParams.glintFrameMask,'glintGammaCorrection', fitParams.glintGammaCorrection, 'numberOfGlints', fitParams.numberOfGlints, ...
+%         'pupilRange', fitParams.pupilRange,'pupilFrameMask', fitParams.pupilFrameMask,'pupilCircleThresh', fitParams.pupilCircleThresh,'pupilGammaCorrection', fitParams.pupilGammaCorrection,'maskBox', fitParams.maskBox,...
+%         'cutErrorThreshold', fitParams.cutErrorThreshold, 'badFrameErrorThreshold', fitParams.badFrameErrorThreshold,'glintPatchRadius', fitParams.glintPatchRadius, 'ellipseTransparentUB',fitParams.ellipseTransparentUB, ...
+%         'ellipseTransparentLB',fitParams.ellipseTransparentLB, 'sceneParamsLB',sceneParams.LB, 'sceneParamsUB',sceneParams.UB, ...
+%         'sceneParamsLBp',sceneParams.LBp,'sceneParamsUBp',sceneParams.UBp,...
+%         'intrinsicCameraMatrix', cameraParams.intrinsicCameraMatrix, ...
+%         'sensorResolution', cameraParams.sensorResolution, ...
+%         'radialDistortionVector',cameraParams.radialDistortionVector, ...
+%         'constraintTolerance', fitParams.constraintTolerance, ...
+%         'eyeLaterality',pathParams.eyeLaterality, ...
+%         'makeFitVideoByNumber',6, ...
+%         'overwriteControlFile', fitParams.overwriteControlFile, ...
+%         'minRadiusProportion', fitParams.minRadiusProportion, ...
+%         'expandPupilRange', fitParams.expandPupilRange, ...
+%         'candidateThetas', fitParams.candidateThetas, ...
+%         'pickLargestCircle', fitParams.pickLargestCircle, ...
+%         'smallObjThresh', fitParams.smallObjThresh, ...
+%         'pickLargestCircle', fitParams.pickLargestCircle, ...
+%         'extendBlinkWindow', fitParams.extendBlinkWindow, ...
+%         'glintsMainDirection', 'both', 'threshold', fitParams.threshold, 'removeIsolatedGlints', true, 'glintFileName', fullfile(pathParams.dataOutputDirFull, [pathParams.runName '_glint.mat']), 'glintZoneRadius');
+%     
 end
 
 
