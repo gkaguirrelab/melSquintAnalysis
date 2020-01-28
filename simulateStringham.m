@@ -3,6 +3,7 @@ function simulateStringham()
 observerAge = 29;
 photoreceptorClasses = {'LConeTabulatedAbsorbance',...
     'MConeTabulatedAbsorbance',...
+    'SConeTabulatedAbsorbance',...
     'Melanopsin'};
 fieldSize = 5.75;
 luminanceCdM2 = 5;
@@ -22,7 +23,7 @@ for i = 1:length(photoreceptorClasses)
     spectralSensitivity.(photoreceptorClasses{i}) = spectralSensitivity.(photoreceptorClasses{i});
 end
 
-spectralSensitivity.luminance = (spectralSensitivity.LConeTabulatedAbsorbance + spectralSensitivity.MConeTabulatedAbsorbance)./2;
+spectralSensitivity.luminance = (spectralSensitivity.LConeTabulatedAbsorbance + spectralSensitivity.MConeTabulatedAbsorbance - spectralSensitivity.SConeTabulatedAbsorbance)./3;
 
 %% predict the discomfort
 alpha = 0.60;
@@ -63,14 +64,9 @@ stringhamValues = [ ...
 
 %% Plot
 figure; hold on;
-plot(wavelengths, d, 'Color', 'k');
-plot(stringhamValues(:,1), stringhamValues(:,2));
-xlabel('Wavelength (nm)')
-ylabel('Sensitivity')
-
-figure; hold on;
 plot(wavelengths, -log10(pulseSize./(min(pulseSize))), 'Color', 'k');
-plot(stringhamValues(:,1), stringhamValues(:,2));
+plot(stringhamValues(:,1), stringhamValues(:,2), 'r');
 xlabel('Wavelength (nm)')
-ylabel('Sensitivity')
+ylabel('Sensitivity (log-scale)')
+legend('Sub-Additive Mode', 'Stringham Results')
 end
