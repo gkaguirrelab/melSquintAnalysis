@@ -815,3 +815,14 @@ spotCheckVideo('MELA_3038', '2020-01-16_session_1', 4, 6, 'skipParamsAdjustment'
 spotCheckVideo('MELA_3038', '2020-01-16_session_1', 4, 4, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_2', 'Protocol', 'Deuteranopes');
 spotCheckVideo('MELA_3038', '2020-01-16_session_1', 3, 2, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_2', 'Protocol', 'Deuteranopes');
 spotCheckVideo('MELA_3038', '2020-01-16_session_1', 2, 6, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_2', 'Protocol', 'Deuteranopes');
+
+
+spotCheckVideo('MELA_3035', '2019-12-10_session_1', 4, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3035', '2019-12-10_session_1', 3, 8, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+
+%%
+spotCheckVideo('MELA_3038', '2020-01-30_session_1', 1, 4, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_2', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3038', '2020-01-30_session_1', 1, 5, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_2', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3038', '2020-01-30_session_1', 1, 8, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_2', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3038', '2020-01-30_session_1', 2, 10, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_2', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3038', '2020-01-30_session_1', 3, 6, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_2', 'Protocol', 'Deuteranopes');
