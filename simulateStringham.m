@@ -24,7 +24,7 @@ for i = 1:length(photoreceptorClasses)
 end
 
 spectralSensitivity.luminance = (spectralSensitivity.LConeTabulatedAbsorbance + spectralSensitivity.MConeTabulatedAbsorbance - spectralSensitivity.SConeTabulatedAbsorbance)./3;
-
+spectralSensitiivty.luminance = spectralSensitivity.luminance/(max(spectralSensitivity.luminance));
 %% predict the discomfort
 alpha = 0.60;
 beta = 2.02;
