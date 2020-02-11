@@ -54,6 +54,7 @@ if strcmp(p.Results.approach, 'Squint')
     fitParams.pickLargestCircle = false;
     fitParams.threshold = 0.2;
     fitParams.glintZoneRadius = 80;
+    fitParams.medianGlintVector = [];
 
     cameraParams.intrinsicCameraMatrix =  [1347.76, 0, 658.90; ...
                                             0, 1345.48, 365.68; ...

@@ -111,6 +111,9 @@ end
 if ~isfield(fitParams, 'glintZoneRadius')
     fitParams.glintZoneRadius = defaultFitParams.glintZoneRadius;
 end
+if ~isfield(fitParams, 'medianGlintVector')
+    fitParams.medianGlintVector = defaultFitParams.medianGlintVector;
+end
 
 %% Run the pipeline
 
@@ -141,6 +144,7 @@ runVideoPipeline(pathParams,...
     'removeIsolatedGlints', true, ...
     'glintFileName', fullfile(pathParams.dataOutputDirFull, [pathParams.runName '_glint.mat']), ... 
     'glintZoneRadius', fitParams.glintZoneRadius, ...
+    'medianGlintVector', fitParams.medianGlintVector, ...
     varargin{:});
 
 
