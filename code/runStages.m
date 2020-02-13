@@ -73,11 +73,11 @@ else
 end
 
 %% Determine scene geomtry file name
-if exist(fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']))
-    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']);
+if exist(fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.experimentName, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']))
+    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.experimentName, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']);
     customSceneGeometryFileName = [runName, '_sceneGeometry.mat'];
 else
-    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, pathParams.session, 'pupilCalibration', 'sceneGeometry.mat');
+    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, pathParams.experimentName, pathParams.session, 'pupilCalibration', 'sceneGeometry.mat');
     customSceneGeometryFileName = 'sceneGeometry.mat';
 end
     
