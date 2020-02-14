@@ -121,7 +121,7 @@ export_fig(plotFig, fullfile(savePath, 'combinedExperimentsSummary.pdf'));
 %% Summarize EMG
 fileName = 'audioTrialStruct_final.mat';
 RMS = [];
-normalize = true;
+normalize = false;
 
 % pre-allocate results variable
 for experiment = 1:2
@@ -167,6 +167,11 @@ for experiment = 1:2
 end
 
 % plot results
+if normalize
+    yLims = [-0.5 1];
+else
+    yLims = [0.5 3];
+end
 for experiment = 1:2
     RMSForPlotting.Controls = RMS.(['experiment', num2str(experiment)]);
     if experiment == 1
@@ -182,7 +187,7 @@ for experiment = 1:2
     else
         saveNameSuffix = [];
     end
-    plotSpreadResults(RMSForPlotting, 'stimuli', stimuli, 'contrasts', contrasts, 'saveName', fullfile(savePath, ['groupSummary_experiment', num2str(experiment), saveNameSuffix, '.pdf']), 'yLims', [-0.5 1])
+    plotSpreadResults(RMSForPlotting, 'stimuli', stimuli, 'contrasts', contrasts, 'saveName', fullfile(savePath, ['groupSummary_experiment', num2str(experiment), saveNameSuffix, '.pdf']), 'yLims', yLims)
     
     
 end
@@ -208,7 +213,7 @@ for stimulus = 1:length(stimuli)
     xtickangle(45);
     xlabel('Contrast')
     
-    ylim([-0.5 1]);
+    ylim(yLims);
     ylabel('Discomfort Rating')
     
     if stimulus == 3
@@ -217,5 +222,5 @@ for stimulus = 1:length(stimuli)
     end
 end
 set(plotFig, 'Position', [680 460 968 518]);
-export_fig(plotFig, fullfile(savePath, 'combinedExperimentsSummary', saveNameSuffix', '.pdf'));
+export_fig(plotFig, fullfile(savePath, ['combinedExperimentsSummary', saveNameSuffix, '.pdf']));
 
