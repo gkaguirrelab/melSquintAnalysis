@@ -86,3 +86,37 @@ for experiment = 1:2
     
 end
 
+plotFig = figure; 
+for stimulus = 1:length(stimuli)
+    subplot(1,3,stimulus); hold on;
+    title(stimuli{stimulus});
+    data = [discomfort.experiment1.(stimuli{stimulus}).Contrast100; discomfort.experiment1.(stimuli{stimulus}).Contrast200; discomfort.experiment1.(stimuli{stimulus}).Contrast400];
+    plotSpread(data', 'xValues', [log10(100), log10(200), log10(400)], 'distributionColors', 'k')
+    plot([log10(100), log10(200), log10(400)], [median(discomfort.experiment1.(stimuli{stimulus}).Contrast100), median(discomfort.experiment1.(stimuli{stimulus}).Contrast200), median(discomfort.experiment1.(stimuli{stimulus}).Contrast400)], '*', 'Color', 'k')
+    experiment1Plot = plot([log10(100), log10(200), log10(400)], [median(discomfort.experiment1.(stimuli{stimulus}).Contrast100), median(discomfort.experiment1.(stimuli{stimulus}).Contrast200), median(discomfort.experiment1.(stimuli{stimulus}).Contrast400)], 'Color', 'k');
+
+    
+    data = [discomfort.experiment2.(stimuli{stimulus}).Contrast400; discomfort.experiment2.(stimuli{stimulus}).Contrast800; discomfort.experiment2.(stimuli{stimulus}).Contrast1200];
+    plotSpread(data', 'xValues', [log10(400), log10(800), log10(1200)], 'distributionColors', 'r')
+    plot([log10(400), log10(800), log10(1200)], [median(discomfort.experiment2.(stimuli{stimulus}).Contrast400), median(discomfort.experiment2.(stimuli{stimulus}).Contrast800), median(discomfort.experiment2.(stimuli{stimulus}).Contrast1200)], '*', 'Color', 'r')
+    experiment2Plot = plot([log10(400), log10(800), log10(1200)], [median(discomfort.experiment2.(stimuli{stimulus}).Contrast400), median(discomfort.experiment2.(stimuli{stimulus}).Contrast800), median(discomfort.experiment2.(stimuli{stimulus}).Contrast1200)], 'Color', 'r');
+
+    
+    xticks([log10(100), log10(200), log10(400), log10(800), log10(1200)]);
+    xticklabels({'100%', '200%', '400%', '800%', '1200%'});
+    xtickangle(45);
+    xlabel('Contrast')
+    
+    ylim([-0.5 10]);
+    ylabel('Discomfort Rating')
+    
+    if stimulus == 3
+       legend([experiment1Plot, experiment2Plot], 'Experiment 1', 'Experiment 2'); 
+       legend('boxoff')
+    end
+end
+set(plotFig, 'Position', [680 460 968 518]);
+export_fig(plotFig, fullfile(savePath, 'combinedExperimentsSummary.pdf');
+
+
+
