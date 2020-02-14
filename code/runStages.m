@@ -73,11 +73,11 @@ else
 end
 
 %% Determine scene geomtry file name
-if exist(fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']))
-    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']);
+if exist(fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.experimentName, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']))
+    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase,  pathParams.subject, pathParams.experimentName, pathParams.session, acquisitionFolderName, [runName, '_sceneGeometry.mat']);
     customSceneGeometryFileName = [runName, '_sceneGeometry.mat'];
 else
-    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, pathParams.session, 'pupilCalibration', 'sceneGeometry.mat');
+    sceneGeometryFileName = fullfile(pathParams.dataOutputDirBase, subjectID, pathParams.experimentName, pathParams.session, 'pupilCalibration', 'sceneGeometry.mat');
     customSceneGeometryFileName = 'sceneGeometry.mat';
 end
     
@@ -108,7 +108,12 @@ end
 if ~isfield(fitParams, 'threshold')
     fitParams.threshold = defaultFitParams.threshold;
 end
-
+if ~isfield(fitParams, 'glintZoneRadius')
+    fitParams.glintZoneRadius = defaultFitParams.glintZoneRadius;
+end
+if ~isfield(fitParams, 'medianGlintVector')
+    fitParams.medianGlintVector = defaultFitParams.medianGlintVector;
+end
 
 %% Run the pipeline
 
@@ -134,7 +139,13 @@ runVideoPipeline(pathParams,...
     'smallObjThresh', fitParams.smallObjThresh, ...
     'pickLargestCircle', fitParams.pickLargestCircle, ...
     'extendBlinkWindow', fitParams.extendBlinkWindow, ...
-    'glintsMainDirection', 'both', 'threshold', fitParams.threshold, 'removeIsolatedGlints', true, 'glintFileName', fullfile(pathParams.dataOutputDirFull, [pathParams.runName '_glint.mat']), varargin{:});
+    'glintsMainDirection', 'both', ...
+    'threshold', fitParams.threshold, ...
+    'removeIsolatedGlints', true, ...
+    'glintFileName', fullfile(pathParams.dataOutputDirFull, [pathParams.runName '_glint.mat']), ... 
+    'glintZoneRadius', fitParams.glintZoneRadius, ...
+    'medianGlintVector', fitParams.medianGlintVector, ...
+    varargin{:});
 
 
 

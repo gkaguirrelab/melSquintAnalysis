@@ -4,6 +4,8 @@ groups = {'control','mwa','mwoa'};
 colors = {'k','b','r'};
 params = {'melScale','minkowski','slope','intercept'};
 BinWidths = [0.025,0.1,0.1,0.25];
+yLims = {[0 1],[0 4],[0 6],[0 6]};
+yLabels = {'alpha','beta','slope','offset'};
 nBoots = 1000;
 figure
 options = optimset('fmincon');
@@ -117,9 +119,9 @@ for ii = 1:length(groups)
     
     % Add the median discomfort ratings across subjects
     % plot(log10(myMedianModel(p(1:2))),median(dVeridical,2),['o' colors{ii}],'MarkerSize',14)
-    melMedian = plot(ipRGCContrastValues_Mel, [median(discomfortRatingsStruct.(groupField).Melanopsin.Contrast100), median(discomfortRatingsStruct.(groupField).Melanopsin.Contrast200), median(discomfortRatingsStruct.(groupField).Melanopsin.Contrast400)], ['^' colors{ii}],'MarkerSize',14);
-    lmsMedian = plot(ipRGCContrastValues_LMS, [median(discomfortRatingsStruct.(groupField).LMS.Contrast100), median(discomfortRatingsStruct.(groupField).LMS.Contrast200), median(discomfortRatingsStruct.(groupField).LMS.Contrast400)], ['s' colors{ii}],'MarkerSize',16);
-    LFMedian = plot(ipRGCContrastValues_LightFlux, [median(discomfortRatingsStruct.(groupField).LightFlux.Contrast100), median(discomfortRatingsStruct.(groupField).LightFlux.Contrast200), median(discomfortRatingsStruct.(groupField).LightFlux.Contrast400)], ['o' colors{ii}],'MarkerSize',14);
+    melMedian = plot(ipRGCContrastValues_Mel, [median(discomfortStruct.(groupField).Melanopsin.Contrast100), median(discomfortStruct.(groupField).Melanopsin.Contrast200), median(discomfortStruct.(groupField).Melanopsin.Contrast400)], ['^' colors{ii}],'MarkerSize',14);
+    lmsMedian = plot(ipRGCContrastValues_LMS, [median(discomfortStruct.(groupField).LMS.Contrast100), median(discomfortStruct.(groupField).LMS.Contrast200), median(discomfortStruct.(groupField).LMS.Contrast400)], ['s' colors{ii}],'MarkerSize',16);
+    LFMedian = plot(ipRGCContrastValues_LightFlux, [median(discomfortStruct.(groupField).LightFlux.Contrast100), median(discomfortStruct.(groupField).LightFlux.Contrast200), median(discomfortStruct.(groupField).LightFlux.Contrast400)], ['o' colors{ii}],'MarkerSize',14);
 
     
     % Add the model fit line
@@ -144,25 +146,38 @@ end
 pB(:,:,4) = pB(:,:,4)+pB(:,:,3).*log10(200);
 params = {'melScale','minkowski','slope','amplitudeAt200'};
 
-% Plot a histogram of the parameter values by groups across bootstraps
+% Plot the median and 95% CI of the parameters
 figure
 for pp=1:4
-    subplot(2,2,pp);
-    histogram(squeeze(pB(1,:,pp)),'FaceColor',colors{1},'EdgeColor','none','BinWidth',BinWidths(pp))
-    hold on
-    histogram(squeeze(pB(2,:,pp)),'FaceColor',colors{2},'EdgeColor','none','BinWidth',BinWidths(pp))
-    histogram(squeeze(pB(3,:,pp)),'FaceColor',colors{3},'EdgeColor','none','BinWidth',BinWidths(pp))
-    title(params{pp});
-
+    subplot(1,4,pp);
     outline = [params{pp} ' [95 CI] --- '];
     for ii = 1:3
         vals = sort(squeeze(pB(ii,:,pp)));
         p = median(vals);        
         p95low = vals(round(nBoots*0.025));
         p95hi = vals(round(nBoots*0.925));
+        plot(ii,p,['o',colors{ii}]);
+        hold on
+        plot([ii ii],[p95low p95hi],['-',colors{ii}]);
         outline = sprintf([outline groups{ii} ': %2.2f [%2.2f - %2.2f]; '],p,p95low,p95hi);
+        if ii>1
+            df=20;
+            controlVals = sort(squeeze(pB(1,:,pp)));
+            medC = median(controlVals);
+            medV = median(vals);
+            sdC = sqrt(std(controlVals));
+            sdV = sqrt(std(vals));
+            sdPooled = sqrt( ((df-1)*sdC^2 + (df-1)*sdV^2)/(df*2-2) );
+            se = sdPooled * sqrt( 1/df + 1/df);
+            t = (medV - medC)/se;
+            prob = 2*tpdf(t,df*2-2);
+            outline = sprintf([outline groups{ii} '-control, p=%.2d; '],prob);
+        end
     end
+    xlim([0 4]);
+    ylim(yLims{pp});
+    ylabel(yLabels{pp});
     fprintf([outline '\n']);
-    
 end
 
+% Plot the median parameter value and 

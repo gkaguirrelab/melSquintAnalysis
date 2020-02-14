@@ -68,12 +68,15 @@ function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(su
 p = inputParser; p.KeepUnmatched = true;
 p.addParameter('debugSpikeRemover',false,@islogical);
 p.addParameter('debugNumberOfNaNValuesPerTrial', true, @islogical);
+p.addParameter('debugTrialMode', false, @islogical);
 p.addParameter('sessions', {}, @iscell);
 p.addParameter('Protocol', 'SquintToPulse', @ischar);
 p.addParameter('experimentName', [], @ischar);
 p.addParameter('protocolShortName', 'StP', @ischar);
 p.addParameter('contrasts', {100, 200, 400}, @iscell);
 p.addParameter('stimuli', {'Melanopsin', 'LMS', 'LightFlux'}, @iscell);
+p.addParameter('saveNameSuffix', [], @ischar);
+
 
 % Fixed experimental parameters
 p.addParameter('baselineWindowOnsetTime', 1, @isnumeric);
@@ -169,24 +172,62 @@ else
 end
 
 % prep output debugging dir
-if ~exist(fullfile(analysisBasePath,'allTrials'))
-    mkdir(fullfile(analysisBasePath,'allTrials'));
-else
-    if ~exist(fullfile(analysisBasePath,'old'))
-        mkdir(fullfile(analysisBasePath,'old'));
+if ~p.Results.debugTrialMode
+    if ~exist(fullfile(analysisBasePath,'allTrials'))
+        mkdir(fullfile(analysisBasePath,'allTrials'));
+    else
+        if ~exist(fullfile(analysisBasePath,'old'))
+            mkdir(fullfile(analysisBasePath,'old'));
+        end
+        system(['mv "', fullfile(analysisBasePath,'allTrials'), '" "', fullfile(analysisBasePath,'old'), '"']);
+        mkdir(fullfile(analysisBasePath,'allTrials'));
+        
+        
     end
-    system(['mv "', fullfile(analysisBasePath,'allTrials'), '" "', fullfile(analysisBasePath,'old'), '"']);
-    mkdir(fullfile(analysisBasePath,'allTrials'));
+end
+
+if ~p.Results.debugTrialMode
+    % sessions loops
+    sessions = 1:length(sessionIDs);
+    % acquisitions loop
+    acquisitions = 1:6;
+    % trial loop
+    trials = 1:10;
     
+else
+    % sessions loops
+    
+    fprintf('Select the sessionID:\n')
+    counter = 1;
+    for ii = 1:length(sessionIDs)
+        %[fprintf('\t%d. ellipseTransparentUB: ', counter) fitParams.(params{ii})(:), '\n'];
+        fprintf('\t %d: %s\n', ii, sessionIDs{ii})
+
+        counter = counter + 1;
+    end
+    
+    choice = input('\nYour choice: ', 's');
+    
+  
+    
+    
+    
+    sessions = str2num(choice);
+    
+    % acquisitions loop
+    acquisitions = input('Enter acquisition number:\n');
+    
+    % trial loop
+     trials = input('Enter trial number:\n');
     
 end
 
 
 %% Load in the data for each session
-for ss = 1:length(sessionIDs)
+for ss = sessions
     sessionNumber = strsplit(sessionIDs{ss}, 'session_');
     sessionNumber = sessionNumber{2};
-    for aa = 1:6
+    for aa = acquisitions
         system(['touch -a "', fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_pupil.mat', str2num(sessionNumber),p.Results.protocolShortName, aa)), '"']);
         system(['touch -a "', fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)), '"']);
         
@@ -194,7 +235,7 @@ for ss = 1:length(sessionIDs)
         if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)))
             stimulusData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber),p.Results.protocolShortName,aa)));
             
-            for tt = 1:10
+            for tt = trials
                 if tt ~= 1
                     trialData.response = [];
                     
@@ -472,14 +513,15 @@ for ss = 1:length(sessionIDs)
                         fprintf('\tPoor fit frames: %d\n', length(poorFitFrameIndices));
                         fprintf('\tInitial NaN frames: %d\n', length(initialNaNFrames));
                         
-                        
-                        saveas(plotFig, fullfile(analysisBasePath,'allTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt), '_', p.Results.fitLabel, '.png']));
-                        if percentageBadFrames >= trialNaNThreshold
-                            if ~exist(fullfile(analysisBasePath,'allTrials', 'failedTrials'))
-                                mkdir(fullfile(analysisBasePath,'allTrials', 'failedTrials'));
+                        if ~p.Results.debugTrialMode
+                            saveas(plotFig, fullfile(analysisBasePath,'allTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt), '_', p.Results.fitLabel, '.png']));
+                            if percentageBadFrames >= trialNaNThreshold
+                                if ~exist(fullfile(analysisBasePath,'allTrials', 'failedTrials'))
+                                    mkdir(fullfile(analysisBasePath,'allTrials', 'failedTrials'));
+                                end
+                                saveas(plotFig, fullfile(analysisBasePath,'allTrials', 'failedTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt),'_', p.Results.fitLabel, '.png']));
+                                
                             end
-                            saveas(plotFig, fullfile(analysisBasePath,'allTrials', 'failedTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt),'_', p.Results.fitLabel, '.png']));
-                            
                         end
                         
                         
@@ -500,90 +542,92 @@ for ss = 1:length(sessionIDs)
         end
     end
 end
-close all;
 
 %% make average responses
-for ss = 1:length(stimuli)
-    for cc = 1:length(contrasts)
-        for tt = 1:length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,:))
-            averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,tt) = nanmean(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt));
-            averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_SEM'])(1,tt) = nanstd(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt))/sqrt((length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt)) - sum(isnan((trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt))))));
+if ~p.Results.debugTrialMode
+    close all;
+
+    for ss = 1:length(stimuli)
+        for cc = 1:length(contrasts)
+            for tt = 1:length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,:))
+                averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,tt) = nanmean(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt));
+                averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_SEM'])(1,tt) = nanstd(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt))/sqrt((length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt)) - sum(isnan((trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt))))));
+            end
         end
     end
-end
-
-% save out trial responses
-fileName = ['trialStruct_', p.Results.fitLabel];
-save(fullfile(analysisBasePath, fileName), 'trialStruct', '-v7.3');
-
-
-%% Do some plotting
-% set up plot
-plotFig = figure;
-nStimuli = length(p.Results.stimuli);
-nContrasts = length(p.Results.contrasts);
-
-% set up color palette
-colorPalette.Melanopsin{1} = [220/255, 237/255, 200/255];
-colorPalette.Melanopsin{2} = [66/255, 179/255, 213/255];
-colorPalette.Melanopsin{3} = [26/255, 35/255, 126/255];
-
-grayColorMap = colormap(gray);
-colorPalette.LMS{1} = grayColorMap(50,:);
-colorPalette.LMS{2} = grayColorMap(25,:);
-colorPalette.LMS{3} = grayColorMap(1,:);
-colorPalette.LS = colorPalette.LMS;
-
-colorPalette.LightFlux{1} = [254/255, 235/255, 101/255];
-colorPalette.LightFlux{2} = [228/255, 82/255, 27/255];
-colorPalette.LightFlux{3} = [77/255, 52/255, 47/255];
-
-for ss = 1:nStimuli
     
-    % pick the right subplot for the right stimuli
-    subplot(nStimuli,1,ss)
-    title(p.Results.stimuli{ss})
-    hold on
+    % save out trial responses
+    fileName = ['trialStruct_', p.Results.fitLabel, p.Results.saveNameSuffix];
+    save(fullfile(analysisBasePath, fileName), 'trialStruct', '-v7.3');
     
-    for cc = 1:nContrasts
+    
+    %% Do some plotting
+    % set up plot
+    plotFig = figure;
+    nStimuli = length(p.Results.stimuli);
+    nContrasts = length(p.Results.contrasts);
+    
+    % set up color palette
+    colorPalette.Melanopsin{1} = [220/255, 237/255, 200/255];
+    colorPalette.Melanopsin{2} = [66/255, 179/255, 213/255];
+    colorPalette.Melanopsin{3} = [26/255, 35/255, 126/255];
+    
+    grayColorMap = colormap(gray);
+    colorPalette.LMS{1} = grayColorMap(50,:);
+    colorPalette.LMS{2} = grayColorMap(25,:);
+    colorPalette.LMS{3} = grayColorMap(1,:);
+    colorPalette.LS = colorPalette.LMS;
+    
+    colorPalette.LightFlux{1} = [254/255, 235/255, 101/255];
+    colorPalette.LightFlux{2} = [228/255, 82/255, 27/255];
+    colorPalette.LightFlux{3} = [77/255, 52/255, 47/255];
+    
+    for ss = 1:nStimuli
         
-        % make thicker plot lines
-        lineProps.width = 1;
+        % pick the right subplot for the right stimuli
+        subplot(nStimuli,1,ss)
+        title(p.Results.stimuli{ss})
+        hold on
         
-        % adjust color
-        lineProps.col{1} = colorPalette.(p.Results.stimuli{ss}){cc};
+        for cc = 1:nContrasts
+            
+            % make thicker plot lines
+            lineProps.width = 1;
+            
+            % adjust color
+            lineProps.col{1} = colorPalette.(p.Results.stimuli{ss}){cc};
+            
+            % plot
+            axis.(['ax', num2str(cc)]) = mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-p.Results.plotShift, averageResponseStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})])(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc}), '_SEM'])(1:end-p.Results.nTimePointsToSkipPlotting), lineProps);
+            
+            legendText{cc} = ([num2str(p.Results.contrasts{cc}), '% Contrast, N = ', num2str(size(trialStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})]), 1))]);
+            
+        end
         
-        % plot
-        axis.(['ax', num2str(cc)]) = mseb(resampledTimebase(1:end-p.Results.nTimePointsToSkipPlotting)-p.Results.plotShift, averageResponseStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})])(1:end-p.Results.nTimePointsToSkipPlotting), averageResponseStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc}), '_SEM'])(1:end-p.Results.nTimePointsToSkipPlotting), lineProps);
+        legend(legendText, 'Location', 'SouthEast')
+        legend('boxoff')
         
-        legendText{cc} = ([num2str(p.Results.contrasts{cc}), '% Contrast, N = ', num2str(size(trialStruct.(p.Results.stimuli{ss}).(['Contrast', num2str(p.Results.contrasts{cc})]), 1))]);
+        % add line for pulse onset
+        line([p.Results.pulseOnset-p.Results.plotShift,  p.Results.pulseOffset-p.Results.plotShift], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
+        
+        % spruce up axes
+        ylim(p.Results.yLims)
+        xlim(p.Results.xLims)
+        xlabel('Time (s)')
+        ylabel('Pupil Area (% Change)')
         
     end
     
-    legend(legendText, 'Location', 'SouthEast')
-    legend('boxoff')
+    % save out plots
+    print(plotFig, fullfile(analysisBasePath, ['averageResponse_', p.Results.fitLabel, p.Results.saveNameSuffix]), '-dpdf', '-fillpage')
     
-    % add line for pulse onset
-    line([p.Results.pulseOnset-p.Results.plotShift,  p.Results.pulseOffset-p.Results.plotShift], [0.05, 0.05], 'Color', 'k', 'LineWidth', 5, 'HandleVisibility','off');
+    if ~exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots'), 'dir')
+        mkdir(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots'));
+    end
+    print(plotFig, fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots', [subjectID, '_averageResponse_', p.Results.fitLabel, p.Results.saveNameSuffix]), '-dpdf', '-fillpage')
     
-    % spruce up axes
-    ylim(p.Results.yLims)
-    xlim(p.Results.xLims)
-    xlabel('Time (s)')
-    ylabel('Pupil Area (% Change)')
-    
+    close(plotFig)
 end
-
-% save out plots
-print(plotFig, fullfile(analysisBasePath, ['averageResponse_', p.Results.fitLabel]), '-dpdf', '-fillpage')
-
-if ~exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots'), 'dir')
-    mkdir(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots'));
-end
-print(plotFig, fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots', [subjectID, '_averageResponse_', p.Results.fitLabel]), '-dpdf', '-fillpage')
-
-close(plotFig)
-
 
 
 end
