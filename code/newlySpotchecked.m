@@ -958,3 +958,29 @@ spotCheckVideo('MELA_3035', '2019-12-10_session_2', 6, 8, 'skipParamsAdjustment'
 spotCheckVideo('MELA_3035', '2019-12-10_session_2', 6, 2, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
 spotCheckVideo('MELA_3035', '2019-12-10_session_2', 5, 2, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
 spotCheckVideo('MELA_3035', '2019-12-10_session_2', 1, 6, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 1, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 1, 4, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 1, 5, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+
+
+%%
+%spotCheckVideo('MELA_3032', '2019-12-03_session_2', 1, 8, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+%spotCheckVideo('MELA_3032', '2019-12-03_session_2', 1, 9, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+%spotCheckVideo('MELA_3032', '2019-12-03_session_2', 4, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+%spotCheckVideo('MELA_3032', '2019-12-03_session_2', 4, 4, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+%spotCheckVideo('MELA_3032', '2019-12-03_session_2', 4, 5, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+%spotCheckVideo('MELA_3032', '2019-12-03_session_2', 4, 8, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 5, 2, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 5, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 5, 3, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 5, 4, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 5, 7, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 5, 7, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 5, 8, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 5, 9, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 6, 8, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3032', '2019-12-03_session_2', 6, 9, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
+spotCheckVideo('MELA_3032', '2020-01-15_session_1', 5, 5, 'skipParamsAdjustment', true, 'processVideo', true, 'openVideo', false, 'experimentNumber', 'experiment_1', 'Protocol', 'Deuteranopes');
