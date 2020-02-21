@@ -77,7 +77,7 @@ if p.Results.checkStatus
     if isempty(p.Results.experimentNumber)
         fprintf('For subject %s, %s, need to process:\n', subjectID, sessionID)
     else
-        fprintf('For subject %s, %, %s, need to process:\n', p.Results.experimentNumber, subjectID, sessionID)
+        fprintf('For subject %s, %s, %s, need to process:\n', p.Results.experimentNumber, subjectID, sessionID)
     end
     for ii = 1:length(runsToBeProcessed)
         acquisitionNumber = ceil(runsToBeProcessed(ii)/10);
