@@ -2,12 +2,18 @@ subjectStruct = getDeuteranopeSubjectStruct;
 stimuli = {'LightFlux', 'Melanopsin',  'LS'};
 
 %% Summarize pupillometry
-fitType = 'initial';
-saveNameSuffix = '_postSpotCheck';
+fitType = 'radiusSmoothed';
+saveNameSuffix = '';
 
-for experiment = 1:2
+experiments = 1:2;
+experiments = 2;
+subjectIndices = 1:5;
+subjectIndices = 3;
+subjectIDs = fieldnames(subjectStruct.(['experiment', num2str(1)]));
+
+
+for experiment = experiments
     experimentName = ['experiment_', num2str(experiment)];
-    subjectIDs = fieldnames(subjectStruct.(['experiment', num2str(experiment)]));
     
     if experiment == 1
         contrasts = {100, 200, 400};
@@ -16,9 +22,9 @@ for experiment = 1:2
         
     end
     
-    for ss = 1:5
-        
-        makeSubjectAverageResponses(subjectIDs{ss}, 'experimentName', experimentName, 'stimuli', stimuli, 'contrasts', contrasts, 'Protocol', 'Deuteranopes', 'protocolShortName', 'Deuteranopes','blinkBufferFrames', [3 6], 'saveNameSuffix', saveNameSuffix, 'sessions', subjectStruct.(['experiment', num2str(experiment)]).(subjectIDs{ss}))
+    for ss = subjectIndices
+        subjectID = subjectIDs{ss};
+        makeSubjectAverageResponses(subjectID, 'experimentName', experimentName, 'stimuli', stimuli, 'contrasts', contrasts, 'Protocol', 'Deuteranopes', 'protocolShortName', 'Deuteranopes','blinkBufferFrames', [3 6], 'saveNameSuffix', saveNameSuffix, 'sessions', subjectStruct.(['experiment', num2str(experiment)]).(subjectID), 'fitLabel', fitType)
         
     end
 end
