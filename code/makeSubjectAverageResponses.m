@@ -1,4 +1,4 @@
-function [ averageResponseStruct, trialStruct ] = makeSubjectAverageResponses(subjectID, varargin)
+function [ averageResponseStruct, trialStruct, trialInfoStruct ] = makeSubjectAverageResponses(subjectID, varargin)
 
 % Analyzes a single subject's pupillometry data from the OLApproach_Squint,
 % SquintToPulse Experiment
@@ -125,6 +125,8 @@ contrasts = p.Results.contrasts;
 for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
         trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]) = [];
+        
+        trialInfoStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]) = [];
     end
 end
 
@@ -240,8 +242,21 @@ for ss = sessions
                     trialData.response = [];
                     
                     system(['touch -a "', fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)), '"']);
-                    trialData = load(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)));
-                    
+                    stillTrying = true;
+                    tryAttempt = 0;
+                    while stillTrying
+                        try
+                            trialData = load(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)));
+                            stillTrying = false;
+                        catch
+                            tryAttempt = tryAttempt + 1;
+                            if tryAttempt > 5
+                                stillTrying = false;
+                                trialData = load(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)));
+                                
+                            end
+                        end
+                    end
                     % gather into memory the pupil area, RMSE, and timebase
                     if strcmp(p.Results.fitLabel, 'radiusSmoothed')
                         trialData.response.values = ((trialData.pupilData.radiusSmoothed.eyePoses.values(:,4)).^2)*pi;
@@ -532,6 +547,16 @@ for ss = sessions
                         badTrial = tt;
                     else
                         trialStruct.(directionName).(['Contrast', contrast])(nRow+1,:) = trialData.responseResampled.values;
+                        
+                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.blinkIndices = blinkIndices;
+                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.duplicateFrameIndices = duplicateFrameIndices;
+                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.poorFitFrameIndices = poorFitFrameIndices;
+                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.initialNaNFrames = initialNaNFrames;
+                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.session = sessionIDs{ss};
+                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.acquisition = aa;
+                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.trial = tt;
+                        
+                        
                         %                     if nRow > 24
                         %                         pause
                         %                     end
@@ -542,6 +567,8 @@ for ss = sessions
         end
     end
 end
+
+trialInfoStruct.metaData.varargin = varargin;
 
 %% make average responses
 if ~p.Results.debugTrialMode
@@ -558,7 +585,7 @@ if ~p.Results.debugTrialMode
     
     % save out trial responses
     fileName = ['trialStruct_', p.Results.fitLabel, p.Results.saveNameSuffix];
-    save(fullfile(analysisBasePath, fileName), 'trialStruct', '-v7.3');
+    save(fullfile(analysisBasePath, fileName), 'trialStruct', 'trialInfoStruct', '-v7.3');
     
     
     %% Do some plotting
@@ -624,7 +651,11 @@ if ~p.Results.debugTrialMode
     if ~exist(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots'), 'dir')
         mkdir(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots'));
     end
-    print(plotFig, fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots', [subjectID, '_averageResponse_', p.Results.fitLabel, p.Results.saveNameSuffix]), '-dpdf', '-fillpage')
+    if isempty(p.Results.experimentName)
+       print(plotFig, fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots', [subjectID, '_averageResponse_', p.Results.fitLabel, p.Results.saveNameSuffix]), '-dpdf', '-fillpage')
+    else
+       print(plotFig, fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots', [subjectID, '_', p.Results.experimentName, '_averageResponse_', p.Results.fitLabel, p.Results.saveNameSuffix]), '-dpdf', '-fillpage')
+    end
     
     close(plotFig)
 end
