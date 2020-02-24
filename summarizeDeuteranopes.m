@@ -6,11 +6,16 @@ fitType = 'radiusSmoothed';
 saveNameSuffix = '';
 
 experiments = 1:2;
-experiments = 2;
 subjectIndices = 1:5;
-subjectIndices = 3;
 subjectIDs = fieldnames(subjectStruct.(['experiment', num2str(1)]));
 
+runMakeSubjectAverageResponses = false;
+
+ for stimulus = 1:length(stimuli)
+            for contrast = 1:length(contrasts)
+                meanPupilResponse.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            end
+ end
 
 for experiment = experiments
     experimentName = ['experiment_', num2str(experiment)];
@@ -24,10 +29,71 @@ for experiment = experiments
     
     for ss = subjectIndices
         subjectID = subjectIDs{ss};
-        makeSubjectAverageResponses(subjectID, 'experimentName', experimentName, 'stimuli', stimuli, 'contrasts', contrasts, 'Protocol', 'Deuteranopes', 'protocolShortName', 'Deuteranopes','blinkBufferFrames', [3 6], 'saveNameSuffix', saveNameSuffix, 'sessions', subjectStruct.(['experiment', num2str(experiment)]).(subjectID), 'fitLabel', fitType)
+        if runMakeSubjectAverageResponses
+
+            makeSubjectAverageResponses(subjectID, 'experimentName', experimentName, 'stimuli', stimuli, 'contrasts', contrasts, 'Protocol', 'Deuteranopes', 'protocolShortName', 'Deuteranopes','blinkBufferFrames', [3 6], 'saveNameSuffix', saveNameSuffix, 'sessions', subjectStruct.(['experiment', num2str(experiment)]).(subjectID), 'fitLabel', fitType)
+            load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles', subjectID, experimentName, ['trialStruct_', fitType, '.mat']));
+
+        else
+            load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles', subjectID, experimentName, ['trialStruct_', fitType, '.mat']));
+        end
+        
+        for stimulus = 1:length(stimuli)
+            for contrast = 1:length(contrasts)
+                meanPupilResponse.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss,:) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+            end
+        end
         
     end
 end
+
+% Compare 400% responses in high and low contrast sessions
+resampledTimebase = 0:1/60:18.5;
+pulseOnset = 1.5;
+pulseOffset = 5.5;
+plotShift = 1;
+nTimePointsToSkipPlotting = 40;
+yLims = [-0.8 0.3];
+xLims = [0 17];
+
+plotFig = figure;
+
+for stimulus = 1:length(stimuli)
+    
+    experiment1PupilResponse = nanmean(meanPupilResponse.experiment_1.(stimuli{stimulus}).Contrast400);
+    experiment2PupilResponse = nanmean(meanPupilResponse.experiment_2.(stimuli{stimulus}).Contrast400);
+
+    experiment1SEM = nanstd(meanPupilResponse.experiment_1.(stimuli{stimulus}).Contrast400)./sqrt(size(meanPupilResponse.experiment_1.(stimuli{stimulus}).Contrast400,1));
+    experiment2SEM = nanstd(meanPupilResponse.experiment_2.(stimuli{stimulus}).Contrast400)./sqrt(size(meanPupilResponse.experiment_2.(stimuli{stimulus}).Contrast400,1));
+
+    
+    subplot(1,3,stimulus); hold on;
+    
+    % make thicker plot lines
+            lineProps.width = 1;
+            transparent = 1;
+            
+            % adjust color
+    lineProps.col{1} = 'k';    
+    axis.ax1 = mseb(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, experiment1PupilResponse(1:end-nTimePointsToSkipPlotting), experiment1SEM(1:end-nTimePointsToSkipPlotting), lineProps, transparent);
+    
+    lineProps.col{1} = 'r';
+    axis.ax2 = mseb(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, experiment2PupilResponse(1:end-nTimePointsToSkipPlotting), experiment2SEM(1:end-nTimePointsToSkipPlotting), lineProps, transparent);
+
+    %plot(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, experiment1PupilResponse(1:end-nTimePointsToSkipPlotting), 'Color', 'k');
+    %plot(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift,experiment2PupilResponse(1:end-nTimePointsToSkipPlotting), 'Color', 'r');
+    
+    if stimulus == 3
+       legend('Low Contrast Experiment', 'High Contrast Experiment') 
+    end
+    xlim(xLims);
+    ylim(yLims);
+    
+    title(stimuli{stimulus});
+    
+end
+
+
 
 %% Summarize discomfort ratings
 
