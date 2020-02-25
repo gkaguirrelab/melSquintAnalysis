@@ -90,6 +90,8 @@ for stimulus = 1:length(stimuli)
     ylim(yLims);
     
     title(stimuli{stimulus});
+    xlabel('Time (s)')
+    ylabel('Pupil Area (% Change from Baseline)');
     
 end
 
