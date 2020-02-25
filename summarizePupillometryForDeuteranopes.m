@@ -11,7 +11,7 @@ xLims = [0 17];
     plotFig = figure;
 
 for experiment = 1:2
-    load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles', subjectID, ['experiment_', num2str(experiment)], 'trialStruct_initial.mat'));
+    load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles', subjectID, ['experiment_', num2str(experiment)], 'trialStruct_radiusSmoothed.mat'));
     
     % stimuli:
     stimuli = {'LightFlux', 'Melanopsin', 'LS'};
