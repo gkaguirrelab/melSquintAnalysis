@@ -556,6 +556,14 @@ for ss = sessions
                         trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.acquisition = aa;
                         trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.trial = tt;
                         
+                        [~, pulseOnsetIndex ] = min(abs(p.Results.pulseOnset-trialData.response.timebase));
+                        [~, pulseOffsetIndex ] = min(abs(p.Results.pulseOffset-trialData.response.timebase));
+                    
+                        
+                        
+                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.pulseOnsetIndex = pulseOnsetIndex;
+                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.pulseOffsetIndex = pulseOffsetIndex;
+                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.originalTimebase = trialData.response.timebase;
                         
                         %                     if nRow > 24
                         %                         pause
