@@ -172,7 +172,18 @@ for group = 1:length(groups)
             if ~exist(subjectPlotSavePath, 'dir')
                 mkdir(subjectPlotSavePath);
             end
-            export_fig(subjectPlotFig, fullfile(subjectPlotSavePath, [groups{group}, num2str(ss), '_', p.Results.responseMetric, 'linearModelFits.png']));
+            
+            if strcmp(groups{group}, 'mwoa')
+                groupIDs = mwoaSubjects;
+                
+            elseif strcmp(groups{group}, 'mwa')
+                groupIDs = mwaSubjects;
+                
+            elseif strcmp(groups{group}, 'controls')
+                groupIDs = controlSubjects;
+            end
+            
+            export_fig(subjectPlotFig, fullfile(subjectPlotSavePath, [groupIDs{ss}, '_', p.Results.responseMetric, 'linearModelFits.png']));
             close(figure(2));
         end
     end
