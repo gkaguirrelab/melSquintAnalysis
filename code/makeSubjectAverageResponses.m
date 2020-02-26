@@ -204,13 +204,13 @@ else
     for ii = 1:length(sessionIDs)
         %[fprintf('\t%d. ellipseTransparentUB: ', counter) fitParams.(params{ii})(:), '\n'];
         fprintf('\t %d: %s\n', ii, sessionIDs{ii})
-
+        
         counter = counter + 1;
     end
     
     choice = input('\nYour choice: ', 's');
     
-  
+    
     
     
     
@@ -220,7 +220,7 @@ else
     acquisitions = input('Enter acquisition number:\n');
     
     % trial loop
-     trials = input('Enter trial number:\n');
+    trials = input('Enter trial number:\n');
     
 end
 
@@ -239,189 +239,252 @@ for ss = sessions
             
             for tt = trials
                 if tt ~= 1
-                    trialData.response = [];
                     
-                    system(['touch -a "', fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)), '"']);
-                    stillTrying = true;
-                    tryAttempt = 0;
-                    while stillTrying
-                        try
-                            trialData = load(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)));
-                            stillTrying = false;
-                        catch
-                            tryAttempt = tryAttempt + 1;
-                            if tryAttempt > 5
-                                stillTrying = false;
-                                trialData = load(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)));
-                                
-                            end
-                        end
-                    end
-                    % gather into memory the pupil area, RMSE, and timebase
-                    if strcmp(p.Results.fitLabel, 'radiusSmoothed')
-                        trialData.response.values = ((trialData.pupilData.radiusSmoothed.eyePoses.values(:,4)).^2)*pi;
-                        initialResponse = ((trialData.pupilData.radiusSmoothed.eyePoses.values(:,4)).^2)*pi;
-                        trialData.response.RMSE = trialData.pupilData.radiusSmoothed.ellipses.RMSE;
-                    elseif strcmp(p.Results.fitLabel, 'initial')
+                    % load fitParams for that trial
+                    fitParamsBasePath = fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa));
+                    if exist(fullfile(fitParamsBasePath, ['fitParams_', sprintf('trial_%03d', tt), '.mat']))
+                        load(fullfile(fitParamsBasePath, ['fitParams_', sprintf('trial_%03d', tt), '.mat']));
+                    elseif exist(fullfile(fitParamsBasePath, ['fitParams.mat']))
+                        load(fullfile(fitParamsBasePath, ['fitParams.mat']));
+                    elseif exist(fullfile(fitParamsBasePath, '..', ['fitParams.mat']))
                         
-                        trialData.response.values = trialData.pupilData.initial.ellipses.values(:,3);
-                        initialResponse = trialData.pupilData.initial.ellipses.values(:,3);
-                        trialData.response.RMSE = trialData.pupilData.initial.ellipses.RMSE;
-                        
-                    end
-                    trialData.response.timebase = acquisitionData.responseStruct.data(tt).pupil.timebase;
-                    
-                    initialNaNFrames = find(isnan(trialData.response.values));
-                    
-                    % identify duplicate frames
-                    differential = [];
-                    differential = diff(trialData.response.RMSE);
-                    duplicateFrameIndices = [];
-                    duplicateFrameIndices = find(differential == 0);
-                    % censor duplicate frames
-                    for dd = duplicateFrameIndices
-                        trialData.response.values(dd+1) = NaN;
+                        load(fullfile(fitParamsBasePath, '..', ['fitParams.mat']));
+                    else
+                        fitParams = getDefaultParams;
                     end
                     
-                    % mean-center:
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    % adjust the timebase by adding the delay
-                    cameraCommandOutput = acquisitionData.responseStruct.data(tt).pupil.consoleOutput;
-                    consoleOutput = strsplit(cameraCommandOutput, 'start: ');
-                    startTimeFromConsoleOutput = strsplit(consoleOutput{2}, ',');
-                    startTimeFromConsoleOutput = str2num(startTimeFromConsoleOutput{1});
-                    % determine the delay from when ffmpeg thinks we launched video
-                    % acquisition and the UDP command thinks we went our command
-                    delay = startTimeFromConsoleOutput - acquisitionData.responseStruct.events(tt).tRecordingStart;
-                    % adjust the timebase
-                    trialData.response.timebase = trialData.response.timebase + delay;
-                    
-                    % find the indices corresponding to 1 and 1.5 s with the
-                    % new timebase
-                    [~, baselineWindowOnsetIndex ] = min(abs(p.Results.baselineWindowOnsetTime-trialData.response.timebase));
-                    [~, baselineWindowOffsetIndex ] = min(abs(p.Results.baselineWindowOffsetTime-trialData.response.timebase));
-                    baselineSize = nanmean(trialData.response.values(baselineWindowOnsetIndex:baselineWindowOffsetIndex));
-                    trialData.response.values = (trialData.response.values - baselineSize)./baselineSize;
-                    
-                    % remove blinks
-                    controlFile = loadControlFile(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_controlFile.csv', tt)));
-                    blinkIndices = [];
-                    if p.Results.performControlFileBlinkRemoval
-                        % determine if blinkBufferFrames were used in original
-                        % processing
-                        controlFileName = fopen(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_controlFile.csv', tt)));
-                        controlFileContents = textscan(controlFileName,'%s', 'Delimiter',',');
-                        indices = strfind(controlFileContents{1}, 'extendBlinkWindow');
-                        blinkWindowIndex = find(~cellfun(@isempty,indices));
-                        blinkWindowFromControlFile = (controlFileContents{1}(blinkWindowIndex+1));
-                        blinkWindowFromControlFile = str2num(blinkWindowFromControlFile{1});
-                        
-                        if sum(blinkWindowFromControlFile == [0 0]) == 2 % if the control file processed this trial with blinkBufferFrames of [0 0], then apply the inputted range
-                            blinkBufferFrames = p.Results.blinkBufferFrames;
+                    if isfield(fitParams, 'skipTrial')
+                        if fitParams.skipTrial
+                            skipTrial = true;
                         else
-                            blinkBufferFrames = [0 0]; % otherwise, don't further extend the window
+                            skipTrial = false;
                         end
+                    else
+                        skipTrial = false;
+                    end
+                    
+                    if ~skipTrial
                         
+                        trialData.response = [];
                         
-                        for ii = 1:length(controlFile)
-                            if strcmp(controlFile(ii).type, 'blink')
-                                blinkFrame = controlFile(ii).frame;
-                                if blinkFrame - blinkBufferFrames(1) < 1
-                                    beginningOfBlinkFrame = 1;
-                                else
-                                    beginningOfBlinkFrame = blinkFrame - blinkBufferFrames(1);
+                        system(['touch -a "', fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)), '"']);
+                        stillTrying = true;
+                        tryAttempt = 0;
+                        while stillTrying
+                            try
+                                trialData = load(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)));
+                                stillTrying = false;
+                            catch
+                                tryAttempt = tryAttempt + 1;
+                                if tryAttempt > 5
+                                    stillTrying = false;
+                                    trialData = load(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_pupil.mat', tt)));
+                                    
                                 end
-                                if blinkFrame + blinkBufferFrames(2) > length(trialData.response.values)
-                                    endingOfBlinkFrame = length(trialData.response.values);
-                                else
-                                    endingOfBlinkFrame = blinkFrame + blinkBufferFrames(2);
-                                end
-                                blinkIndices = [blinkIndices, beginningOfBlinkFrame:endingOfBlinkFrame];
-                                
-                                trialData.response.values(beginningOfBlinkFrame:endingOfBlinkFrame) = NaN;
                             end
                         end
-                    end
-                    controlFileBlinkIndices = unique(blinkIndices);
-                    % identify frames that were NaN initially (prior to this
-                    % routine assigning them as NaN) that were not assigned so
-                    % because they were blinks (i.e. we couldn't find the pupil
-                    % to begin with);
-                    initialNaNFrames = setdiff(initialNaNFrames,controlFileBlinkIndices);
-                    
-                    spikeRemoverBlinkIndices = [];
-                    if p.Results.performSpikeRemoval
-                        [iy, spikeRemoverBlinkIndices] = PupilAnalysisToolbox_SpikeRemover(trialData.response.values, p.Results.blinkVelocityThreshold, p.Results.spikeWindowLength);
-                        if p.Results.debugSpikeRemover
-                            figure; hold on;
-                            plot(trialData.response.values)
-                            plot(spikeRemoverBlinkIndices, trialData.response.values(spikeRemoverBlinkIndices), 'o', 'Color', 'r')
+                        % gather into memory the pupil area, RMSE, and timebase
+                        if strcmp(p.Results.fitLabel, 'radiusSmoothed')
+                            trialData.response.values = ((trialData.pupilData.radiusSmoothed.eyePoses.values(:,4)).^2)*pi;
+                            initialResponse = ((trialData.pupilData.radiusSmoothed.eyePoses.values(:,4)).^2)*pi;
+                            trialData.response.RMSE = trialData.pupilData.radiusSmoothed.ellipses.RMSE;
+                        elseif strcmp(p.Results.fitLabel, 'initial')
+                            
+                            trialData.response.values = trialData.pupilData.initial.ellipses.values(:,3);
+                            initialResponse = trialData.pupilData.initial.ellipses.values(:,3);
+                            trialData.response.RMSE = trialData.pupilData.initial.ellipses.RMSE;
+                            
                         end
-                        trialData.response.values(spikeRemoverBlinkIndices) = NaN;
-                        spikeRemoverBlinkIndices = unique(spikeRemoverBlinkIndices);
-                    end
-                    blinkIndices = [controlFileBlinkIndices, spikeRemoverBlinkIndices];
-                    blinkIndices = unique(blinkIndices);
-                    
-                    % identify poor ellipse fits
-                    threshold = p.Results.RMSEThreshold; % set the threshold for a bad fit as RMSE > 5
-                    poorFitFrameIndices = [];
-                    poorFitFrameIndices = find(trialData.response.RMSE > threshold);
-                    % censor poor ellipse fits
-                    for pp = poorFitFrameIndices
-                        trialData.response.values(pp) = NaN;
-                    end
-                    poorFitFrameIndices = setdiff(poorFitFrameIndices, blinkIndices);
-                    
-                    % identify extreme frames
-                    extremeFrameIndices = find(abs(trialData.response.values) > p.Results.extremePercentageChangeThreshold);
-                    trialData.response.values(extremeFrameIndices) = NaN;
-                    
-                    % undo, then re-do mean-centering. this is because
-                    % sometimes a blink occurs in the original baseline window,
-                    % which leads to improper estimation of the baseline size.
-                    % after these poor frames have been dealt with, we can
-                    % revert to the original units of pupil size, then re-mean
-                    % center
-                    % undo mean-centering
-                    trialData.response.values = (trialData.response.values*baselineSize)+baselineSize;
-                    
-                    baselineSizePartTwo = nanmean(trialData.response.values(baselineWindowOnsetIndex:baselineWindowOffsetIndex));
-                    trialData.response.values = (trialData.response.values - baselineSizePartTwo)./baselineSizePartTwo;
-                    
-                    
-                    
-                    % resample the timebase so we can put all trials on the same
-                    % timebase
-                    stepSize = 1/p.Results.frameRate;
-                    resampledTimebase = 0:stepSize:18.5;
-                    
-                    resampledValues = [];
-                    resampledRMSE = [];
-                    
-                    if ~(p.Results.interpolateThroughRuns)
-                        numberOfBadFrames = sum(isnan(trialData.response.values));
-                        percentageBadFrames = numberOfBadFrames/(length(trialData.response.values));
-                        % interpolate across all NaN values
-                        theNans = isnan(trialData.response.values);
-                        if numberOfBadFrames ~= length(trialData.response.values)
-                            if p.Results.interpolate
-                                if sum(theNans) > 1
+                        trialData.response.timebase = acquisitionData.responseStruct.data(tt).pupil.timebase;
+                        
+                        initialNaNFrames = find(isnan(trialData.response.values));
+                        
+                        % identify duplicate frames
+                        differential = [];
+                        differential = diff(trialData.response.RMSE);
+                        duplicateFrameIndices = [];
+                        duplicateFrameIndices = find(differential == 0);
+                        % censor duplicate frames
+                        for dd = duplicateFrameIndices
+                            trialData.response.values(dd+1) = NaN;
+                        end
+                        
+                        % mean-center:
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        % adjust the timebase by adding the delay
+                        cameraCommandOutput = acquisitionData.responseStruct.data(tt).pupil.consoleOutput;
+                        consoleOutput = strsplit(cameraCommandOutput, 'start: ');
+                        startTimeFromConsoleOutput = strsplit(consoleOutput{2}, ',');
+                        startTimeFromConsoleOutput = str2num(startTimeFromConsoleOutput{1});
+                        % determine the delay from when ffmpeg thinks we launched video
+                        % acquisition and the UDP command thinks we went our command
+                        delay = startTimeFromConsoleOutput - acquisitionData.responseStruct.events(tt).tRecordingStart;
+                        % adjust the timebase
+                        trialData.response.timebase = trialData.response.timebase + delay;
+                        
+                        % find the indices corresponding to 1 and 1.5 s with the
+                        % new timebase
+                        [~, baselineWindowOnsetIndex ] = min(abs(p.Results.baselineWindowOnsetTime-trialData.response.timebase));
+                        [~, baselineWindowOffsetIndex ] = min(abs(p.Results.baselineWindowOffsetTime-trialData.response.timebase));
+                        baselineSize = nanmean(trialData.response.values(baselineWindowOnsetIndex:baselineWindowOffsetIndex));
+                        trialData.response.values = (trialData.response.values - baselineSize)./baselineSize;
+                        
+                        % remove blinks
+                        controlFile = loadControlFile(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_controlFile.csv', tt)));
+                        blinkIndices = [];
+                        if p.Results.performControlFileBlinkRemoval
+                            % determine if blinkBufferFrames were used in original
+                            % processing
+                            controlFileName = fopen(fullfile(analysisBasePath, sessionIDs{ss}, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d_controlFile.csv', tt)));
+                            controlFileContents = textscan(controlFileName,'%s', 'Delimiter',',');
+                            indices = strfind(controlFileContents{1}, 'extendBlinkWindow');
+                            blinkWindowIndex = find(~cellfun(@isempty,indices));
+                            blinkWindowFromControlFile = (controlFileContents{1}(blinkWindowIndex+1));
+                            blinkWindowFromControlFile = str2num(blinkWindowFromControlFile{1});
+                            
+                            if sum(blinkWindowFromControlFile == [0 0]) == 2 % if the control file processed this trial with blinkBufferFrames of [0 0], then apply the inputted range
+                                blinkBufferFrames = p.Results.blinkBufferFrames;
+                            else
+                                blinkBufferFrames = [0 0]; % otherwise, don't further extend the window
+                            end
+                            
+                            
+                            for ii = 1:length(controlFile)
+                                if strcmp(controlFile(ii).type, 'blink')
+                                    blinkFrame = controlFile(ii).frame;
+                                    if blinkFrame - blinkBufferFrames(1) < 1
+                                        beginningOfBlinkFrame = 1;
+                                    else
+                                        beginningOfBlinkFrame = blinkFrame - blinkBufferFrames(1);
+                                    end
+                                    if blinkFrame + blinkBufferFrames(2) > length(trialData.response.values)
+                                        endingOfBlinkFrame = length(trialData.response.values);
+                                    else
+                                        endingOfBlinkFrame = blinkFrame + blinkBufferFrames(2);
+                                    end
+                                    blinkIndices = [blinkIndices, beginningOfBlinkFrame:endingOfBlinkFrame];
+                                    
+                                    trialData.response.values(beginningOfBlinkFrame:endingOfBlinkFrame) = NaN;
+                                end
+                            end
+                        end
+                        controlFileBlinkIndices = unique(blinkIndices);
+                        % identify frames that were NaN initially (prior to this
+                        % routine assigning them as NaN) that were not assigned so
+                        % because they were blinks (i.e. we couldn't find the pupil
+                        % to begin with);
+                        initialNaNFrames = setdiff(initialNaNFrames,controlFileBlinkIndices);
+                        
+                        spikeRemoverBlinkIndices = [];
+                        if p.Results.performSpikeRemoval
+                            [iy, spikeRemoverBlinkIndices] = PupilAnalysisToolbox_SpikeRemover(trialData.response.values, p.Results.blinkVelocityThreshold, p.Results.spikeWindowLength);
+                            if p.Results.debugSpikeRemover
+                                figure; hold on;
+                                plot(trialData.response.values)
+                                plot(spikeRemoverBlinkIndices, trialData.response.values(spikeRemoverBlinkIndices), 'o', 'Color', 'r')
+                            end
+                            trialData.response.values(spikeRemoverBlinkIndices) = NaN;
+                            spikeRemoverBlinkIndices = unique(spikeRemoverBlinkIndices);
+                        end
+                        blinkIndices = [controlFileBlinkIndices, spikeRemoverBlinkIndices];
+                        blinkIndices = unique(blinkIndices);
+                        
+                        % identify poor ellipse fits
+                        threshold = p.Results.RMSEThreshold; % set the threshold for a bad fit as RMSE > 5
+                        poorFitFrameIndices = [];
+                        poorFitFrameIndices = find(trialData.response.RMSE > threshold);
+                        % censor poor ellipse fits
+                        for pp = poorFitFrameIndices
+                            trialData.response.values(pp) = NaN;
+                        end
+                        poorFitFrameIndices = setdiff(poorFitFrameIndices, blinkIndices);
+                        
+                        % identify extreme frames
+                        extremeFrameIndices = find(abs(trialData.response.values) > p.Results.extremePercentageChangeThreshold);
+                        trialData.response.values(extremeFrameIndices) = NaN;
+                        
+                        % undo, then re-do mean-centering. this is because
+                        % sometimes a blink occurs in the original baseline window,
+                        % which leads to improper estimation of the baseline size.
+                        % after these poor frames have been dealt with, we can
+                        % revert to the original units of pupil size, then re-mean
+                        % center
+                        % undo mean-centering
+                        trialData.response.values = (trialData.response.values*baselineSize)+baselineSize;
+                        
+                        baselineSizePartTwo = nanmean(trialData.response.values(baselineWindowOnsetIndex:baselineWindowOffsetIndex));
+                        trialData.response.values = (trialData.response.values - baselineSizePartTwo)./baselineSizePartTwo;
+                        
+                        
+                        
+                        % resample the timebase so we can put all trials on the same
+                        % timebase
+                        stepSize = 1/p.Results.frameRate;
+                        resampledTimebase = 0:stepSize:18.5;
+                        
+                        resampledValues = [];
+                        resampledRMSE = [];
+                        
+                        if ~(p.Results.interpolateThroughRuns)
+                            numberOfBadFrames = sum(isnan(trialData.response.values));
+                            percentageBadFrames = numberOfBadFrames/(length(trialData.response.values));
+                            % interpolate across all NaN values
+                            theNans = isnan(trialData.response.values);
+                            if numberOfBadFrames ~= length(trialData.response.values)
+                                if p.Results.interpolate
+                                    if sum(theNans) > 1
+                                        x = trialData.response.values;
+                                        x(theNans) = interp1(trialData.response.timebase(~theNans), trialData.response.values(~theNans), trialData.response.timebase(theNans)', 'linear');
+                                        trialData.response.values = x;
+                                    end
+                                end
+                                
+                                % interpolate onto common timebase across trials
+                                resampledValues = interp1(trialData.response.timebase,trialData.response.values,resampledTimebase,'linear');
+                                
+                                
+                                trialData.responseResampled = [];
+                                trialData.responseResampled.values = resampledValues;
+                                trialData.responseResampled.timebase = resampledTimebase;
+                                
+                            else
+                                resampledValues = nan(1,length(resampledTimebase));
+                                trialData.responseResampled.values = resampledValues;
+                            end
+                            
+                        else
+                            
+                            % interpolate through runs of duration shorter than
+                            % interpolationLimit
+                            TotalNaNIndices = find(isnan(trialData.response.values));
+                            
+                            NaNRunsCellArray = identifyRuns(TotalNaNIndices);
+                            interpolationLimitInFrames = p.Results.interpolationLimitInFrames;
+                            for rr = 1:length(NaNRunsCellArray)
+                                if length(NaNRunsCellArray{rr}) <= interpolationLimitInFrames
+                                    theNans = zeros(1,length(trialData.response.values));
+                                    theNans(NaNRunsCellArray{rr}) = 1;
+                                    theNans = logical(theNans);
                                     x = trialData.response.values;
                                     x(theNans) = interp1(trialData.response.timebase(~theNans), trialData.response.values(~theNans), trialData.response.timebase(theNans)', 'linear');
                                     trialData.response.values = x;
                                 end
                             end
                             
-                            % interpolate onto common timebase across trials
+                            % tally up unrecoverable frames
+                            numberOfBadFrames = sum(isnan(trialData.response.values));
+                            percentageBadFrames = numberOfBadFrames/(length(trialData.response.values));
+                            
+                            % interpolate onto common timebase, but leave the NaNs
+                            % intact
                             resampledValues = interp1(trialData.response.timebase,trialData.response.values,resampledTimebase,'linear');
                             
                             
@@ -429,145 +492,109 @@ for ss = sessions
                             trialData.responseResampled.values = resampledValues;
                             trialData.responseResampled.timebase = resampledTimebase;
                             
+                        end
+                        
+                        
+                        % stash the trial
+                        % first figure out what type of trial we're working with
+                        directionNameLong = stimulusData.trialList(tt).modulationData.modulationParams.direction;
+                        directionNameSplit = strsplit(directionNameLong, ' ');
+                        if strcmp(directionNameSplit{1}, 'Light')
+                            directionName = 'LightFlux';
+                        elseif strcmp(directionNameSplit{1}, 'L+S')
+                            directionName = 'LS';
                         else
-                            resampledValues = nan(1,length(resampledTimebase));
-                            trialData.responseResampled.values = resampledValues;
+                            directionName = directionNameSplit{1};
                         end
+                        contrastLong = strsplit(directionNameLong, '%');
+                        contrastLong = strsplit(contrastLong{1}, ' ');
+                        contrast = contrastLong{end};
+                        % pool the results
+                        nRow = size(trialStruct.(directionName).(['Contrast', contrast]),1);
                         
-                    else
                         
-                        % interpolate through runs of duration shorter than
-                        % interpolationLimit
-                        TotalNaNIndices = find(isnan(trialData.response.values));
+                        trialNaNThreshold = p.Results.trialNaNThreshold;
                         
-                        NaNRunsCellArray = identifyRuns(TotalNaNIndices);
-                        interpolationLimitInFrames = p.Results.interpolationLimitInFrames;
-                        for rr = 1:length(NaNRunsCellArray)
-                            if length(NaNRunsCellArray{rr}) <= interpolationLimitInFrames
-                                theNans = zeros(1,length(trialData.response.values));
-                                theNans(NaNRunsCellArray{rr}) = 1;
-                                theNans = logical(theNans);
-                                x = trialData.response.values;
-                                x(theNans) = interp1(trialData.response.timebase(~theNans), trialData.response.values(~theNans), trialData.response.timebase(theNans)', 'linear');
-                                trialData.response.values = x;
+                        if p.Results.debugNumberOfNaNValuesPerTrial
+                            close all;
+                            plotFig = figure; hold on;
+                            plot(trialData.response.timebase, (initialResponse-baselineSize)./baselineSize); hold on; plot(resampledTimebase, resampledValues)
+                            
+                            if ~isempty(controlFileBlinkIndices)
+                                plot(trialData.response.timebase(controlFileBlinkIndices), trialData.response.values(controlFileBlinkIndices), 'o', 'Color', 'b')
                             end
-                        end
-                        
-                        % tally up unrecoverable frames
-                        numberOfBadFrames = sum(isnan(trialData.response.values));
-                        percentageBadFrames = numberOfBadFrames/(length(trialData.response.values));
-                        
-                        % interpolate onto common timebase, but leave the NaNs
-                        % intact
-                        resampledValues = interp1(trialData.response.timebase,trialData.response.values,resampledTimebase,'linear');
-                        
-                        
-                        trialData.responseResampled = [];
-                        trialData.responseResampled.values = resampledValues;
-                        trialData.responseResampled.timebase = resampledTimebase;
-                        
-                    end
-                    
-                    
-                    % stash the trial
-                    % first figure out what type of trial we're working with
-                    directionNameLong = stimulusData.trialList(tt).modulationData.modulationParams.direction;
-                    directionNameSplit = strsplit(directionNameLong, ' ');
-                    if strcmp(directionNameSplit{1}, 'Light')
-                        directionName = 'LightFlux';
-                    elseif strcmp(directionNameSplit{1}, 'L+S')
-                        directionName = 'LS';
-                    else
-                        directionName = directionNameSplit{1};
-                    end
-                    contrastLong = strsplit(directionNameLong, '%');
-                    contrastLong = strsplit(contrastLong{1}, ' ');
-                    contrast = contrastLong{end};
-                    % pool the results
-                    nRow = size(trialStruct.(directionName).(['Contrast', contrast]),1);
-                    
-                    
-                    trialNaNThreshold = p.Results.trialNaNThreshold;
-                    
-                    if p.Results.debugNumberOfNaNValuesPerTrial
-                        close all;
-                        plotFig = figure; hold on;
-                        plot(trialData.response.timebase, (initialResponse-baselineSize)./baselineSize); hold on; plot(resampledTimebase, resampledValues)
-                        
-                        if ~isempty(controlFileBlinkIndices)
-                            plot(trialData.response.timebase(controlFileBlinkIndices), trialData.response.values(controlFileBlinkIndices), 'o', 'Color', 'b')
-                        end
-                        if ~isempty(spikeRemoverBlinkIndices)
-                            
-                            plot(trialData.response.timebase(spikeRemoverBlinkIndices), trialData.response.values(spikeRemoverBlinkIndices), '+', 'Color', 'b')
-                        end
-                        if ~isempty(duplicateFrameIndices)
-                            
-                            plot(trialData.response.timebase(duplicateFrameIndices), trialData.response.values(duplicateFrameIndices),'o',  'Color', 'k')
-                        end
-                        if ~isempty(poorFitFrameIndices)
-                            
-                            plot(trialData.response.timebase(poorFitFrameIndices), trialData.response.values(poorFitFrameIndices), 'o', 'Color', 'g')
-                        end
-                        if ~isempty(initialNaNFrames)
-                            
-                            plot(trialData.response.timebase(initialNaNFrames), trialData.response.values(initialNaNFrames), 'o', 'Color', 'r')
-                        end
-                        
-                        string = sprintf('Session %d, Acquisition %d, Trial %d: %f\n\tBlink frames: %d (%d from CF, %d from SR)\n\tDuplicate frames: %d\n\tPoor fit frames: %d\n\tInitial NaN frames: %d\n\tExtreme frames: %d', str2num(sessionNumber), aa, tt, percentageBadFrames, length(blinkIndices), length(controlFileBlinkIndices), length(spikeRemoverBlinkIndices), length(duplicateFrameIndices), length(poorFitFrameIndices), length(initialNaNFrames), length(extremeFrameIndices));
-                        ax = gca;
-                        axesRange = ax.YLim(2) - ax.YLim(1);
-                        ogYLowerLimit = ax.YLim(1);
-                        ax.YLim(1) = ogYLowerLimit - 0.25*axesRange;
-                        text(0.3, ogYLowerLimit - 0.1*axesRange, string);
-                        
-                        
-                        fprintf('Session %d, Acquisition %d, Trial %d: %f\n', str2num(sessionNumber), aa, tt, percentageBadFrames);
-                        fprintf('\tBlink frames: %d (%d from CF, %d from SR)\n', length(blinkIndices), length(controlFileBlinkIndices), length(spikeRemoverBlinkIndices));
-                        fprintf('\tDuplicate frames: %d\n', length(duplicateFrameIndices));
-                        fprintf('\tPoor fit frames: %d\n', length(poorFitFrameIndices));
-                        fprintf('\tInitial NaN frames: %d\n', length(initialNaNFrames));
-                        
-                        if ~p.Results.debugTrialMode
-                            saveas(plotFig, fullfile(analysisBasePath,'allTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt), '_', p.Results.fitLabel, '.png']));
-                            if percentageBadFrames >= trialNaNThreshold
-                                if ~exist(fullfile(analysisBasePath,'allTrials', 'failedTrials'))
-                                    mkdir(fullfile(analysisBasePath,'allTrials', 'failedTrials'));
-                                end
-                                saveas(plotFig, fullfile(analysisBasePath,'allTrials', 'failedTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt),'_', p.Results.fitLabel, '.png']));
+                            if ~isempty(spikeRemoverBlinkIndices)
                                 
+                                plot(trialData.response.timebase(spikeRemoverBlinkIndices), trialData.response.values(spikeRemoverBlinkIndices), '+', 'Color', 'b')
                             end
+                            if ~isempty(duplicateFrameIndices)
+                                
+                                plot(trialData.response.timebase(duplicateFrameIndices), trialData.response.values(duplicateFrameIndices),'o',  'Color', 'k')
+                            end
+                            if ~isempty(poorFitFrameIndices)
+                                
+                                plot(trialData.response.timebase(poorFitFrameIndices), trialData.response.values(poorFitFrameIndices), 'o', 'Color', 'g')
+                            end
+                            if ~isempty(initialNaNFrames)
+                                
+                                plot(trialData.response.timebase(initialNaNFrames), trialData.response.values(initialNaNFrames), 'o', 'Color', 'r')
+                            end
+                            
+                            string = sprintf('Session %d, Acquisition %d, Trial %d: %f\n\tBlink frames: %d (%d from CF, %d from SR)\n\tDuplicate frames: %d\n\tPoor fit frames: %d\n\tInitial NaN frames: %d\n\tExtreme frames: %d', str2num(sessionNumber), aa, tt, percentageBadFrames, length(blinkIndices), length(controlFileBlinkIndices), length(spikeRemoverBlinkIndices), length(duplicateFrameIndices), length(poorFitFrameIndices), length(initialNaNFrames), length(extremeFrameIndices));
+                            ax = gca;
+                            axesRange = ax.YLim(2) - ax.YLim(1);
+                            ogYLowerLimit = ax.YLim(1);
+                            ax.YLim(1) = ogYLowerLimit - 0.25*axesRange;
+                            text(0.3, ogYLowerLimit - 0.1*axesRange, string);
+                            
+                            
+                            fprintf('Session %d, Acquisition %d, Trial %d: %f\n', str2num(sessionNumber), aa, tt, percentageBadFrames);
+                            fprintf('\tBlink frames: %d (%d from CF, %d from SR)\n', length(blinkIndices), length(controlFileBlinkIndices), length(spikeRemoverBlinkIndices));
+                            fprintf('\tDuplicate frames: %d\n', length(duplicateFrameIndices));
+                            fprintf('\tPoor fit frames: %d\n', length(poorFitFrameIndices));
+                            fprintf('\tInitial NaN frames: %d\n', length(initialNaNFrames));
+                            
+                            if ~p.Results.debugTrialMode
+                                saveas(plotFig, fullfile(analysisBasePath,'allTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt), '_', p.Results.fitLabel, '.png']));
+                                if percentageBadFrames >= trialNaNThreshold
+                                    if ~exist(fullfile(analysisBasePath,'allTrials', 'failedTrials'))
+                                        mkdir(fullfile(analysisBasePath,'allTrials', 'failedTrials'));
+                                    end
+                                    saveas(plotFig, fullfile(analysisBasePath,'allTrials', 'failedTrials', [sessionIDs{ss}, '_a', num2str(aa), '_t', num2str(tt),'_', p.Results.fitLabel, '.png']));
+                                    
+                                end
+                            end
+                            
+                            
                         end
                         
-                        
-                    end
-                    
-                    if percentageBadFrames >= trialNaNThreshold
-                        %trialStruct.(directionName).(['Contrast', contrast])(nRow+1,:) = nan(1,length(trialData.responseResampled.values));
-                        badTrial = tt;
-                    else
-                        trialStruct.(directionName).(['Contrast', contrast])(nRow+1,:) = trialData.responseResampled.values;
-                        
-                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.blinkIndices = blinkIndices;
-                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.duplicateFrameIndices = duplicateFrameIndices;
-                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.poorFitFrameIndices = poorFitFrameIndices;
-                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.initialNaNFrames = initialNaNFrames;
-                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.session = sessionIDs{ss};
-                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.acquisition = aa;
-                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.trial = tt;
-                        
-                        [~, pulseOnsetIndex ] = min(abs(p.Results.pulseOnset-trialData.response.timebase));
-                        [~, pulseOffsetIndex ] = min(abs(p.Results.pulseOffset-trialData.response.timebase));
-                    
-                        
-                        
-                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.pulseOnsetIndex = pulseOnsetIndex;
-                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.pulseOffsetIndex = pulseOffsetIndex;
-                        trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.originalTimebase = trialData.response.timebase;
-                        
-                        %                     if nRow > 24
-                        %                         pause
-                        %                     end
+                        if percentageBadFrames >= trialNaNThreshold
+                            %trialStruct.(directionName).(['Contrast', contrast])(nRow+1,:) = nan(1,length(trialData.responseResampled.values));
+                            badTrial = tt;
+                        else
+                            trialStruct.(directionName).(['Contrast', contrast])(nRow+1,:) = trialData.responseResampled.values;
+                            
+                            trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.blinkIndices = blinkIndices;
+                            trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.duplicateFrameIndices = duplicateFrameIndices;
+                            trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.poorFitFrameIndices = poorFitFrameIndices;
+                            trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.initialNaNFrames = initialNaNFrames;
+                            trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.session = sessionIDs{ss};
+                            trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.acquisition = aa;
+                            trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.trial = tt;
+                            
+                            [~, pulseOnsetIndex ] = min(abs(p.Results.pulseOnset-trialData.response.timebase));
+                            [~, pulseOffsetIndex ] = min(abs(p.Results.pulseOffset-trialData.response.timebase));
+                            
+                            
+                            
+                            trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.pulseOnsetIndex = pulseOnsetIndex;
+                            trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.pulseOffsetIndex = pulseOffsetIndex;
+                            trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.originalTimebase = trialData.response.timebase;
+                            
+                            %                     if nRow > 24
+                            %                         pause
+                            %                     end
+                        end
                     end
                 end
                 
@@ -581,7 +608,7 @@ trialInfoStruct.metaData.varargin = varargin;
 %% make average responses
 if ~p.Results.debugTrialMode
     close all;
-
+    
     for ss = 1:length(stimuli)
         for cc = 1:length(contrasts)
             for tt = 1:length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,:))
@@ -660,9 +687,9 @@ if ~p.Results.debugTrialMode
         mkdir(fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots'));
     end
     if isempty(p.Results.experimentName)
-       print(plotFig, fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots', [subjectID, '_averageResponse_', p.Results.fitLabel, p.Results.saveNameSuffix]), '-dpdf', '-fillpage')
+        print(plotFig, fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots', [subjectID, '_averageResponse_', p.Results.fitLabel, p.Results.saveNameSuffix]), '-dpdf', '-fillpage')
     else
-       print(plotFig, fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots', [subjectID, '_', p.Results.experimentName, '_averageResponse_', p.Results.fitLabel, p.Results.saveNameSuffix]), '-dpdf', '-fillpage')
+        print(plotFig, fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.Protocol, '/DataFiles/', 'averageResponsePlots', [subjectID, '_', p.Results.experimentName, '_averageResponse_', p.Results.fitLabel, p.Results.saveNameSuffix]), '-dpdf', '-fillpage')
     end
     
     close(plotFig)
