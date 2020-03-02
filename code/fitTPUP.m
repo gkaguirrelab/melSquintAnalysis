@@ -17,6 +17,8 @@ p.addParameter('closePlots', false, @islogical);
 p.addParameter('plotComponents', true, @islogical);
 p.addParameter('printParams', true, @islogical);
 p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP'));
+p.addParameter('experimentName',[]);
+p.addParameter('protocol','SquintToPulse', @ischar);
 p.addParameter('LMSResponse',[]);
 p.addParameter('MelanopsinResponse',[]);
 p.addParameter('LightFluxResponse',[]);
@@ -29,7 +31,13 @@ p.parse(varargin{:});
 
 if strcmp(subjectID, 'group') || strcmp(p.Results.methodForDeterminingPersistentGammaTau, 'fitToGroupAverage')
     % load average responses across all subjects
-    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'trialStructs', 'combinedGroupAverageResponse_radiusSmoothed.mat'));
+    if strcmp(p.Results.protocol, 'SquintToPulse')
+        load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'trialStructs', 'combinedGroupAverageResponse_radiusSmoothed.mat'));
+    elseif strcmp(p.Results.protocol, 'Deuteranopes')
+        load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'deuteranopes','combinedGroupAverageResponse_radiusSmoothed.mat')); 
+        groupAveragePupilResponses = groupAveragePupilResponses.(p.Results.experimentName);
+        groupAveragePupilResponses.LMS = groupAveragePupilResponses.LS;
+    end
     
     % compute group average responses, including NaNing poor indices (at
     % the beginning and the end)
@@ -61,7 +69,11 @@ if isempty(subjectID)
 
 elseif ~strcmp(subjectID, 'group')
     % load average responses across all subjects
-    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'trialStructs', [subjectID, '_trialStruct_radiusSmoothed.mat']));
+    if strcmp(p.Results.protocol, 'SquintToPulse')
+        load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'trialStructs', [subjectID, '_trialStruct_radiusSmoothed.mat']));
+    elseif strcmp(p.Results.protocol, 'Deuteranopes')
+        load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles/', subjectID, p.Results.experimentNumber, 'trialStruct_radiusSmoothed.mat')); 
+    end
     
     % compute group average responses, including NaNing poor indices (at
     % the beginning and the end)
