@@ -6,7 +6,7 @@ fitType = 'radiusSmoothed';
 saveNameSuffix = '';
 
 experiments = 1:2;
-subjectIndices = 1:5;
+subjectIndices = 2:5;
 subjectIDs = fieldnames(subjectStruct.(['experiment', num2str(1)]));
 
 runMakeSubjectAverageResponses = false;
@@ -51,7 +51,7 @@ for experiment = experiments
         
         for stimulus = 1:length(stimuli)
             for contrast = 1:length(contrasts)
-                subjectAveragePupilResponses.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss,:) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                subjectAveragePupilResponses.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
             end
         end
         
@@ -125,6 +125,14 @@ for stimulus = 1:length(stimuli)
     
 end
 
+% thoughts on this plot: there seems to bee a consistent reduction in amplitude
+% of constriction to 400% contrast in the high contrast, as compared with
+% th low contrast sessions
+
+% to explain whether this difference is due to a DECREASE in constriction
+% in the high contrast session or an INCREASE in the low contrast session,
+% let's compare to controls from the squint study
+
 %% Compare 400% between high and low contrast sessions with the squint study 400% results
 deuteranopeResults = load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'deuteranopes','combinedGroupAverageResponse_radiusSmoothed.mat')); 
 migraineResults = load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'trialStructs', 'averageResponsesByGroup.mat'), 'groupAveragePupilResponses');
@@ -165,6 +173,19 @@ for stimulus = 1:length(migraineStimuli)
     
     
 end
+
+% Thoughts: If we include all subjects, the amount of constriction is less
+% for both high and low contrast sessions -- consistent with some weird
+% notion that deuteranopes constrict less across the board, and we have no
+% idea why we're constricting less in high contrast sessions
+
+% However, if we remove one subject who had strikingly reduced pupil
+% constrction relative to everyone else, the low contrast sessions behave
+% quite similarly to the control study run previously -- as expected
+% because the stimuli are essentially the same!
+% This analysis suggests we have one weirdo, but ignoring him for now, the
+% pupil constriction is attenuated relative to normal in high contrast
+% sessions
 %% Fit TPUP to all subject averages
 for experiment = experiments
     experimentName = ['experiment_', num2str(experiment)];
