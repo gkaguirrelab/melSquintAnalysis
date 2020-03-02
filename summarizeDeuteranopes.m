@@ -11,11 +11,22 @@ subjectIDs = fieldnames(subjectStruct.(['experiment', num2str(1)]));
 
 runMakeSubjectAverageResponses = false;
 
- for stimulus = 1:length(stimuli)
-            for contrast = 1:length(contrasts)
-                meanPupilResponse.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-            end
- end
+for experiment = experiments
+    experimentName = ['experiment_', num2str(experiment)];
+    
+    if experiment == 1
+        contrasts = {100, 200, 400};
+    elseif experiment == 2
+        contrasts = {400, 800, 1200};
+        
+    end
+    for stimulus = 1:length(stimuli)
+        for contrast = 1:length(contrasts)
+            subjectAveragePupilResponses.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+        end
+    end
+end
+
 
 for experiment = experiments
     experimentName = ['experiment_', num2str(experiment)];
@@ -40,14 +51,33 @@ for experiment = experiments
         
         for stimulus = 1:length(stimuli)
             for contrast = 1:length(contrasts)
-                meanPupilResponse.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss,:) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                subjectAveragePupilResponses.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss,:) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
             end
         end
         
     end
 end
 
-% Compare 400% responses in high and low contrast sessions
+% make group average response for all stimulus types
+for experiment = experiments
+    experimentName = ['experiment_', num2str(experiment)];
+    
+    if experiment == 1
+        contrasts = {100, 200, 400};
+    elseif experiment == 2
+        contrasts = {400, 800, 1200};
+        
+    end
+    for stimulus = 1:length(stimuli)
+        for contrast = 1:length(contrasts)
+            groupAveragePupilResponses.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = nanmean(subjectAveragePupilResponses.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+        end
+    end
+end
+
+save(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'deuteranopes','combinedGroupAverageResponse_radiusSmoothed.mat'), 'groupAveragePupilResponses', '-v7.3');
+
+%% Compare 400% responses in high and low contrast sessions
 resampledTimebase = 0:1/60:18.5;
 pulseOnset = 1.5;
 pulseOffset = 5.5;
@@ -60,11 +90,11 @@ plotFig = figure;
 
 for stimulus = 1:length(stimuli)
     
-    experiment1PupilResponse = nanmean(meanPupilResponse.experiment_1.(stimuli{stimulus}).Contrast400);
-    experiment2PupilResponse = nanmean(meanPupilResponse.experiment_2.(stimuli{stimulus}).Contrast400);
+    experiment1PupilResponse = nanmean(subjectAveragePupilResponses.experiment_1.(stimuli{stimulus}).Contrast400);
+    experiment2PupilResponse = nanmean(subjectAveragePupilResponses.experiment_2.(stimuli{stimulus}).Contrast400);
 
-    experiment1SEM = nanstd(meanPupilResponse.experiment_1.(stimuli{stimulus}).Contrast400)./sqrt(size(meanPupilResponse.experiment_1.(stimuli{stimulus}).Contrast400,1));
-    experiment2SEM = nanstd(meanPupilResponse.experiment_2.(stimuli{stimulus}).Contrast400)./sqrt(size(meanPupilResponse.experiment_2.(stimuli{stimulus}).Contrast400,1));
+    experiment1SEM = nanstd(subjectAveragePupilResponses.experiment_1.(stimuli{stimulus}).Contrast400)./sqrt(size(subjectAveragePupilResponses.experiment_1.(stimuli{stimulus}).Contrast400,1));
+    experiment2SEM = nanstd(subjectAveragePupilResponses.experiment_2.(stimuli{stimulus}).Contrast400)./sqrt(size(subjectAveragePupilResponses.experiment_2.(stimuli{stimulus}).Contrast400,1));
 
     
     subplot(1,3,stimulus); hold on;
@@ -95,6 +125,75 @@ for stimulus = 1:length(stimuli)
     
 end
 
+%% Compare 400% between high and low contrast sessions with the squint study 400% results
+deuteranopeResults = load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'deuteranopes','combinedGroupAverageResponse_radiusSmoothed.mat')); 
+migraineResults = load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'trialStructs', 'averageResponsesByGroup.mat'), 'groupAveragePupilResponses');
+deuteranopeResults.groupAveragePupilResponses.experiment_1.LMS = deuteranopeResults.groupAveragePupilResponses.experiment_1.LS;
+deuteranopeResults.groupAveragePupilResponses.experiment_2.LMS = deuteranopeResults.groupAveragePupilResponses.experiment_2.LS;
+
+
+resampledTimebase = 0:1/60:18.5;
+pulseOnset = 1.5;
+pulseOffset = 5.5;
+plotShift = 1;
+nTimePointsToSkipPlotting = 40;
+yLims = [-0.8 0.3];
+xLims = [0 17];
+
+plotFig = figure;
+
+migraineStimuli = {'LightFlux', 'Melanopsin', 'LMS'};
+for stimulus = 1:length(migraineStimuli)
+    subplot(1,3, stimulus); hold on;
+    experiment1PupilResponse = deuteranopeResults.groupAveragePupilResponses.experiment_1.(migraineStimuli{stimulus}).Contrast400;
+    experiment2PupilResponse = deuteranopeResults.groupAveragePupilResponses.experiment_2.(migraineStimuli{stimulus}).Contrast400;
+    migrainePupilResponse = migraineResults.groupAveragePupilResponses.Control.(migraineStimuli{stimulus}).Contrast400;
+    
+    plot(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, experiment1PupilResponse(1:end-nTimePointsToSkipPlotting), 'Color', 'k');
+    plot(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, experiment2PupilResponse(1:end-nTimePointsToSkipPlotting), 'Color', 'r');
+    plot(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, migrainePupilResponse(1:end-nTimePointsToSkipPlotting), 'Color', 'b');
+
+    if stimulus == 3
+       legend('Low Contrast Experiment', 'High Contrast Experiment', 'Squint Experiment') 
+    end
+    xlim(xLims);
+    ylim(yLims);
+    
+    title(migraineStimuli{stimulus});
+    xlabel('Time (s)')
+    ylabel('Pupil Area (% Change from Baseline)');
+    
+    
+end
+%% Fit TPUP to all subject averages
+for experiment = experiments
+    experimentName = ['experiment_', num2str(experiment)];
+    
+    if experiment == 1
+        contrasts = {100, 200, 400};
+    elseif experiment == 2
+        contrasts = {400, 800, 1200};
+        
+    end
+    
+    for ss = subjectIndices
+        subjectID = subjectIDs{ss};
+        load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles/', subjectID, ['experiment_', num2str(experiment)], 'trialStruct_radiusSmoothed.mat')); 
+        for contrast = 1:length(contrasts)
+            LSResponse = nanmean(trialStruct.LS.(['Contrast', num2str(contrasts{contrast})]));
+            LightFluxResponse = nanmean(trialStruct.LightFlux.(['Contrast', num2str(contrasts{contrast})]));
+            MelanopsinResponse = nanmean(trialStruct.Melanopsin.(['Contrast', num2str(contrasts{contrast})]));
+
+        
+        
+            fitTPUP([], 'LightFluxResponse', LightFluxResponse, 'MelanopsinResponse', MelanopsinResponse, 'LMSResponse', LSResponse, 'savePath', [])
+        
+        end
+        
+        
+        
+    end
+end
 
 
 %% Summarize discomfort ratings
