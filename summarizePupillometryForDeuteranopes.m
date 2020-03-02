@@ -8,10 +8,9 @@ nTimePointsToSkipPlotting = 40;
 yLims = [-0.8 0.3];
 xLims = [0 17];
 
-    plotFig = figure;
+plotFig = figure;
 
 for experiment = 1:2
-    load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles', subjectID, ['experiment_', num2str(experiment)], 'trialStruct_radiusSmoothed.mat'));
     
     % stimuli:
     stimuli = {'LightFlux', 'Melanopsin', 'LS'};
@@ -21,11 +20,33 @@ for experiment = 1:2
         contrasts = {400, 800, 1200};
     end
     
+    if strcmp(subjectID, 'group')
+        subjectStruct = getDeuteranopeSubjectStruct;
+        for subject = 1:5
+            subjects = fieldnames(subjectStruct.experiment1);
+            
+            load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles', subjects{subject}, ['experiment_', num2str(experiment)], 'trialStruct_radiusSmoothed.mat'));
+
+            for stimulus = 1:length(stimuli)
+                for cc = 1:length(contrasts)
+                    resultsStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{cc})])(subject,:) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{cc})]));
+                    
+                end
+            end
+        end
+        
+    else
+        
+        load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles', subjectID, ['experiment_', num2str(experiment)], 'trialStruct_radiusSmoothed.mat'));
+        resultsStruct = trialStruct;
+    end
+    
+    
     for ss = 1:length(stimuli)
         for cc = 1:length(contrasts)
             for tt = 1:length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,:))
-                averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,tt) = nanmean(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt));
-                averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_SEM'])(1,tt) = nanstd(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt))/sqrt((length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt)) - sum(isnan((trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt))))));
+                averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(1,tt) = nanmean(resultsStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt));
+                averageResponseStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc}), '_SEM'])(1,tt) = nanstd(resultsStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt))/sqrt((length(trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt)) - sum(isnan((trialStruct.(stimuli{ss}).(['Contrast',num2str(contrasts{cc})])(:,tt))))));
             end
         end
     end
@@ -74,9 +95,9 @@ for experiment = 1:2
             lineProps.col{1} = colorPalette.(stimuli{ss}){cc+(experiment-1)*2};
             
             % plot
-            axis.(['ax', num2str(cc)]) = mseb(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, averageResponseStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), averageResponseStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps);
+            axis.(['ax', num2str(cc)]) = mseb(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, averageResponseStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})])(1:end-nTimePointsToSkipPlotting), averageResponseStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc}), '_SEM'])(1:end-nTimePointsToSkipPlotting), lineProps, 1);
             
-            legendText{cc} = ([num2str(contrasts{cc}), '% Contrast, N = ', num2str(size(trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]), 1))]);
+            legendText{cc} = ([num2str(contrasts{cc}), '% Contrast, N = ', num2str(size(resultsStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]), 1))]);
             
         end
         
