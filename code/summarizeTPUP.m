@@ -49,9 +49,9 @@ for ss = 1:length(subjectIDs)
     LightFluxResponse = nanmean(trialStruct.LightFlux.(['Contrast', num2str(p.Results.contrast)]));
     
     
-    modeledResponses = fitTPUP('', 'methodForDeterminingPersistentGammaTau', persistentGammaTau, 'LMSResponse', LMSResponse, 'LightFluxResponse', LightFluxResponse, 'MelanopsinResponse', MelanopsinResponse, 'saveName', subjectIDs{ss});
+    modeledResponses = fitTPUP('', 'methodForDeterminingPersistentGammaTau', persistentGammaTau, 'LMSResponse', LMSResponse, 'LightFluxResponse', LightFluxResponse, 'MelanopsinResponse', MelanopsinResponse, 'saveName', [subjectIDs{ss}, 'Contrast', num2str(p.Results.contrast)], 'protocol', p.Results.protocol, 'experimentName', p.Results.experimentName);
     close all
-    cellArray{rowNumber, 1} = subjectList{ss};
+    cellArray{rowNumber, 1} = subjectIDs{ss};
     cellArray{rowNumber, 2} = modeledResponses.LMS.params.paramMainMatrix(1);
     cellArray{rowNumber, 3} = modeledResponses.LMS.params.paramMainMatrix(2);
     cellArray{rowNumber, 4} = modeledResponses.LMS.params.paramMainMatrix(3);
