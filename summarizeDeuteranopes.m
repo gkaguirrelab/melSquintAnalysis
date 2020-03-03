@@ -206,6 +206,121 @@ for experiment = experiments
     
 end
 
+%% Plot some TPUP results
+for experiment = 1:2
+    
+    if experiment == 1
+        contrasts = {100, 200, 400};
+    elseif experiment == 2
+        contrasts = {400, 800, 1200};
+    end
+    
+    for stimulus = 1:length(stimuli)
+        for contrast = 1:length(contrasts)
+            
+            totalResponseAmplitude.(['experiment', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+        end
+        
+    end
+end
+
+% pool results
+for experiment = 1:2
+    experimentName = ['experiment_', num2str(experiment)];
+    subjectIDs = fieldnames(subjectStruct.(['experiment', num2str(experiment)]));
+    
+    if experiment == 1
+        contrasts = {100, 200, 400};
+    elseif experiment == 2
+        contrasts = {400, 800, 1200};
+        
+    end
+    
+    for ss = 1:5
+        
+        for stimulus = 1:length(stimuli)
+            for contrast = 1:length(contrasts)
+                csvFileName = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis/pupil/TPUP/Deuteranopes', ['experiment_', num2str(experiment)], ['TPUPParams_', num2str(contrasts{contrast}),  'Contrast.csv']);
+                
+                TPUPParamsTable = readtable(csvFileName);
+                columnsNames = TPUPParamsTable.Properties.VariableNames;
+                subjectRow = find(contains(TPUPParamsTable{:,1}, subjectIDs{ss}));
+                
+                if strcmp(stimuli{stimulus}, 'LS')
+                    transientAmplitudeColumn = find(contains(columnsNames, ['LMSTransientAmplitude']));
+                    sustainedAmplitudeColumn = find(contains(columnsNames, ['LMSSustainedAmplitude']));
+                    persistentAmplitudeColumn = find(contains(columnsNames, ['LMSPersistentAmplitude']));
+                else
+                    transientAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'TransientAmplitude']));
+                    sustainedAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'SustainedAmplitude']));
+                    persistentAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'PersistentAmplitude']));
+                end
+                
+                transientAmplitude = TPUPParamsTable{subjectRow, transientAmplitudeColumn};
+                sustainedAmplitude = TPUPParamsTable{subjectRow, sustainedAmplitudeColumn};
+                persistentAmplitude = TPUPParamsTable{subjectRow, persistentAmplitudeColumn};
+                
+                
+                
+                totalResponseAmplitude.(['experiment', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss) = abs(transientAmplitude + sustainedAmplitude + persistentAmplitude);
+            end
+        end
+        
+        
+        
+        
+        
+    end
+end
+
+% plot results
+for experiment = 1:2
+    totalResponseAmplitudeRating.Controls = totalResponseAmplitude.(['experiment', num2str(experiment)]);
+    if experiment == 1
+        contrasts = {100, 200, 400};
+    elseif experiment == 2
+        contrasts = {400, 800, 1200};
+        
+    end
+    
+    savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP', 'Deuteranopes');
+    plotSpreadResults(totalResponseAmplitudeRating, 'stimuli', stimuli, 'contrasts', contrasts, 'saveName', fullfile(savePath, ['groupSummary_experiment', num2str(experiment), '.pdf']), 'yLims', [0 10.1])
+    
+    
+end
+
+plotFig = figure; 
+for stimulus = 1:length(stimuli)
+    subplot(1,3,stimulus); hold on;
+    title(stimuli{stimulus});
+    data = [totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100; totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200; totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400];
+    plotSpread(data', 'xValues', [log10(100), log10(200), log10(400)], 'distributionColors', 'k')
+    plot([log10(100), log10(200), log10(400)], [median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400)], '*', 'Color', 'k')
+    experiment1Plot = plot([log10(100), log10(200), log10(400)], [median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400)], 'Color', 'k');
+
+    
+    data = [totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400; totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast800; totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast1200];
+    plotSpread(data', 'xValues', [log10(400), log10(800), log10(1200)], 'distributionColors', 'r')
+    plot([log10(400), log10(800), log10(1200)], [median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast800), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast1200)], '*', 'Color', 'r')
+    experiment2Plot = plot([log10(400), log10(800), log10(1200)], [median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast800), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast1200)], 'Color', 'r');
+
+    
+    xticks([log10(100), log10(200), log10(400), log10(800), log10(1200)]);
+    xticklabels({'100%', '200%', '400%', '800%', '1200%'});
+    xtickangle(45);
+    xlabel('Contrast')
+    
+    ylim([0 10.1]);
+    ylabel('Discomfort Rating')
+    
+    if stimulus == 3
+       legend([experiment1Plot, experiment2Plot], 'Experiment 1', 'Experiment 2'); 
+       legend('boxoff')
+    end
+end
+set(plotFig, 'Position', [680 460 968 518]);
+export_fig(plotFig, fullfile(savePath, 'combinedExperimentsSummary.pdf'));
+
 
 %% Summarize discomfort ratings
 
