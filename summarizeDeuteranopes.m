@@ -311,7 +311,7 @@ for stimulus = 1:length(stimuli)
     xlabel('Contrast')
     
     ylim([0 10.1]);
-    ylabel('Discomfort Rating')
+    ylabel('Response Amplitude')
     
     if stimulus == 3
        legend([experiment1Plot, experiment2Plot], 'Experiment 1', 'Experiment 2'); 
@@ -321,6 +321,137 @@ end
 set(plotFig, 'Position', [680 460 968 518]);
 export_fig(plotFig, fullfile(savePath, 'combinedExperimentsSummary.pdf'));
 
+
+plotFig = figure;
+for stimulus = 1:length(stimuli)
+    ax.(['ax', num2str(stimulus)]) = subplot(1,3,stimulus); hold on;
+    title(stimuli{stimulus})
+    for ss = 1:5
+        plot([1, 2], [totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400(ss), totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400(ss)], 'Color', 'k') 
+    end
+    
+    xlim([0.75 2.25])
+    xticks([1 2])
+    xticklabels({'Low Contrast', 'High Contrast'});
+    xtickangle(30)
+    ylabel('Amplitude of Constriction to 400% Contrast')
+    
+end
+linkaxes([ax.ax1, ax.ax2, ax.ax3]);
+
+%% Total area under the curve
+numberOfIndicesToExclude = 40;
+for experiment = 1:2
+    
+    if experiment == 1
+        contrasts = {100, 200, 400};
+    elseif experiment == 2
+        contrasts = {400, 800, 1200};
+    end
+    
+    for stimulus = 1:length(stimuli)
+        for contrast = 1:length(contrasts)
+            
+            AUC.(['experiment', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+        end
+        
+    end
+end
+
+% pool results
+for experiment = 1:2
+    experimentName = ['experiment_', num2str(experiment)];
+    subjectIDs = fieldnames(subjectStruct.(['experiment', num2str(experiment)]));
+    
+    if experiment == 1
+        contrasts = {100, 200, 400};
+    elseif experiment == 2
+        contrasts = {400, 800, 1200};
+        
+    end
+    
+    for ss = 1:5
+        
+        for stimulus = 1:length(stimuli)
+            for contrast = 1:length(contrasts)
+
+                
+                AUC.(['experiment', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss) = abs(trapz(subjectAveragePupilResponses.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss,numberOfIndicesToExclude:end-numberOfIndicesToExclude)));
+            end
+        end
+        
+        
+        
+        
+        
+    end
+end
+
+% plot results
+for experiment = 1:2
+    AUCRating.Controls = AUC.(['experiment', num2str(experiment)]);
+    if experiment == 1
+        contrasts = {100, 200, 400};
+    elseif experiment == 2
+        contrasts = {400, 800, 1200};
+        
+    end
+    
+    savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP', 'Deuteranopes');
+    plotSpreadResults(AUCRating, 'stimuli', stimuli, 'contrasts', contrasts, 'saveName', fullfile(savePath, ['AUC_groupSummary_experiment', num2str(experiment), '.pdf']), 'yLims', [0 400])
+    
+    
+end
+
+plotFig = figure; 
+for stimulus = 1:length(stimuli)
+    subplot(1,3,stimulus); hold on;
+    title(stimuli{stimulus});
+    data = [AUC.experiment1.(stimuli{stimulus}).Contrast100; AUC.experiment1.(stimuli{stimulus}).Contrast200; AUC.experiment1.(stimuli{stimulus}).Contrast400];
+    plotSpread(data', 'xValues', [log10(100), log10(200), log10(400)], 'distributionColors', 'k')
+    plot([log10(100), log10(200), log10(400)], [median(AUC.experiment1.(stimuli{stimulus}).Contrast100), median(AUC.experiment1.(stimuli{stimulus}).Contrast200), median(AUC.experiment1.(stimuli{stimulus}).Contrast400)], '*', 'Color', 'k')
+    experiment1Plot = plot([log10(100), log10(200), log10(400)], [median(AUC.experiment1.(stimuli{stimulus}).Contrast100), median(AUC.experiment1.(stimuli{stimulus}).Contrast200), median(AUC.experiment1.(stimuli{stimulus}).Contrast400)], 'Color', 'k');
+
+    
+    data = [AUC.experiment2.(stimuli{stimulus}).Contrast400; AUC.experiment2.(stimuli{stimulus}).Contrast800; AUC.experiment2.(stimuli{stimulus}).Contrast1200];
+    plotSpread(data', 'xValues', [log10(400), log10(800), log10(1200)], 'distributionColors', 'r')
+    plot([log10(400), log10(800), log10(1200)], [median(AUC.experiment2.(stimuli{stimulus}).Contrast400), median(AUC.experiment2.(stimuli{stimulus}).Contrast800), median(AUC.experiment2.(stimuli{stimulus}).Contrast1200)], '*', 'Color', 'r')
+    experiment2Plot = plot([log10(400), log10(800), log10(1200)], [median(AUC.experiment2.(stimuli{stimulus}).Contrast400), median(AUC.experiment2.(stimuli{stimulus}).Contrast800), median(AUC.experiment2.(stimuli{stimulus}).Contrast1200)], 'Color', 'r');
+
+    
+    xticks([log10(100), log10(200), log10(400), log10(800), log10(1200)]);
+    xticklabels({'100%', '200%', '400%', '800%', '1200%'});
+    xtickangle(45);
+    xlabel('Contrast')
+    
+    ylim([0 400]);
+    ylabel('Area Under the Curve')
+    
+    if stimulus == 3
+       legend([experiment1Plot, experiment2Plot], 'Experiment 1', 'Experiment 2'); 
+       legend('boxoff')
+    end
+end
+set(plotFig, 'Position', [680 460 968 518]);
+export_fig(plotFig, fullfile(savePath, 'AUC_combinedExperimentsSummary.pdf'));
+
+
+plotFig = figure;
+for stimulus = 1:length(stimuli)
+    ax.(['ax', num2str(stimulus)]) = subplot(1,3,stimulus); hold on;
+    title(stimuli{stimulus})
+    for ss = 1:5
+        plot([1, 2], [AUC.experiment1.(stimuli{stimulus}).Contrast400(ss), AUC.experiment2.(stimuli{stimulus}).Contrast400(ss)], 'Color', 'k') 
+    end
+    
+    xlim([0.75 2.25])
+    xticks([1 2])
+    xticklabels({'Low Contrast', 'High Contrast'});
+    xtickangle(30)
+    ylabel('Amplitude of Constriction to 400% Contrast')
+    
+end
+linkaxes([ax.ax1, ax.ax2, ax.ax3]);
 
 %% Summarize discomfort ratings
 
@@ -416,6 +547,9 @@ for stimulus = 1:length(stimuli)
 end
 set(plotFig, 'Position', [680 460 968 518]);
 export_fig(plotFig, fullfile(savePath, 'combinedExperimentsSummary.pdf'));
+
+
+
 
 %% Summarize EMG
 fileName = 'audioTrialStruct_final.mat';
@@ -522,4 +656,6 @@ for stimulus = 1:length(stimuli)
 end
 set(plotFig, 'Position', [680 460 968 518]);
 export_fig(plotFig, fullfile(savePath, ['combinedExperimentsSummary', saveNameSuffix, '.pdf']));
+
+
 
