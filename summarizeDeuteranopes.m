@@ -436,6 +436,42 @@ end
 set(plotFig, 'Position', [680 460 968 518]);
 export_fig(plotFig, fullfile(savePath, 'combinedExperimentsSummary_withTrichromatControls.pdf'));
 
+plotFig = figure; 
+for stimulus = 1:length(stimuli)
+    subplot(1,3,stimulus); hold on;
+    title(stimuli{stimulus});
+    data = [totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100; totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200; totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400];
+    plotSpread(data', 'xValues', [log10(100), log10(200), log10(400)], 'distributionColors', 'k')
+    plot([log10(100), log10(200), log10(400)], [median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400)], '*', 'Color', 'k')
+    experiment1Plot = plot([log10(100), log10(200), log10(400)], [median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400)], 'Color', 'k');
+
+    % add trichomat data in blue
+    lineProps.col{1} = 'b';
+    errorUpper = [abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100, 25)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200, 25)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400, 25))] - [abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400))];
+    errorLower = abs([abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100, 75)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200, 75)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400, 75))] - [abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400))]);
+
+    errorToPlot(1,1:3, 1) = errorUpper;
+    errorToPlot(1,1:3, 2) = errorLower;
+    trichromatcPlot = mseb([log10(100), log10(200), log10(400)], [abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400))], ...
+        errorToPlot, lineProps, 1);
+        
+
+    
+    xticks([log10(100), log10(200), log10(400)]);
+    xticklabels({'100%', '200%', '400%'});
+    xtickangle(45);
+    xlabel('Contrast')
+    
+    ylim([0 10.1]);
+    ylabel('Response Amplitude')
+    
+    if stimulus == 3
+       legend([experiment1Plot, trichromatcPlot], 'Deuteranopes', 'Trichromats'); 
+       legend('boxoff')
+    end
+end
+set(plotFig, 'Position', [680 460 968 518]);
+export_fig(plotFig, fullfile(savePath, 'experiment1Summary_withTrichromatControls.pdf'));
 
 plotFig = figure;
 for stimulus = 1:length(stimuli)
