@@ -17,6 +17,7 @@ p.addParameter('closePlots', false, @islogical);
 p.addParameter('plotComponents', true, @islogical);
 p.addParameter('printParams', true, @islogical);
 p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP'));
+p.addParameter('saveName', [], @ischar);
 p.addParameter('experimentName',[]);
 p.addParameter('protocol','SquintToPulse', @ischar);
 p.addParameter('LMSResponse',[]);
@@ -26,6 +27,13 @@ p.addParameter('LightFluxResponse',[]);
 
 
 p.parse(varargin{:});
+
+if strcmp(p.Results.protocol, 'Deuteranopes')
+    savePath = fullfile(p.Results.savePath, 'Deuteranopes', p.Results.experimentName);
+else
+    savePath = p.Results.savePath;
+end
+    
 
 %% Get the responses
 
@@ -287,7 +295,7 @@ if strcmp(p.Results.method, 'HPUP')
             end
             
             if strcmp(subjectID, 'group')
-                saveas(plotFig, fullfile(p.Results.savePath, 'groupModelFits.png')), 
+                saveas(plotFig, fullfile(savePath, 'groupModelFits.png')), 
             end
             
             fprintf(' <strong>Fitting group average response </strong>\n');
@@ -544,8 +552,12 @@ if strcmp(p.Results.method, 'HPUP')
         end
         
         % save out plot
-        if ~isempty(p.Results.savePath)
-            saveas(plotFig, fullfile(p.Results.savePath, [subjectID, '.png'])),
+        if ~isempty(savePath)
+            if ~isempty(subjectID)
+                saveas(plotFig, fullfile(savePath, [subjectID, '.png'])),
+            else
+                saveas(plotFig, fullfile(savePath, [p.Results.saveName, '.png'])),
+            end
         end
 
         

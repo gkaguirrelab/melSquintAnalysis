@@ -6,7 +6,7 @@ fitType = 'radiusSmoothed';
 saveNameSuffix = '';
 
 experiments = 1:2;
-subjectIndices = 2:5;
+subjectIndices = 1:5;
 subjectIDs = fieldnames(subjectStruct.(['experiment', num2str(1)]));
 
 runMakeSubjectAverageResponses = false;
@@ -192,28 +192,18 @@ for experiment = experiments
     
     if experiment == 1
         contrasts = {100, 200, 400};
+        [modeledResponses] = fitTPUP('group', 'protocol', 'Deuteranopes', 'experimentName', 'experiment_1');
+        persistentGammaTau = modeledResponses.LightFlux.params.paramMainMatrix(3);
     elseif experiment == 2
         contrasts = {400, 800, 1200};
-        
+        [modeledResponses] = fitTPUP('group', 'protocol', 'Deuteranopes', 'experimentName', 'experiment_2');
+        persistentGammaTau = modeledResponses.LightFlux.params.paramMainMatrix(3);
     end
     
-    for ss = subjectIndices
-        subjectID = subjectIDs{ss};
-        load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles/', subjectID, ['experiment_', num2str(experiment)], 'trialStruct_radiusSmoothed.mat')); 
-        for contrast = 1:length(contrasts)
-            LSResponse = nanmean(trialStruct.LS.(['Contrast', num2str(contrasts{contrast})]));
-            LightFluxResponse = nanmean(trialStruct.LightFlux.(['Contrast', num2str(contrasts{contrast})]));
-            MelanopsinResponse = nanmean(trialStruct.Melanopsin.(['Contrast', num2str(contrasts{contrast})]));
-
-        
-        
-            fitTPUP([], 'LightFluxResponse', LightFluxResponse, 'MelanopsinResponse', MelanopsinResponse, 'LMSResponse', LSResponse, 'savePath', [])
-        
-        end
-        
-        
-        
+    for contrast = 1:length(contrasts)
+        summarizeTPUP(persistentGammaTau, 'protocol', 'Deuteranopes', 'experimentName', ['experiment_', num2str(experiment)], 'contrast', contrasts{contrast}, 'saveName', ['TPUPParams_', num2str(contrasts{contrast}), 'Contrast.csv']);
     end
+    
 end
 
 

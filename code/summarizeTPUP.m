@@ -1,12 +1,55 @@
-function summarizeTPUP(subjectList, persistentGammaTau)
+function summarizeTPUP(persistentGammaTau, varargin)
+%% Parse Input
+p = inputParser; p.KeepUnmatched = true;
 
-csvFile = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP', 'TPUPParams.csv');
+p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP'), @ischar);
+p.addParameter('saveName', 'TPUPParams.csv', @ischar);
+p.addParameter('experimentName',[]);
+p.addParameter('protocol','SquintToPulse', @ischar);
+p.addParameter('contrast',400, @isnumeric);
+
+
+p.parse(varargin{:});
+
+%% Set up CSV File
+if strcmp(p.Results.protocol, 'SquintToPulse')
+    csvFile = fullfile(p.Results.savePath, p.Results.saveName);
+else
+    csvFile = fullfile(p.Results.savePath, p.Results.protocol, p.Results.experimentName, p.Results.saveName);
+
+end
 cellArray = {'SubjectID', 'LMS Delay', 'LMS Pupil Gamma', 'LMS Persistent Gamma', 'LMS Exponential Tau', 'LMS Transient Amplitude', 'LMS Sustained Amplitude', 'LMS Persistent Amplitude','Melanopsin Delay', 'Melanopsin Pupil Gamma', 'Melanopsin Persistent Gamma', 'Melanopsin Exponential Tau', 'Melanopsin Transient Amplitude', 'Melanopsin Sustained Amplitude', 'Melanopsin Persistent Amplitude', 'Light Flux Delay', 'Light Flux Pupil Gamma', 'Light Flux Persistent Gamma', 'Light Flux Exponential Tau', 'Light Flux Transient Amplitude', 'Light Flux Sustained Amplitude', 'Light Flux Persistent Amplitude'};
 
 
 rowNumber = 2;
-for ss = 1:length(subjectList)
-    modeledResponses = fitTPUP(subjectList{ss}, 'methodForDeterminingPersistentGammaTau', persistentGammaTau);
+%% Get the subject list
+if strcmp(p.Results.protocol, 'SquintToPulse')
+    dataBasePath = getpref('melSquintAnalysis','melaDataPath');
+    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', 'subjectListStruct.mat'));    
+    subjectIDs = fieldnames(subjectListStruct);
+elseif strcmp(p.Results.protocol, 'Deuteranopes')
+    subjectListStruct = getDeuteranopeSubjectStruct;
+    subjectIDs = fieldnames(subjectListStruct.experiment1);
+end
+
+trialStructPath = fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/', p.Results.protocol, 'DataFiles');
+
+
+%% Loop over subjects, fitting TPUP
+for ss = 1:length(subjectIDs)
+    % load up trialStruct for the given subject
+    load(fullfile(trialStructPath, subjectIDs{ss}, p.Results.experimentName, 'trialStruct_radiusSmoothed.mat'));
+    if strcmp(p.Results.protocol, 'SquintToPulse')
+        LMSResponse = nanmean(trialStruct.LMS.(['Contrast', num2str(p.Results.contrast)]));
+    elseif strcmp(p.Results.protocol, 'Deuteranopes')
+        LMSResponse = nanmean(trialStruct.LS.(['Contrast', num2str(p.Results.contrast)]));
+        
+    end
+    MelanopsinResponse = nanmean(trialStruct.Melanopsin.(['Contrast', num2str(p.Results.contrast)]));
+    LightFluxResponse = nanmean(trialStruct.LightFlux.(['Contrast', num2str(p.Results.contrast)]));
+    
+    
+    modeledResponses = fitTPUP('', 'methodForDeterminingPersistentGammaTau', persistentGammaTau, 'LMSResponse', LMSResponse, 'LightFluxResponse', LightFluxResponse, 'MelanopsinResponse', MelanopsinResponse, 'saveName', subjectIDs{ss});
     close all
     cellArray{rowNumber, 1} = subjectList{ss};
     cellArray{rowNumber, 2} = modeledResponses.LMS.params.paramMainMatrix(1);
