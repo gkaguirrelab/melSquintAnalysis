@@ -206,6 +206,77 @@ for experiment = experiments
     
 end
 
+%% also load up control total response amplitude results
+dataBasePath = getpref('melSquintAnalysis','melaDataPath');
+load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', 'subjectListStruct.mat'));
+migraineSubjectIDs = fieldnames(subjectListStruct);
+
+controlPercentPersistent = [];
+mwaPercentPersistent = [];
+mwoaPercentPersistent = [];
+
+stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
+contrasts = {100, 200, 400};
+amplitudes = {'Transient', 'Sustained', 'Persistent'};
+
+
+
+for stimulus = 1:length(stimuli)
+    for contrast = 1:length(contrasts)
+        controlPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+        mwaPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+        mwoaPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+        
+        controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+        mwaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+        mwoaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+    end
+end
+
+for ss = 1:length(subjectIDs)
+    
+    
+    group = linkMELAIDToGroup(subjectIDs{ss});
+    
+    for stimulus = 1:length(stimuli)
+        for contrast = 1:length(contrasts)
+            
+            csvFileName = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis/pupil/TPUP/', ['TPUPParams_Contrast', num2str(contrasts{contrast}),  '.csv']);
+            TPUPParamsTable = readtable(csvFileName);
+            columnsNames = TPUPParamsTable.Properties.VariableNames;
+            subjectRow = find(contains(TPUPParamsTable{:,1}, subjectIDs{ss}));
+            
+            transientAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'TransientAmplitude']));
+            sustainedAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'SustainedAmplitude']));
+            persistentAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'PersistentAmplitude']));
+            
+            transientAmplitude = TPUPParamsTable{subjectRow, transientAmplitudeColumn};
+            sustainedAmplitude = TPUPParamsTable{subjectRow, sustainedAmplitudeColumn};
+            persistentAmplitude = TPUPParamsTable{subjectRow, persistentAmplitudeColumn};
+            
+            percentPersistent = (persistentAmplitude)/(transientAmplitude + sustainedAmplitude + persistentAmplitude)*100;
+            
+            totalResponseAmplitude = (transientAmplitude + sustainedAmplitude + persistentAmplitude);
+            
+            if strcmp(group, 'c')
+                controlPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = percentPersistent;
+                controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = totalResponseAmplitude;
+                
+            elseif strcmp(group, 'mwa')
+                mwaPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = percentPersistent;
+                mwaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = totalResponseAmplitude;
+                
+                
+            elseif strcmp(group, 'mwoa')
+                mwoaPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = percentPersistent;
+                mwoaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = totalResponseAmplitude;
+                
+            else
+                fprintf('Subject %s has group %s\n', subjectIDs{ss}, group);
+            end
+        end
+    end
+end
 %% Plot some TPUP results
 for experiment = 1:2
     
@@ -289,6 +360,7 @@ for experiment = 1:2
     
 end
 
+
 plotFig = figure; 
 for stimulus = 1:length(stimuli)
     subplot(1,3,stimulus); hold on;
@@ -320,6 +392,49 @@ for stimulus = 1:length(stimuli)
 end
 set(plotFig, 'Position', [680 460 968 518]);
 export_fig(plotFig, fullfile(savePath, 'combinedExperimentsSummary.pdf'));
+
+plotFig = figure; 
+for stimulus = 1:length(stimuli)
+    subplot(1,3,stimulus); hold on;
+    title(stimuli{stimulus});
+    data = [totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100; totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200; totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400];
+    plotSpread(data', 'xValues', [log10(100), log10(200), log10(400)], 'distributionColors', 'k')
+    plot([log10(100), log10(200), log10(400)], [median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400)], '*', 'Color', 'k')
+    experiment1Plot = plot([log10(100), log10(200), log10(400)], [median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400)], 'Color', 'k');
+
+    
+    data = [totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400; totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast800; totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast1200];
+    plotSpread(data', 'xValues', [log10(400), log10(800), log10(1200)], 'distributionColors', 'r')
+    plot([log10(400), log10(800), log10(1200)], [median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast800), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast1200)], '*', 'Color', 'r')
+    experiment2Plot = plot([log10(400), log10(800), log10(1200)], [median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast800), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast1200)], 'Color', 'r');
+    
+    % add trichomat data in blue
+    lineProps.col{1} = 'b';
+    errorUpper = [abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100, 25)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200, 25)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400, 25))] - [abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400))];
+    errorLower = abs([abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100, 75)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200, 75)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400, 75))] - [abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400))]);
+
+    errorToPlot(1,1:3, 1) = errorUpper;
+    errorToPlot(1,1:3, 2) = errorLower;
+    mseb([log10(100), log10(200), log10(400)], [abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400))], ...
+        errorToPlot, lineProps, 1);
+        
+
+    
+    xticks([log10(100), log10(200), log10(400), log10(800), log10(1200)]);
+    xticklabels({'100%', '200%', '400%', '800%', '1200%'});
+    xtickangle(45);
+    xlabel('Contrast')
+    
+    ylim([0 10.1]);
+    ylabel('Response Amplitude')
+    
+    if stimulus == 3
+       legend([experiment1Plot, experiment2Plot], 'Low Contrast', 'High Contrast', 'Trichromats'); 
+       legend('boxoff')
+    end
+end
+set(plotFig, 'Position', [680 460 968 518]);
+export_fig(plotFig, fullfile(savePath, 'combinedExperimentsSummary_withTrichromatControls.pdf'));
 
 
 plotFig = figure;
