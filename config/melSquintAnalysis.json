@@ -1,7 +1,7 @@
 [
 
  	{
-		"flavor": "",
+		"flavor": "e51ab345",
 		"hook": "",
 		"importance": "",
 		"localHookTemplate": "",
@@ -9,9 +9,22 @@
 		"pathPlacement": "append",
 		"subfolder": "",
 		"toolboxRoot": "",
-		"type": "include",
+		"type": "git",
 		"update": "",
-		"url": ""
+		"url": "https://github.com/gkaguirrelab/transparentTrack.git"
+	},
+ 	{
+		"flavor": "3496e97a",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "gkaModelEye",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "git",
+		"update": "",
+		"url": "https://github.com/gkaguirrelab/gkaModelEye.git"
 	},
     {
 		"flavor": "",
