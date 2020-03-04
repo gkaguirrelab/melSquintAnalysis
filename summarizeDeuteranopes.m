@@ -2,61 +2,8 @@ subjectStruct = getDeuteranopeSubjectStruct;
 stimuli = {'LightFlux', 'Melanopsin',  'LS'};
 
 %% Summarize pupillometry
-fitType = 'radiusSmoothed';
-saveNameSuffix = '';
-
-experiments = 1:2;
-subjectIndices = 1:5;
-subjectIDs = fieldnames(subjectStruct.(['experiment', num2str(1)]));
-
-runMakeSubjectAverageResponses = false;
-
-for experiment = experiments
-    experimentName = ['experiment_', num2str(experiment)];
-    
-    if experiment == 1
-        contrasts = {100, 200, 400};
-    elseif experiment == 2
-        contrasts = {400, 800, 1200};
-        
-    end
-    for stimulus = 1:length(stimuli)
-        for contrast = 1:length(contrasts)
-            subjectAveragePupilResponses.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-        end
-    end
-end
-
-
-for experiment = experiments
-    experimentName = ['experiment_', num2str(experiment)];
-    
-    if experiment == 1
-        contrasts = {100, 200, 400};
-    elseif experiment == 2
-        contrasts = {400, 800, 1200};
-        
-    end
-    
-    for ss = subjectIndices
-        subjectID = subjectIDs{ss};
-        if runMakeSubjectAverageResponses
-
-            makeSubjectAverageResponses(subjectID, 'experimentName', experimentName, 'stimuli', stimuli, 'contrasts', contrasts, 'Protocol', 'Deuteranopes', 'protocolShortName', 'Deuteranopes','blinkBufferFrames', [3 6], 'saveNameSuffix', saveNameSuffix, 'sessions', subjectStruct.(['experiment', num2str(experiment)]).(subjectID), 'fitLabel', fitType)
-            load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles', subjectID, experimentName, ['trialStruct_', fitType, '.mat']));
-
-        else
-            load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles', subjectID, experimentName, ['trialStruct_', fitType, '.mat']));
-        end
-        
-        for stimulus = 1:length(stimuli)
-            for contrast = 1:length(contrasts)
-                subjectAveragePupilResponses.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
-            end
-        end
-        
-    end
-end
+% load responses over time
+[subjectAveragePupilResponses] = loadPupilResponses('protocol', 'Deuteranopes')
 
 % make group average response for all stimulus types
 for experiment = experiments
@@ -206,272 +153,30 @@ for experiment = experiments
     
 end
 
-%% also load up control total response amplitude results
-dataBasePath = getpref('melSquintAnalysis','melaDataPath');
-load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', 'subjectListStruct.mat'));
-migraineSubjectIDs = fieldnames(subjectListStruct);
-
-controlPercentPersistent = [];
-mwaPercentPersistent = [];
-mwoaPercentPersistent = [];
-
-stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
-contrasts = {100, 200, 400};
-amplitudes = {'Transient', 'Sustained', 'Persistent'};
-
-
-
-for stimulus = 1:length(stimuli)
-    for contrast = 1:length(contrasts)
-        controlPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-        mwaPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-        mwoaPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-        
-        controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-        mwaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-        mwoaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-    end
-end
-
-for ss = 1:length(subjectIDs)
-    
-    
-    group = linkMELAIDToGroup(subjectIDs{ss});
-    
-    for stimulus = 1:length(stimuli)
-        for contrast = 1:length(contrasts)
-            
-            csvFileName = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis/pupil/TPUP/', ['TPUPParams_Contrast', num2str(contrasts{contrast}),  '.csv']);
-            TPUPParamsTable = readtable(csvFileName);
-            columnsNames = TPUPParamsTable.Properties.VariableNames;
-            subjectRow = find(contains(TPUPParamsTable{:,1}, subjectIDs{ss}));
-            
-            transientAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'TransientAmplitude']));
-            sustainedAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'SustainedAmplitude']));
-            persistentAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'PersistentAmplitude']));
-            
-            transientAmplitude = TPUPParamsTable{subjectRow, transientAmplitudeColumn};
-            sustainedAmplitude = TPUPParamsTable{subjectRow, sustainedAmplitudeColumn};
-            persistentAmplitude = TPUPParamsTable{subjectRow, persistentAmplitudeColumn};
-            
-            percentPersistent = (persistentAmplitude)/(transientAmplitude + sustainedAmplitude + persistentAmplitude)*100;
-            
-            totalResponseAmplitude = (transientAmplitude + sustainedAmplitude + persistentAmplitude);
-            
-            if strcmp(group, 'c')
-                controlPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = percentPersistent;
-                controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = totalResponseAmplitude;
-                
-            elseif strcmp(group, 'mwa')
-                mwaPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = percentPersistent;
-                mwaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = totalResponseAmplitude;
-                
-                
-            elseif strcmp(group, 'mwoa')
-                mwoaPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = percentPersistent;
-                mwoaTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = totalResponseAmplitude;
-                
-            else
-                fprintf('Subject %s has group %s\n', subjectIDs{ss}, group);
-            end
-        end
-    end
-end
 %% Plot some TPUP results
-for experiment = 1:2
-    
-    if experiment == 1
-        contrasts = {100, 200, 400};
-    elseif experiment == 2
-        contrasts = {400, 800, 1200};
-    end
-    
-    for stimulus = 1:length(stimuli)
-        for contrast = 1:length(contrasts)
-            
-            totalResponseAmplitude.(['experiment', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-        end
-        
-    end
-end
+[~, totalResponseAmplitude, ~, ~] = loadPupilResponses('protocol', 'Deuteranopes');
 
-% pool results
-for experiment = 1:2
-    experimentName = ['experiment_', num2str(experiment)];
-    subjectIDs = fieldnames(subjectStruct.(['experiment', num2str(experiment)]));
-    
-    if experiment == 1
-        contrasts = {100, 200, 400};
-    elseif experiment == 2
-        contrasts = {400, 800, 1200};
-        
-    end
-    
-    for ss = 1:5
-        
-        for stimulus = 1:length(stimuli)
-            for contrast = 1:length(contrasts)
-                csvFileName = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis/pupil/TPUP/Deuteranopes', ['experiment_', num2str(experiment)], ['TPUPParams_', num2str(contrasts{contrast}),  'Contrast.csv']);
-                
-                TPUPParamsTable = readtable(csvFileName);
-                columnsNames = TPUPParamsTable.Properties.VariableNames;
-                subjectRow = find(contains(TPUPParamsTable{:,1}, subjectIDs{ss}));
-                
-                if strcmp(stimuli{stimulus}, 'LS')
-                    transientAmplitudeColumn = find(contains(columnsNames, ['LMSTransientAmplitude']));
-                    sustainedAmplitudeColumn = find(contains(columnsNames, ['LMSSustainedAmplitude']));
-                    persistentAmplitudeColumn = find(contains(columnsNames, ['LMSPersistentAmplitude']));
-                else
-                    transientAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'TransientAmplitude']));
-                    sustainedAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'SustainedAmplitude']));
-                    persistentAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'PersistentAmplitude']));
-                end
-                
-                transientAmplitude = TPUPParamsTable{subjectRow, transientAmplitudeColumn};
-                sustainedAmplitude = TPUPParamsTable{subjectRow, sustainedAmplitudeColumn};
-                persistentAmplitude = TPUPParamsTable{subjectRow, persistentAmplitudeColumn};
-                
-                
-                
-                totalResponseAmplitude.(['experiment', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss) = abs(transientAmplitude + sustainedAmplitude + persistentAmplitude);
-            end
-        end
-        
-        
-        
-        
-        
-    end
-end
+savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP', 'Deuteranopes');
 
-% plot results
-for experiment = 1:2
-    totalResponseAmplitudeRating.Controls = totalResponseAmplitude.(['experiment', num2str(experiment)]);
-    if experiment == 1
-        contrasts = {100, 200, 400};
-    elseif experiment == 2
-        contrasts = {400, 800, 1200};
-        
-    end
-    
-    savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP', 'Deuteranopes');
-    plotSpreadResults(totalResponseAmplitudeRating, 'stimuli', stimuli, 'contrasts', contrasts, 'saveName', fullfile(savePath, ['groupSummary_experiment', num2str(experiment), '.pdf']), 'yLims', [0 10.1])
-    
-    
-end
+% Plot experiment 1 results alone
+plotDeuteranopeResult(totalResponseAmplitude.experiment1, [], [], 'savePath', savePath, 'saveName', 'experiment1.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
+
+% Plot experiment 2 results alone
+plotDeuteranopeResult([], totalResponseAmplitude.experiment2, [], 'savePath', savePath, 'saveName', 'experiment2.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
 
 
-plotFig = figure; 
-for stimulus = 1:length(stimuli)
-    subplot(1,3,stimulus); hold on;
-    title(stimuli{stimulus});
-    data = [totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100; totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200; totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400];
-    plotSpread(data', 'xValues', [log10(100), log10(200), log10(400)], 'distributionColors', 'k')
-    plot([log10(100), log10(200), log10(400)], [median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400)], '*', 'Color', 'k')
-    experiment1Plot = plot([log10(100), log10(200), log10(400)], [median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400)], 'Color', 'k');
+% Plot comparison between high and low contrast experiments
+plotDeuteranopeResult(totalResponseAmplitude.experiment1, totalResponseAmplitude.experiment2, [], 'savePath', savePath, 'saveName', 'combinedExperiments.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
 
-    
-    data = [totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400; totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast800; totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast1200];
-    plotSpread(data', 'xValues', [log10(400), log10(800), log10(1200)], 'distributionColors', 'r')
-    plot([log10(400), log10(800), log10(1200)], [median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast800), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast1200)], '*', 'Color', 'r')
-    experiment2Plot = plot([log10(400), log10(800), log10(1200)], [median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast800), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast1200)], 'Color', 'r');
+% Add trichomats for comparison
+[~, trichromatAmplitudeStruct] = loadPupilResponses('protocol', 'SquintToPulse');
+trichromatAmplitudeStruct = trichromatAmplitudeStruct.controls;
 
-    
-    xticks([log10(100), log10(200), log10(400), log10(800), log10(1200)]);
-    xticklabels({'100%', '200%', '400%', '800%', '1200%'});
-    xtickangle(45);
-    xlabel('Contrast')
-    
-    ylim([0 10.1]);
-    ylabel('Response Amplitude')
-    
-    if stimulus == 3
-       legend([experiment1Plot, experiment2Plot], 'Experiment 1', 'Experiment 2'); 
-       legend('boxoff')
-    end
-end
-set(plotFig, 'Position', [680 460 968 518]);
-export_fig(plotFig, fullfile(savePath, 'combinedExperimentsSummary.pdf'));
+plotDeuteranopeResult(totalResponseAmplitude.experiment1, [], trichromatAmplitudeStruct, 'savePath', savePath, 'saveName', 'experiment1_withTrichromats.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
+plotDeuteranopeResult(totalResponseAmplitude.experiment1, totalResponseAmplitude.experiment2, trichromatAmplitudeStruct, 'savePath', savePath, 'saveName', 'combinedExperiments_withTrichromats.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
 
-plotFig = figure; 
-for stimulus = 1:length(stimuli)
-    subplot(1,3,stimulus); hold on;
-    title(stimuli{stimulus});
-    data = [totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100; totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200; totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400];
-    plotSpread(data', 'xValues', [log10(100), log10(200), log10(400)], 'distributionColors', 'k')
-    plot([log10(100), log10(200), log10(400)], [median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400)], '*', 'Color', 'k')
-    experiment1Plot = plot([log10(100), log10(200), log10(400)], [median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400)], 'Color', 'k');
 
-    
-    data = [totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400; totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast800; totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast1200];
-    plotSpread(data', 'xValues', [log10(400), log10(800), log10(1200)], 'distributionColors', 'r')
-    plot([log10(400), log10(800), log10(1200)], [median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast800), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast1200)], '*', 'Color', 'r')
-    experiment2Plot = plot([log10(400), log10(800), log10(1200)], [median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast800), median(totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast1200)], 'Color', 'r');
-    
-    % add trichomat data in blue
-    lineProps.col{1} = 'b';
-    errorUpper = [abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100, 25)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200, 25)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400, 25))] - [abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400))];
-    errorLower = abs([abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100, 75)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200, 75)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400, 75))] - [abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400))]);
 
-    errorToPlot(1,1:3, 1) = errorUpper;
-    errorToPlot(1,1:3, 2) = errorLower;
-    mseb([log10(100), log10(200), log10(400)], [abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400))], ...
-        errorToPlot, lineProps, 1);
-        
-
-    
-    xticks([log10(100), log10(200), log10(400), log10(800), log10(1200)]);
-    xticklabels({'100%', '200%', '400%', '800%', '1200%'});
-    xtickangle(45);
-    xlabel('Contrast')
-    
-    ylim([0 10.1]);
-    ylabel('Response Amplitude')
-    
-    if stimulus == 3
-       legend([experiment1Plot, experiment2Plot], 'Low Contrast', 'High Contrast', 'Trichromats'); 
-       legend('boxoff')
-    end
-end
-set(plotFig, 'Position', [680 460 968 518]);
-export_fig(plotFig, fullfile(savePath, 'combinedExperimentsSummary_withTrichromatControls.pdf'));
-
-plotFig = figure; 
-for stimulus = 1:length(stimuli)
-    subplot(1,3,stimulus); hold on;
-    title(stimuli{stimulus});
-    data = [totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100; totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200; totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400];
-    plotSpread(data', 'xValues', [log10(100), log10(200), log10(400)], 'distributionColors', 'k')
-    plot([log10(100), log10(200), log10(400)], [median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400)], '*', 'Color', 'k')
-    experiment1Plot = plot([log10(100), log10(200), log10(400)], [median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast100), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast200), median(totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400)], 'Color', 'k');
-
-    % add trichomat data in blue
-    lineProps.col{1} = 'b';
-    errorUpper = [abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100, 25)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200, 25)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400, 25))] - [abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400))];
-    errorLower = abs([abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100, 75)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200, 75)), abs(prctile(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400, 75))] - [abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400))]);
-
-    errorToPlot(1,1:3, 1) = errorUpper;
-    errorToPlot(1,1:3, 2) = errorLower;
-    trichromatcPlot = mseb([log10(100), log10(200), log10(400)], [abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast100)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast200)), abs(median(controlTotalResponseAmplitude.(stimuli{stimulus}).Contrast400))], ...
-        errorToPlot, lineProps, 1);
-        
-
-    
-    xticks([log10(100), log10(200), log10(400)]);
-    xticklabels({'100%', '200%', '400%'});
-    xtickangle(45);
-    xlabel('Contrast')
-    
-    ylim([0 10.1]);
-    ylabel('Response Amplitude')
-    
-    if stimulus == 3
-       legend([experiment1Plot, trichromatcPlot], 'Deuteranopes', 'Trichromats'); 
-       legend('boxoff')
-    end
-end
-set(plotFig, 'Position', [680 460 968 518]);
-export_fig(plotFig, fullfile(savePath, 'experiment1Summary_withTrichromatControls.pdf'));
 
 plotFig = figure;
 for stimulus = 1:length(stimuli)
