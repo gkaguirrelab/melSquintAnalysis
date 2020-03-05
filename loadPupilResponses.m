@@ -43,6 +43,12 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
             mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             combinedPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             
+                        controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM']) = [];
+            mwaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM']) = [];
+            mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM']) = [];
+            combinedPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM']) = [];
+            
+            
             controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
@@ -69,19 +75,25 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
         for stimulus = 1:length(stimuli)
             for contrast = 1:length(contrasts)
                 
-                        subjectAverageResponse = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast})]));
-        AUC = abs(trapz(subjectAverageResponse(numberOfIndicesToExclude:end-numberOfIndicesToExclude)));
+                subjectAverageResponse = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast})]));
+                SEM = nanstd(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]))/sqrt(size(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1));
+                
+                AUC = abs(trapz(subjectAverageResponse(numberOfIndicesToExclude:end-numberOfIndicesToExclude)));
                 
                 if strcmp(group, 'c')
                     controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
+                    controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM'])(end+1,:) = SEM;
                     controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     controlSubjects{end+1} = subjectIDs{ss};
                 elseif strcmp(group, 'mwa')
                     mwaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
+                    mwaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM'])(end+1,:) = SEM;
                     mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     mwaSubjects{end+1} = subjectIDs{ss};
                 elseif strcmp(group, 'mwoa')
                     mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
+                    mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM'])(end+1,:) = SEM;
+                    
                     mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     mwoaSubjects{end+1} = subjectIDs{ss};
                 else
@@ -204,6 +216,7 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
         for stimulus = 1:length(stimuli)
             for contrast = 1:length(contrasts)
                 responseOverTimeStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+                responseOverTimeStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM']) = [];
                 AUCStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
                 
             end
@@ -235,9 +248,11 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
             for stimulus = 1:length(stimuli)
                 for contrast = 1:length(contrasts)
                     subjectAverageResponse = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                    SEM = nanstd(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]))/sqrt(size(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1));
                     AUC = abs(trapz(subjectAverageResponse(numberOfIndicesToExclude:end-numberOfIndicesToExclude)));
                     
                     responseOverTimeStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
+                    responseOverTimeStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM'])(end+1,:) = SEM;
                     AUCStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss) = AUC;
                     
                 end
