@@ -1,4 +1,4 @@
-function [responseOverTimeStruct, amplitudeStruct, percentPersistentStruct, subjectListStruct] = loadPupilResponses(varargin)
+function [resultsStruct] = loadPupilResponses(varargin)
 
 %% Input parser
 p = inputParser; p.KeepUnmatched = true;
@@ -20,6 +20,9 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
     subjectIDs = fieldnames(subjectListStruct.experiment1);
 end
 
+% For AUC, how many noisy indices to exclude from beginning and end:
+numberOfIndicesToExclude = 40;
+
 
 
 
@@ -40,6 +43,11 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
             mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             combinedPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             
+            controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            combinedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            
         end
     end
     
@@ -56,17 +64,25 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
         resultsDir = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'trialStructs');
         load(fullfile(resultsDir, [subjectIDs{ss}, '_trialStruct_radiusSmoothed.mat']));
         
+
         
         for stimulus = 1:length(stimuli)
             for contrast = 1:length(contrasts)
+                
+                        subjectAverageResponse = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast})]));
+        AUC = abs(trapz(subjectAverageResponse(numberOfIndicesToExclude:end-numberOfIndicesToExclude)));
+                
                 if strcmp(group, 'c')
-                    controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast})]));
+                    controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
+                    controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     controlSubjects{end+1} = subjectIDs{ss};
                 elseif strcmp(group, 'mwa')
-                    mwaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast})]));
+                    mwaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
+                    mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     mwaSubjects{end+1} = subjectIDs{ss};
                 elseif strcmp(group, 'mwoa')
-                    mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast})]));
+                    mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
+                    mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     mwoaSubjects{end+1} = subjectIDs{ss};
                 else
                     fprintf('Subject %s has group %s\n', subjectIDs{ss}, group);
@@ -79,6 +95,10 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     responseOverTimeStruct.mwa = mwaPupilResponses;
     responseOverTimeStruct.mwoa = mwoaPupilResponses;
     responseOverTimeStruct.controls = controlPupilResponses;
+    
+    AUCStruct.mwa = mwaAUC;
+    AUCStruct.mwoa = mwoaAUC;
+    AUCStruct.controls = controlAUC;
     
     mwaSubjects = unique(mwaSubjects);
     mwoaSubjects = unique(mwoaSubjects);
@@ -184,6 +204,8 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
         for stimulus = 1:length(stimuli)
             for contrast = 1:length(contrasts)
                 responseOverTimeStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+                AUCStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+                
             end
         end
     end
@@ -212,7 +234,12 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
             
             for stimulus = 1:length(stimuli)
                 for contrast = 1:length(contrasts)
-                    responseOverTimeStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                    subjectAverageResponse = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                    AUC = abs(trapz(subjectAverageResponse(numberOfIndicesToExclude:end-numberOfIndicesToExclude)));
+                    
+                    responseOverTimeStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
+                    AUCStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss) = AUC;
+                    
                 end
             end
             
@@ -221,76 +248,83 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
     
     % amplitude and percent persistent
     for experiment = 1:2
-    
-    if experiment == 1
-        contrasts = {100, 200, 400};
-    elseif experiment == 2
-        contrasts = {400, 800, 1200};
-    end
-    
-    for stimulus = 1:length(stimuli)
-        for contrast = 1:length(contrasts)
-            
-            amplitudeStruct.(['experiment', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-            percentPersistentStruct.(['experiment', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-
+        
+        if experiment == 1
+            contrasts = {100, 200, 400};
+        elseif experiment == 2
+            contrasts = {400, 800, 1200};
         end
-        
-    end
-end
-
-% pool results
-for experiment = 1:2
-    experimentName = ['experiment_', num2str(experiment)];
-    
-    if experiment == 1
-        contrasts = {100, 200, 400};
-    elseif experiment == 2
-        contrasts = {400, 800, 1200};
-        
-    end
-    
-    for ss = 1:5
         
         for stimulus = 1:length(stimuli)
             for contrast = 1:length(contrasts)
-                csvFileName = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis/pupil/TPUP/Deuteranopes', ['experiment_', num2str(experiment)], ['TPUPParams_', num2str(contrasts{contrast}),  'Contrast.csv']);
                 
-                TPUPParamsTable = readtable(csvFileName);
-                columnsNames = TPUPParamsTable.Properties.VariableNames;
-                subjectRow = find(contains(TPUPParamsTable{:,1}, subjectIDs{ss}));
+                amplitudeStruct.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+                percentPersistentStruct.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
                 
-                if strcmp(stimuli{stimulus}, 'LS')
-                    transientAmplitudeColumn = find(contains(columnsNames, ['LMSTransientAmplitude']));
-                    sustainedAmplitudeColumn = find(contains(columnsNames, ['LMSSustainedAmplitude']));
-                    persistentAmplitudeColumn = find(contains(columnsNames, ['LMSPersistentAmplitude']));
-                else
-                    transientAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'TransientAmplitude']));
-                    sustainedAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'SustainedAmplitude']));
-                    persistentAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'PersistentAmplitude']));
-                end
-                
-                transientAmplitude = TPUPParamsTable{subjectRow, transientAmplitudeColumn};
-                sustainedAmplitude = TPUPParamsTable{subjectRow, sustainedAmplitudeColumn};
-                persistentAmplitude = TPUPParamsTable{subjectRow, persistentAmplitudeColumn};
-                
-                
-                
-                amplitudeStruct.(['experiment', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss) = abs(transientAmplitude + sustainedAmplitude + persistentAmplitude);
-                percentPersistentStruct.(['experiment', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = persistentAmplitude/(persistentAmplitude + transientAmplitude + sustainedAmplitude);
-
             end
+            
+        end
+    end
+    
+    % pool results
+    for experiment = 1:2
+        experimentName = ['experiment_', num2str(experiment)];
+        
+        if experiment == 1
+            contrasts = {100, 200, 400};
+        elseif experiment == 2
+            contrasts = {400, 800, 1200};
+            
         end
         
-        
-        
-        
-        
+        for ss = 1:5
+            
+            for stimulus = 1:length(stimuli)
+                for contrast = 1:length(contrasts)
+                    csvFileName = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis/pupil/TPUP/Deuteranopes', ['experiment_', num2str(experiment)], ['TPUPParams_', num2str(contrasts{contrast}),  'Contrast.csv']);
+                    
+                    TPUPParamsTable = readtable(csvFileName);
+                    columnsNames = TPUPParamsTable.Properties.VariableNames;
+                    subjectRow = find(contains(TPUPParamsTable{:,1}, subjectIDs{ss}));
+                    
+                    if strcmp(stimuli{stimulus}, 'LS')
+                        transientAmplitudeColumn = find(contains(columnsNames, ['LMSTransientAmplitude']));
+                        sustainedAmplitudeColumn = find(contains(columnsNames, ['LMSSustainedAmplitude']));
+                        persistentAmplitudeColumn = find(contains(columnsNames, ['LMSPersistentAmplitude']));
+                    else
+                        transientAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'TransientAmplitude']));
+                        sustainedAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'SustainedAmplitude']));
+                        persistentAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'PersistentAmplitude']));
+                    end
+                    
+                    transientAmplitude = TPUPParamsTable{subjectRow, transientAmplitudeColumn};
+                    sustainedAmplitude = TPUPParamsTable{subjectRow, sustainedAmplitudeColumn};
+                    persistentAmplitude = TPUPParamsTable{subjectRow, persistentAmplitudeColumn};
+                    
+                    
+                    
+                    amplitudeStruct.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss) = abs(transientAmplitude + sustainedAmplitude + persistentAmplitude);
+                    percentPersistentStruct.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = persistentAmplitude/(persistentAmplitude + transientAmplitude + sustainedAmplitude);
+                    
+                end
+            end
+            
+            
+            
+            
+            
+        end
     end
-end
     
     % percentPersistent
     
 end
+
+resultsStruct.responseOverTime = responseOverTimeStruct;
+resultsStruct.AUC = AUCStruct;
+resultsStruct.amplitude = amplitudeStruct;
+resultsStruct.percentPersistent = percentPersistentStruct;
+resultsStruct.subjects = subjectListStruct;
+
 
 end
