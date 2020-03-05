@@ -37,31 +37,31 @@ plotFig = figure;
 
 for stimulus = 1:length(stimuli)
     
-    experiment1PupilResponse = nanmean(subjectAveragePupilResponses.experiment_1.(stimuli{stimulus}).Contrast400);
-    experiment2PupilResponse = nanmean(subjectAveragePupilResponses.experiment_2.(stimuli{stimulus}).Contrast400);
-
-    experiment1SEM = nanstd(subjectAveragePupilResponses.experiment_1.(stimuli{stimulus}).Contrast400)./sqrt(size(subjectAveragePupilResponses.experiment_1.(stimuli{stimulus}).Contrast400,1));
-    experiment2SEM = nanstd(subjectAveragePupilResponses.experiment_2.(stimuli{stimulus}).Contrast400)./sqrt(size(subjectAveragePupilResponses.experiment_2.(stimuli{stimulus}).Contrast400,1));
-
+    experiment1PupilResponse = nanmean(subjectAveragePupilResponses.responseOverTime.experiment_1.(stimuli{stimulus}).Contrast400);
+    experiment2PupilResponse = nanmean(subjectAveragePupilResponses.responseOverTime.experiment_2.(stimuli{stimulus}).Contrast400);
+    
+    experiment1SEM = nanstd(subjectAveragePupilResponses.responseOverTime.experiment_1.(stimuli{stimulus}).Contrast400)./sqrt(size(subjectAveragePupilResponses.responseOverTime.experiment_1.(stimuli{stimulus}).Contrast400,1));
+    experiment2SEM = nanstd(subjectAveragePupilResponses.responseOverTime.experiment_2.(stimuli{stimulus}).Contrast400)./sqrt(size(subjectAveragePupilResponses.responseOverTime.experiment_2.(stimuli{stimulus}).Contrast400,1));
+    
     
     subplot(1,3,stimulus); hold on;
     
     % make thicker plot lines
-            lineProps.width = 1;
-            transparent = 1;
-            
-            % adjust color
-    lineProps.col{1} = 'k';    
+    lineProps.width = 1;
+    transparent = 1;
+    
+    % adjust color
+    lineProps.col{1} = 'k';
     axis.ax1 = mseb(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, experiment1PupilResponse(1:end-nTimePointsToSkipPlotting), experiment1SEM(1:end-nTimePointsToSkipPlotting), lineProps, transparent);
     
     lineProps.col{1} = 'r';
     axis.ax2 = mseb(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, experiment2PupilResponse(1:end-nTimePointsToSkipPlotting), experiment2SEM(1:end-nTimePointsToSkipPlotting), lineProps, transparent);
-
+    
     %plot(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, experiment1PupilResponse(1:end-nTimePointsToSkipPlotting), 'Color', 'k');
     %plot(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift,experiment2PupilResponse(1:end-nTimePointsToSkipPlotting), 'Color', 'r');
     
     if stimulus == 3
-       legend('Low Contrast Experiment', 'High Contrast Experiment') 
+        legend('Low Contrast Experiment', 'High Contrast Experiment')
     end
     xlim(xLims);
     ylim(yLims);
@@ -72,6 +72,10 @@ for stimulus = 1:length(stimuli)
     
 end
 
+    set(gcf, 'Position', [260 419 1187 566]);
+    export_fig(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'deuteranopes', '400Comparison', ['groupAverage.pdf']))
+   
+
 % thoughts on this plot: there seems to bee a consistent reduction in amplitude
 % of constriction to 400% contrast in the high contrast, as compared with
 % th low contrast sessions
@@ -81,7 +85,7 @@ end
 % let's compare to controls from the squint study
 
 %% Compare 400% between high and low contrast sessions with the squint study 400% results
-deuteranopeResults = load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'deuteranopes','combinedGroupAverageResponse_radiusSmoothed.mat')); 
+deuteranopeResults = load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'deuteranopes','combinedGroupAverageResponse_radiusSmoothed.mat'));
 migraineResults = load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'trialStructs', 'averageResponsesByGroup.mat'), 'groupAveragePupilResponses');
 deuteranopeResults.groupAveragePupilResponses.experiment_1.LMS = deuteranopeResults.groupAveragePupilResponses.experiment_1.LS;
 deuteranopeResults.groupAveragePupilResponses.experiment_2.LMS = deuteranopeResults.groupAveragePupilResponses.experiment_2.LS;
@@ -107,9 +111,9 @@ for stimulus = 1:length(migraineStimuli)
     plot(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, experiment1PupilResponse(1:end-nTimePointsToSkipPlotting), 'Color', 'k');
     plot(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, experiment2PupilResponse(1:end-nTimePointsToSkipPlotting), 'Color', 'r');
     plot(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, migrainePupilResponse(1:end-nTimePointsToSkipPlotting), 'Color', 'b');
-
+    
     if stimulus == 3
-       legend('Low Contrast Experiment', 'High Contrast Experiment', 'Squint Experiment') 
+        legend('Low Contrast Experiment', 'High Contrast Experiment', 'Squint Experiment')
     end
     xlim(xLims);
     ylim(yLims);
@@ -120,7 +124,9 @@ for stimulus = 1:length(migraineStimuli)
     
     
 end
-
+    set(gcf, 'Position', [260 419 1187 566]);
+    export_fig(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'deuteranopes', '400Comparison', ['groupAverage_withTrichromats.pdf']))
+    
 % Thoughts: If we include all subjects, the amount of constriction is less
 % for both high and low contrast sessions -- consistent with some weird
 % notion that deuteranopes constrict less across the board, and we have no
@@ -133,6 +139,49 @@ end
 % This analysis suggests we have one weirdo, but ignoring him for now, the
 % pupil constriction is attenuated relative to normal in high contrast
 % sessions
+
+%% now for each subject
+stimuli = {'LightFlux', 'Melanopsin', 'LS'};
+for ss = 1:5
+    plotFig = figure;
+    
+    for stimulus = 1:length(stimuli)
+        subplot(1,3, stimulus); hold on;
+        experiment1PupilResponse = subjectAveragePupilResponses.responseOverTime.experiment_1.(stimuli{stimulus}).Contrast400(ss,:);
+        experiment2PupilResponse = subjectAveragePupilResponses.responseOverTime.experiment_2.(stimuli{stimulus}).Contrast400(ss,:);
+        
+        experiment1SEM = subjectAveragePupilResponses.responseOverTime.experiment_1.(stimuli{stimulus}).Contrast400_SEM(ss,:);
+        experiment2SEM = subjectAveragePupilResponses.responseOverTime.experiment_1.(stimuli{stimulus}).Contrast400_SEM(ss,:);
+        
+        subplot(1,3,stimulus); hold on;
+        
+        % make thicker plot lines
+        lineProps.width = 1;
+        transparent = 1;
+        
+        % adjust color
+        lineProps.col{1} = 'k';
+        axis.ax1 = mseb(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, experiment1PupilResponse(1:end-nTimePointsToSkipPlotting), experiment1SEM(1:end-nTimePointsToSkipPlotting), lineProps, transparent);
+        
+        lineProps.col{1} = 'r';
+        axis.ax2 = mseb(resampledTimebase(1:end-nTimePointsToSkipPlotting)-plotShift, experiment2PupilResponse(1:end-nTimePointsToSkipPlotting), experiment2SEM(1:end-nTimePointsToSkipPlotting), lineProps, transparent);
+        
+        if stimulus == 3
+            legend('Low Contrast Experiment', 'High Contrast Experiment')
+        end
+        xlim(xLims);
+        ylim(yLims);
+        
+        title(stimuli{stimulus});
+        xlabel('Time (s)')
+        ylabel('Pupil Area (% Change from Baseline)');
+    end
+    
+    set(gcf, 'Position', [260 419 1187 566]);
+    export_fig(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'deuteranopes', '400Comparison', [subjectIDs{ss}, '.pdf']))
+    
+    
+end
 %% Fit TPUP to all subject averages
 for experiment = experiments
     experimentName = ['experiment_', num2str(experiment)];
