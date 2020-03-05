@@ -3,7 +3,7 @@ stimuli = {'LightFlux', 'Melanopsin',  'LS'};
 
 %% Summarize pupillometry
 % load responses over time
-[subjectAveragePupilResponses] = loadPupilResponses('protocol', 'Deuteranopes')
+[subjectAveragePupilResponses] = loadPupilResponses('protocol', 'Deuteranopes');
 
 % make group average response for all stimulus types
 for experiment = experiments
@@ -154,160 +154,61 @@ for experiment = experiments
 end
 
 %% Plot some TPUP results
-[~, totalResponseAmplitude, ~, ~] = loadPupilResponses('protocol', 'Deuteranopes');
+[deuteranopeResultsStruct] = loadPupilResponses('protocol', 'Deuteranopes');
+totalResponseAmplitude = deuteranopeResultsStruct.amplitude;
 
 savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP', 'Deuteranopes');
 
 % Plot experiment 1 results alone
-plotDeuteranopeResult(totalResponseAmplitude.experiment1, [], [], 'savePath', savePath, 'saveName', 'experiment1.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
+plotDeuteranopeResult(totalResponseAmplitude.experiment_1, [], [], 'savePath', savePath, 'saveName', 'experiment1.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
 
 % Plot experiment 2 results alone
-plotDeuteranopeResult([], totalResponseAmplitude.experiment2, [], 'savePath', savePath, 'saveName', 'experiment2.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
+plotDeuteranopeResult([], totalResponseAmplitude.experiment_2, [], 'savePath', savePath, 'saveName', 'experiment2.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
 
 
 % Plot comparison between high and low contrast experiments
-plotDeuteranopeResult(totalResponseAmplitude.experiment1, totalResponseAmplitude.experiment2, [], 'savePath', savePath, 'saveName', 'combinedExperiments.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
+plotDeuteranopeResult(totalResponseAmplitude.experiment_1, totalResponseAmplitude.experiment_2, [], 'savePath', savePath, 'saveName', 'combinedExperiments.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
 
 % Add trichomats for comparison
-[~, trichromatAmplitudeStruct] = loadPupilResponses('protocol', 'SquintToPulse');
-trichromatAmplitudeStruct = trichromatAmplitudeStruct.controls;
+[trichromatResultsStruct] = loadPupilResponses('protocol', 'SquintToPulse');
+trichromatAmplitudeStruct = trichromatResultsStruct.amplitude.controls;
 
-plotDeuteranopeResult(totalResponseAmplitude.experiment1, [], trichromatAmplitudeStruct, 'savePath', savePath, 'saveName', 'experiment1_withTrichromats.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
-plotDeuteranopeResult(totalResponseAmplitude.experiment1, totalResponseAmplitude.experiment2, trichromatAmplitudeStruct, 'savePath', savePath, 'saveName', 'combinedExperiments_withTrichromats.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
-
-
+plotDeuteranopeResult(totalResponseAmplitude.experiment_1, [], trichromatAmplitudeStruct, 'savePath', savePath, 'saveName', 'experiment1_withTrichromats.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
+plotDeuteranopeResult(totalResponseAmplitude.experiment_1, totalResponseAmplitude.experiment_2, trichromatAmplitudeStruct, 'savePath', savePath, 'saveName', 'combinedExperiments_withTrichromats.pdf', 'yLims', [0 10.1], 'yLabel', 'Constriction Amplitude');
 
 
-plotFig = figure;
-for stimulus = 1:length(stimuli)
-    ax.(['ax', num2str(stimulus)]) = subplot(1,3,stimulus); hold on;
-    title(stimuli{stimulus})
-    for ss = 1:5
-        plot([1, 2], [totalResponseAmplitude.experiment1.(stimuli{stimulus}).Contrast400(ss), totalResponseAmplitude.experiment2.(stimuli{stimulus}).Contrast400(ss)], 'Color', 'k') 
-    end
-    
-    xlim([0.75 2.25])
-    xticks([1 2])
-    xticklabels({'Low Contrast', 'High Contrast'});
-    xtickangle(30)
-    ylabel('Amplitude of Constriction to 400% Contrast')
-    
-end
-linkaxes([ax.ax1, ax.ax2, ax.ax3]);
+
+plotDeuteranopeResult(totalResponseAmplitude.experiment_1, totalResponseAmplitude.experiment_2, trichromatAmplitudeStruct, 'savePath', savePath, 'saveName', '400ContrastComparison.pdf', 'whichPlot', '400Comparison', 'ylabel', 'Amplitude of Constriction to 400% Contrast');
+
 
 %% Total area under the curve
-numberOfIndicesToExclude = 40;
-for experiment = 1:2
-    
-    if experiment == 1
-        contrasts = {100, 200, 400};
-    elseif experiment == 2
-        contrasts = {400, 800, 1200};
-    end
-    
-    for stimulus = 1:length(stimuli)
-        for contrast = 1:length(contrasts)
-            
-            AUC.(['experiment', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-        end
-        
-    end
-end
+[deuteranopeResultsStruct] = loadPupilResponses('protocol', 'Deuteranopes');
+AUC = deuteranopeResultsStruct.AUC;
 
-% pool results
-for experiment = 1:2
-    experimentName = ['experiment_', num2str(experiment)];
-    subjectIDs = fieldnames(subjectStruct.(['experiment', num2str(experiment)]));
-    
-    if experiment == 1
-        contrasts = {100, 200, 400};
-    elseif experiment == 2
-        contrasts = {400, 800, 1200};
-        
-    end
-    
-    for ss = 1:5
-        
-        for stimulus = 1:length(stimuli)
-            for contrast = 1:length(contrasts)
+savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP', 'Deuteranopes');
 
-                
-                AUC.(['experiment', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss) = abs(trapz(subjectAveragePupilResponses.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss,numberOfIndicesToExclude:end-numberOfIndicesToExclude)));
-            end
-        end
-        
-        
-        
-        
-        
-    end
-end
+% Plot experiment 1 results alone
+plotDeuteranopeResult(AUC.experiment_1, [], [], 'savePath', savePath, 'saveName', 'AUC_experiment1.pdf', 'yLims', [0 400], 'yLabel', 'Constriction AUC');
 
-% plot results
-for experiment = 1:2
-    AUCRating.Controls = AUC.(['experiment', num2str(experiment)]);
-    if experiment == 1
-        contrasts = {100, 200, 400};
-    elseif experiment == 2
-        contrasts = {400, 800, 1200};
-        
-    end
-    
-    savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP', 'Deuteranopes');
-    plotSpreadResults(AUCRating, 'stimuli', stimuli, 'contrasts', contrasts, 'saveName', fullfile(savePath, ['AUC_groupSummary_experiment', num2str(experiment), '.pdf']), 'yLims', [0 400])
-    
-    
-end
-
-plotFig = figure; 
-for stimulus = 1:length(stimuli)
-    subplot(1,3,stimulus); hold on;
-    title(stimuli{stimulus});
-    data = [AUC.experiment1.(stimuli{stimulus}).Contrast100; AUC.experiment1.(stimuli{stimulus}).Contrast200; AUC.experiment1.(stimuli{stimulus}).Contrast400];
-    plotSpread(data', 'xValues', [log10(100), log10(200), log10(400)], 'distributionColors', 'k')
-    plot([log10(100), log10(200), log10(400)], [median(AUC.experiment1.(stimuli{stimulus}).Contrast100), median(AUC.experiment1.(stimuli{stimulus}).Contrast200), median(AUC.experiment1.(stimuli{stimulus}).Contrast400)], '*', 'Color', 'k')
-    experiment1Plot = plot([log10(100), log10(200), log10(400)], [median(AUC.experiment1.(stimuli{stimulus}).Contrast100), median(AUC.experiment1.(stimuli{stimulus}).Contrast200), median(AUC.experiment1.(stimuli{stimulus}).Contrast400)], 'Color', 'k');
-
-    
-    data = [AUC.experiment2.(stimuli{stimulus}).Contrast400; AUC.experiment2.(stimuli{stimulus}).Contrast800; AUC.experiment2.(stimuli{stimulus}).Contrast1200];
-    plotSpread(data', 'xValues', [log10(400), log10(800), log10(1200)], 'distributionColors', 'r')
-    plot([log10(400), log10(800), log10(1200)], [median(AUC.experiment2.(stimuli{stimulus}).Contrast400), median(AUC.experiment2.(stimuli{stimulus}).Contrast800), median(AUC.experiment2.(stimuli{stimulus}).Contrast1200)], '*', 'Color', 'r')
-    experiment2Plot = plot([log10(400), log10(800), log10(1200)], [median(AUC.experiment2.(stimuli{stimulus}).Contrast400), median(AUC.experiment2.(stimuli{stimulus}).Contrast800), median(AUC.experiment2.(stimuli{stimulus}).Contrast1200)], 'Color', 'r');
-
-    
-    xticks([log10(100), log10(200), log10(400), log10(800), log10(1200)]);
-    xticklabels({'100%', '200%', '400%', '800%', '1200%'});
-    xtickangle(45);
-    xlabel('Contrast')
-    
-    ylim([0 400]);
-    ylabel('Area Under the Curve')
-    
-    if stimulus == 3
-       legend([experiment1Plot, experiment2Plot], 'Experiment 1', 'Experiment 2'); 
-       legend('boxoff')
-    end
-end
-set(plotFig, 'Position', [680 460 968 518]);
-export_fig(plotFig, fullfile(savePath, 'AUC_combinedExperimentsSummary.pdf'));
+% Plot experiment 2 results alone
+plotDeuteranopeResult([], AUC.experiment_2, [], 'savePath', savePath, 'saveName', 'AUC_experiment2.pdf', 'yLims', [0 400], 'yLabel', 'Constriction AUC');
 
 
-plotFig = figure;
-for stimulus = 1:length(stimuli)
-    ax.(['ax', num2str(stimulus)]) = subplot(1,3,stimulus); hold on;
-    title(stimuli{stimulus})
-    for ss = 1:5
-        plot([1, 2], [AUC.experiment1.(stimuli{stimulus}).Contrast400(ss), AUC.experiment2.(stimuli{stimulus}).Contrast400(ss)], 'Color', 'k') 
-    end
-    
-    xlim([0.75 2.25])
-    xticks([1 2])
-    xticklabels({'Low Contrast', 'High Contrast'});
-    xtickangle(30)
-    ylabel('Amplitude of Constriction to 400% Contrast')
-    
-end
-linkaxes([ax.ax1, ax.ax2, ax.ax3]);
+% Plot comparison between high and low contrast experiments
+plotDeuteranopeResult(AUC.experiment_1, AUC.experiment_2, [], 'savePath', savePath, 'saveName', 'AUC_combinedExperiments.pdf', 'yLims', [0 400], 'yLabel', 'Constriction AUC');
+
+% Add trichomats for comparison
+[trichromatResultsStruct] = loadPupilResponses('protocol', 'SquintToPulse');
+trichromatAUCStruct = trichromatResultsStruct.AUC.controls;
+
+plotDeuteranopeResult(AUC.experiment_1, [], trichromatAUCStruct, 'savePath', savePath, 'saveName', 'AUC_experiment1_withTrichromats.pdf', 'yLims', [0 400], 'yLabel', 'Constriction AUC');
+plotDeuteranopeResult(AUC.experiment_1, AUC.experiment_2, trichromatAUCStruct, 'savePath', savePath, 'saveName', 'AUC_combinedExperiments_withTrichromats.pdf', 'yLims', [0 400], 'yLabel', 'Constriction AUC');
+
+
+
+plotDeuteranopeResult(AUC.experiment_1, AUC.experiment_2, trichromatAUCStruct, 'savePath', savePath, 'saveName', 'AUC_400ContrastComparison.pdf', 'whichPlot', '400Comparison', 'ylabel', 'AUC of Constriction to 400% Contrast');
+
+
 
 %% Summarize discomfort ratings
 
