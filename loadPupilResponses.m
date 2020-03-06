@@ -21,8 +21,8 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
 end
 
 % For AUC, how many noisy indices to exclude from beginning and end:
-numberOfIndicesToExclude = 40;
-
+beginningNumberOfIndicesToExclude = 40;
+endingNumberOfIndicesToExclude = 40;
 
 
 
@@ -43,7 +43,7 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
             mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             combinedPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             
-                        controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM']) = [];
+            controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM']) = [];
             mwaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM']) = [];
             mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM']) = [];
             combinedPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM']) = [];
@@ -53,6 +53,11 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
             mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             combinedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            
+            controlPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            mwaPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            mwoaPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            combinedPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             
         end
     end
@@ -78,22 +83,24 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
                 subjectAverageResponse = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast})]));
                 SEM = nanstd(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]))/sqrt(size(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1));
                 
-                AUC = abs(trapz(subjectAverageResponse(numberOfIndicesToExclude:end-numberOfIndicesToExclude)));
+                AUC = abs(trapz(subjectAverageResponse(beginningNumberOfIndicesToExclude:end-endingNumberOfIndicesToExclude)));
                 
                 if strcmp(group, 'c')
                     controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
                     controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM'])(end+1,:) = SEM;
                     controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
+                    controlPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = abs(min(subjectAverageResponse));
                     controlSubjects{end+1} = subjectIDs{ss};
                 elseif strcmp(group, 'mwa')
                     mwaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
                     mwaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM'])(end+1,:) = SEM;
                     mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
+                    mwaPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = abs(min(subjectAverageResponse));
                     mwaSubjects{end+1} = subjectIDs{ss};
                 elseif strcmp(group, 'mwoa')
                     mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
                     mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM'])(end+1,:) = SEM;
-                    
+                    mwoaPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = abs(min(subjectAverageResponse));
                     mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     mwoaSubjects{end+1} = subjectIDs{ss};
                 else
@@ -111,6 +118,11 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     AUCStruct.mwa = mwaAUC;
     AUCStruct.mwoa = mwoaAUC;
     AUCStruct.controls = controlAUC;
+    
+    peakAmplitudeStruct.mwa = mwaPeakAmplitude;
+    peakAmplitudeStruct.mwoa = mwoaPeakAmplitude;
+    peakAmplitudeStruct.controls = controlPeakAmplitude;
+
     
     mwaSubjects = unique(mwaSubjects);
     mwoaSubjects = unique(mwoaSubjects);
@@ -340,6 +352,7 @@ resultsStruct.AUC = AUCStruct;
 resultsStruct.amplitude = amplitudeStruct;
 resultsStruct.percentPersistent = percentPersistentStruct;
 resultsStruct.subjects = subjectListStruct;
+resultsStruct.peakAmplitude = peakAmplitudeStruct;
 
 
 end
