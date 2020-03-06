@@ -65,9 +65,9 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     end
     
     % stash results
-    discomfortRatingsStruct.controlDiscomfort = controlDiscomfort;
-    discomfortRatingsStruct.mwaDiscomfort = mwaDiscomfort;
-    discomfortRatingsStruct.mwoaDiscomfort = mwoaDiscomfort;
+    discomfortRatingsStruct.controls = controlDiscomfort;
+    discomfortRatingsStruct.mwa = mwaDiscomfort;
+    discomfortRatingsStruct.mwoa = mwoaDiscomfort;
     
     subjectIDsStruct.controlSubjects = controlSubjects;
     subjectIDsStruct.mwaSubjects = mwaSubjects;
