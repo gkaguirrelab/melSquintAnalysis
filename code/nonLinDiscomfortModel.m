@@ -4,7 +4,7 @@ if strcmp(modality, 'discomfortRatings')
     resultsStruct = loadDiscomfortRatings();
 elseif strcmp(modality, 'pupil')
     resultsStruct = loadPupilResponses();
-    resultsStruct = resultsStruct.amplitude;
+    resultsStruct = resultsStruct.AUC;
 end
 
 groups = {'controls','mwa','mwoa'};
@@ -87,10 +87,10 @@ for ii = 1:length(groups)
         d = reshape(d,1,180);
 
         % L1 objective function to optimize for the median
-        myObj = @(p) sum(abs(d - myLogLinFit(p(1:2),p(3:4))));
+        %myObj = @(p) sum(abs(d - myLogLinFit(p(1:2),p(3:4))));
 
         % L2 objective function to optimize for the mean
-        %myObj = @(p) sqrt(sum( (d - myLogLinFit(p(1:2),p(3:4))).^2 ));
+        myObj = @(p) sqrt(sum( (d - myLogLinFit(p(1:2),p(3:4))).^2 ));
 
         % Fit that sucker
         pB(ii,bb,:) = fmincon(myObj,[1 1 1 1],[],[],[],[],[0.1 0.1 0 -10],[2 5 Inf 10],[],options);
