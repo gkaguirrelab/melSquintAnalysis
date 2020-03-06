@@ -3,7 +3,7 @@ function runMixedEffectsANOVA(responseModality, responseMetric)
 %% get model fit params
 
 if strcmp(responseModality, 'pupil')
-    [slope, intercept, meanRating] = fitLineToResponseModality(responseModality, 'makePlots', false, 'makeCSV', false, 'responseMetric', 'amplitude');
+    [slope, intercept, meanRating] = fitLineToResponseModality(responseModality, 'makePlots', false, 'makeCSV', false, 'responseMetric', 'AUC');
 else 
     [slope, intercept, meanRating] = fitLineToResponseModality(responseModality, 'makePlots', false, 'makeCSV', false);
 end
