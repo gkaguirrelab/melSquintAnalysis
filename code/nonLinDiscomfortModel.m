@@ -1,6 +1,13 @@
-discomfortStruct = loadDiscomfortRatings();
+modality = 'pupil';
 
-groups = {'control','mwa','mwoa'};
+if strcmp(modality, 'discomfortRatings')
+    resultsStruct = loadDiscomfortRatings();
+elseif strcmp(modality, 'pupil')
+    resultsStruct = loadPupilResponses();
+    resultsStruct = resultsStruct.amplitude;
+end
+
+groups = {'controls','mwa','mwoa'};
 colors = {'k','b','r'};
 params = {'melScale','minkowski','slope','intercept'};
 BinWidths = [0.025,0.1,0.1,0.25];
@@ -52,17 +59,17 @@ for ii = 1:length(groups)
     Lc = reshape(LcFull,1,180);
     
     % Assemble the discomfort ratings
-    groupField = [groups{ii} 'Discomfort'];
+    groupField = [groups{ii}];
     dVeridical = [ ...
-        discomfortStruct.(groupField).Melanopsin.Contrast100; ...
-        discomfortStruct.(groupField).Melanopsin.Contrast200; ...
-        discomfortStruct.(groupField).Melanopsin.Contrast400; ...
-        discomfortStruct.(groupField).LMS.Contrast100; ...
-        discomfortStruct.(groupField).LMS.Contrast200; ...
-        discomfortStruct.(groupField).LMS.Contrast400; ...
-        discomfortStruct.(groupField).LightFlux.Contrast100; ...
-        discomfortStruct.(groupField).LightFlux.Contrast200; ...
-        discomfortStruct.(groupField).LightFlux.Contrast400; ...
+        resultsStruct.(groupField).Melanopsin.Contrast100; ...
+        resultsStruct.(groupField).Melanopsin.Contrast200; ...
+        resultsStruct.(groupField).Melanopsin.Contrast400; ...
+        resultsStruct.(groupField).LMS.Contrast100; ...
+        resultsStruct.(groupField).LMS.Contrast200; ...
+        resultsStruct.(groupField).LMS.Contrast400; ...
+        resultsStruct.(groupField).LightFlux.Contrast100; ...
+        resultsStruct.(groupField).LightFlux.Contrast200; ...
+        resultsStruct.(groupField).LightFlux.Contrast400; ...
         ];
     
     % Anonymous functions for the model
@@ -80,13 +87,13 @@ for ii = 1:length(groups)
         d = reshape(d,1,180);
 
         % L1 objective function to optimize for the median
-%        myObj = @(p) sum(abs(d - myLogLinFit(p(1:2),p(3:4))));
+        myObj = @(p) sum(abs(d - myLogLinFit(p(1:2),p(3:4))));
 
         % L2 objective function to optimize for the mean
-        myObj = @(p) sqrt(sum( (d - myLogLinFit(p(1:2),p(3:4))).^2 ));
+        %myObj = @(p) sqrt(sum( (d - myLogLinFit(p(1:2),p(3:4))).^2 ));
 
         % Fit that sucker
-        pB(ii,bb,:) = fmincon(myObj,[1 1 1 1],[],[],[],[],[0.1 1 0 -10],[2 5 Inf 10],[],options);
+        pB(ii,bb,:) = fmincon(myObj,[1 1 1 1],[],[],[],[],[0.1 0.1 0 -10],[2 5 Inf 10],[],options);
        
     end
     
@@ -119,9 +126,9 @@ for ii = 1:length(groups)
     
     % Add the median discomfort ratings across subjects
     % plot(log10(myMedianModel(p(1:2))),median(dVeridical,2),['o' colors{ii}],'MarkerSize',14)
-    melMedian = plot(ipRGCContrastValues_Mel, [median(discomfortStruct.(groupField).Melanopsin.Contrast100), median(discomfortStruct.(groupField).Melanopsin.Contrast200), median(discomfortStruct.(groupField).Melanopsin.Contrast400)], ['^' colors{ii}],'MarkerSize',14);
-    lmsMedian = plot(ipRGCContrastValues_LMS, [median(discomfortStruct.(groupField).LMS.Contrast100), median(discomfortStruct.(groupField).LMS.Contrast200), median(discomfortStruct.(groupField).LMS.Contrast400)], ['s' colors{ii}],'MarkerSize',16);
-    LFMedian = plot(ipRGCContrastValues_LightFlux, [median(discomfortStruct.(groupField).LightFlux.Contrast100), median(discomfortStruct.(groupField).LightFlux.Contrast200), median(discomfortStruct.(groupField).LightFlux.Contrast400)], ['o' colors{ii}],'MarkerSize',14);
+    melMedian = plot(ipRGCContrastValues_Mel, [median(resultsStruct.(groupField).Melanopsin.Contrast100), median(resultsStruct.(groupField).Melanopsin.Contrast200), median(resultsStruct.(groupField).Melanopsin.Contrast400)], ['^' colors{ii}],'MarkerSize',14);
+    lmsMedian = plot(ipRGCContrastValues_LMS, [median(resultsStruct.(groupField).LMS.Contrast100), median(resultsStruct.(groupField).LMS.Contrast200), median(resultsStruct.(groupField).LMS.Contrast400)], ['s' colors{ii}],'MarkerSize',16);
+    LFMedian = plot(ipRGCContrastValues_LightFlux, [median(resultsStruct.(groupField).LightFlux.Contrast100), median(resultsStruct.(groupField).LightFlux.Contrast200), median(resultsStruct.(groupField).LightFlux.Contrast400)], ['o' colors{ii}],'MarkerSize',14);
 
     
     % Add the model fit line
