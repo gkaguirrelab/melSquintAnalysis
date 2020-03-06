@@ -18,9 +18,9 @@ if strcmp(responseModality, 'discomfortRating')
 end
 
 if strcmp(responseModality, 'discomfortRatings') || strcmp(responseModality, 'discomfortRating')
-    [ discomfortRatingsStruct, subjectIDsStruct ] = loadDiscomfortRatings;
+    [ resultsStruct, subjectIDsStruct ] = loadDiscomfortRatings;
 
-    mwaResult = discomfortRatingsStruct.mwaDiscomfort;
+    mwaResult = resultsStruct.mwa;
     mwoaResult = discomfortRatingsStruct.mwoaDiscomfort;
     controlResult = discomfortRatingsStruct.controlDiscomfort;
 elseif strcmp(responseModality, 'emg')
@@ -32,20 +32,14 @@ elseif strcmp(responseModality, 'emg')
     
 elseif strcmp(responseModality, 'pupil')
     
-    [responseOverTimeStruct, amplitudeStruct, percentPersistentStruct, subjectIDsStruct] = loadPupilResponses;
+    [ resultsStruct ] = loadPupilResponses;
     
-    if strcmp(p.Results.responseMetric, 'amplitude')
-        mwaResult = amplitudeStruct.mwa;
-        mwoaResult = amplitudeStruct.mwoa;
-        controlResult = amplitudeStruct.controls;
-        
-    elseif strcmp(p.responseMetric, 'percentPersistent')
-        mwaResult = percentPersistentStruct.mwa;
-        mwoaResult = percentPersistentStruct.mwoa;
-        controlResult = percentPersistentStruct.controls;
-        
-    end
+    mwaResult = resultsStruct.(p.Results.responseMetric).mwa;
+    mwoaResult = resultsStruct.(p.Results.responseMetric).mwoa;
+    controlResult = resultsStruct.(p.Results.responseMetric).controls;
     
+    
+    subjectIDsStruct = resultsStruct.subjects;
     
     
 end
@@ -130,8 +124,18 @@ for group = 1:length(groups)
                 xlabel('Contrast')
                 ylabel(responseModality)
                 xlim([x(1) - 0.1, x(3) + 0.1]);
+                if strcmp(responseModality, 'discomfortRatings')
                 ylim([-0.5 10.5]);
                 yticks([0:1:10])
+                elseif strcmp(responseModality, 'pupil')
+                    if strcmp(p.Results.responseMetric, 'amplitude')
+                        ylim([0 11]);
+                        yticks([0:1:10])
+                    elseif strcmp(p.Results.responseMetric, 'AUC')
+                        ylim([0 500]);
+                        yticks([0:100:500])
+                    end
+                end
                 title(stimuli{stimulus});
                 legend([withInterceptLine], ['y = ', num2str(coeffs(1), '%4.2f'), 'x + ', num2str(coeffs(2), '%4.2f')]);
             end
@@ -232,24 +236,30 @@ if p.Results.makePlots
         
         xlim([x(1) - 0.1, x(3) + 0.1]);
         
+        
         if strcmp(responseModality, 'discomfortRatings')
-            ylabel('Discomfort')
             ylim([-0.5 10.5]);
             yticks([0:1:10])
-            
+            ylabel('Discomfort')
         elseif strcmp(responseModality, 'pupil')
             if strcmp(p.Results.responseMetric, 'amplitude')
-                yLims = [0 11];
-                ylim(yLims);
-                yticks([0:10]);
+                ylim([-0.5 11]);
+                yticks([0:1:10])
                 ylabel('Pupil Constriction Amplitude')
+            elseif strcmp(p.Results.responseMetric, 'AUC')
+                ylim([0 500]);
+                yticks([0:100:500])
+                ylabel('Pupil AUC')
             end
         end
         
         
+
+        
+        
         
     end
-    export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, [p.Results.responseMetric, 'discomfortFitLines.png']));
+    export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, [p.Results.responseMetric, '_discomfortFitLines.png']));
     
     % summarize model params across subjects
     slopes = [];
@@ -269,8 +279,11 @@ if p.Results.makePlots
         if strcmp(p.Results.responseMetric, 'amplitude')
             yLims = [0 11];
         end
+        if strcmp(p.Results.responseMetric, 'AUC')
+            yLims = [-150 400];
+        end
     end
-    plotSpreadResults(slopes, 'contrasts', {400}, 'yLims', yLims, 'yLabel', [responseModality,' Slopes'], 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, 'groupAverage_slopes.pdf'))
+    plotSpreadResults(slopes, 'contrasts', {400}, 'yLims', yLims, 'yLabel', [responseModality,' Slopes'], 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, [p.Results.responseMetric, 'groupAverage_slopes.pdf']))
     
     
     intercepts = [];
@@ -289,6 +302,9 @@ if p.Results.makePlots
     elseif strcmp(responseModality, 'pupil')
         if strcmp(p.Results.responseMetric, 'amplitude')
             yLims = [-11 11];
+        end
+        if strcmp(p.Results.responseMetric, 'AUC')
+            yLims = [-800 400];
         end
     end
 
@@ -311,6 +327,9 @@ if p.Results.makePlots
     elseif strcmp(responseModality, 'pupil')
         if strcmp(p.Results.responseMetric, 'amplitude')
             yLims = [0 11];
+        end
+        if strcmp(p.Results.responseMetric, 'AUC')
+            yLims = [0 400];
         end
     end
     
