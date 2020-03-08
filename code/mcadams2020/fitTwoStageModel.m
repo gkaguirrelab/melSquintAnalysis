@@ -26,7 +26,7 @@ stimNorm = 2;
 bootNorm = 1;
 
 % How many boot-straps to peform for the fitting
-nBoots = 1000;
+nBoots = 10;
 
 
 %% Hard-coded variables
@@ -71,11 +71,9 @@ elseif strcmp(modality, 'pupil')
 end
 
 % Define some properties for the plots
-groups = {'controls','mwa','mwoa'};
-colors = {'k','b','r'};
+groupLabels = {'controls','mwa','mwoa'};
+groupColors = {'k','b','r'};
 stimSymbols = {'^','s','o'};
-paramLabels = {'melScale','minkowski','slope','intercept'};
-BinWidths = [0.025,0.1,0.1,0.25];
 yLabels = {'alpha','beta','slope','offset'};
 
 % Open a figure to plot the data
@@ -87,19 +85,19 @@ options.Display = 'off';
 
 % Loop over the studied groups
 pB = []; % All of the param values across bootstraps
-for gg = 1:length(groups)
+for gg = 1:length(groupLabels)
     
     % Assemble the data to be fit
     dVeridical = [ ...
-        resultsStruct.(groups{gg}).Melanopsin.Contrast100; ...
-        resultsStruct.(groups{gg}).Melanopsin.Contrast200; ...
-        resultsStruct.(groups{gg}).Melanopsin.Contrast400; ...
-        resultsStruct.(groups{gg}).LMS.Contrast100; ...
-        resultsStruct.(groups{gg}).LMS.Contrast200; ...
-        resultsStruct.(groups{gg}).LMS.Contrast400; ...
-        resultsStruct.(groups{gg}).LightFlux.Contrast100; ...
-        resultsStruct.(groups{gg}).LightFlux.Contrast200; ...
-        resultsStruct.(groups{gg}).LightFlux.Contrast400; ...
+        resultsStruct.(groupLabels{gg}).Melanopsin.Contrast100; ...
+        resultsStruct.(groupLabels{gg}).Melanopsin.Contrast200; ...
+        resultsStruct.(groupLabels{gg}).Melanopsin.Contrast400; ...
+        resultsStruct.(groupLabels{gg}).LMS.Contrast100; ...
+        resultsStruct.(groupLabels{gg}).LMS.Contrast200; ...
+        resultsStruct.(groupLabels{gg}).LMS.Contrast400; ...
+        resultsStruct.(groupLabels{gg}).LightFlux.Contrast100; ...
+        resultsStruct.(groupLabels{gg}).LightFlux.Contrast200; ...
+        resultsStruct.(groupLabels{gg}).LightFlux.Contrast400; ...
         ];
     
     % Stage 1 of the model transforms mel and cone contrast into log10
@@ -160,16 +158,18 @@ for gg = 1:length(groups)
     for ss = 1:3
         x = ipRGCContrastValues(xSetsByStim{ss});
         y = dVeridical(ySetsByStim{ss},:)';
-        h = scatter(repmat(x, 1, nSubjectsPerGroup), y(:), stimSymbols{ss}, 'MarkerFaceColor',colors{gg},'MarkerEdgeColor','none');
-        h.MarkerFaceAlpha = .2;
-        
+        h = scatter(repmat(x, 1, nSubjectsPerGroup), y(:), stimSymbols{ss});
+        h.MarkerFaceColor = groupColors{gg};
+        h.MarkerEdgeColor = 'none';
+        h.MarkerFaceAlpha = 0.2;
+
         % Add the central tendency of the response across subjects for each
         % stimulus type
-        switch normToUse
-            case 'L1'
-                plot(x, median(y), [stimSymbols{ss} colors{gg}],'MarkerSize',14);
-            case 'L2'
-                plot(x, mean(y), [stimSymbols{ss} colors{gg}],'MarkerSize',14);
+        switch subNorm
+            case 1
+                plot(x, median(y), [stimSymbols{ss} groupColors{gg}],'MarkerSize',14);
+            case 2
+                plot(x, mean(y), [stimSymbols{ss} groupColors{gg}],'MarkerSize',14);
         end
         
     end
@@ -177,35 +177,34 @@ for gg = 1:length(groups)
     % Add the model fit line using the central tendency of the parameters
     % from stage 2
     reflineHandle = refline(p(3),p(4));
-    reflineHandle.Color = colors{gg};
+    reflineHandle.Color = groupColors{gg};
     
     % Clean up the plot
     ylim(yLimFig1);
     xlim([1 3]);
     xticks([log10(50) log10(100) log10(200) log10(400) log10(800)])
     xticklabels({'0.5','1','2','4','8'})
-    title(groups{gg});
+    title(groupLabels{gg});
     
 end
 
 % Convert the intercept into the response at log(200%) ipRGC contrast
 pB(:,:,4) = pB(:,:,4)+pB(:,:,3).*log10(200);
-paramLabels = {'melScale','minkowski','slope','amplitudeAt200'};
 
 % Plot the central tendency and 95% CI of the parameters
 figHandle2 = figure();
-for pp=1:length(paramLabels)
+for pp=1:length(yLabels)
     subplot(1,4,pp);
-    outline = [paramLabels{pp} ' [95 CI] --- '];
+    outline = [yLabels{pp} ' [95 CI] --- '];
     for gg = 1:3
         vals = sort(squeeze(pB(gg,:,pp)));
         p = median(vals);
         p95low = vals(max([round(nBoots*0.025) 1]));
         p95hi = vals(round(nBoots*0.925));
-        plot(gg,p,['o',colors{gg}]);
+        plot(gg,p,['o',groupColors{gg}]);
         hold on
-        plot([gg gg],[p95low p95hi],['-',colors{gg}]);
-        outline = sprintf([outline groups{gg} ': %2.2f [%2.2f - %2.2f]; '],p,p95low,p95hi);
+        plot([gg gg],[p95low p95hi],['-',groupColors{gg}]);
+        outline = sprintf([outline groupLabels{gg} ': %2.2f [%2.2f - %2.2f]; '],p,p95low,p95hi);
         if gg>1
             df=20;
             controlVals = sort(squeeze(pB(1,:,pp)));
@@ -223,7 +222,7 @@ for pp=1:length(paramLabels)
             se = sdPooled * sqrt( 1/df + 1/df);
             t = (medV - medC)/se;
             prob = 2*tpdf(t,df*2-2);
-            outline = sprintf([outline groups{gg} '-control, p=%.2d; '],prob);
+            outline = sprintf([outline groupLabels{gg} '-control, p=%.2d; '],prob);
         end
     end
     xlim([0 4]);
