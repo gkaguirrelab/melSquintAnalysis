@@ -1,4 +1,4 @@
-function [figHandle1, figHandle2] = fitTwoStageModel(varargin)
+function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
 % A two-stage, non-linear, log-linear model for discomfort and pupil data
 %
 % Syntax:
@@ -6,7 +6,8 @@ function [figHandle1, figHandle2] = fitTwoStageModel(varargin)
 %
 % Description:
 %   Implements a two-stage, non-linear, log-linear fit to across-subject
-%   discomfort and pupil data from the melaSquint project.
+%   discomfort and pupil data from the melaSquint project. These fits are
+%   the basis of panels in Figures XXX of McAdams et al, 2020.
 %
 % Optional key-value pairs:
 %  'modality'             - Char vector. Which data set to operate upon. 
@@ -17,28 +18,46 @@ function [figHandle1, figHandle2] = fitTwoStageModel(varargin)
 %  'nBoots'               - Scalar. The number of boot-strap resamplings to
 %                           perform in estimating the variation in the
 %                           model parameters.
+%  'rngSeed'              - Structure. Can provide an rng seed structure to
+%                           place the random number generator in a known
+%                           state so that reproducible bootstrap results
+%                           are obtained. The default behavior of this
+%                           function is to place the rng seed in the
+%                           default state (i.e., as if Matlab had just been
+%                           started).
+%  'stimSymbols'          - 1x3 cell array. Provides the char codes for the
+%                           symbols used to plot the Mel, LMS, and
+%                           lightFlux stimuli, respectively.
 %  'x0,lb,ub'             - 1x4 vectors. Properties for the fmincon search.
 %                           If defined, it would usually be for the purpose
 %                           of locking one or more parameters.
 %
 % Outputs:
 %   figHandle1, figHandle2 - Handles to the plotted figures.
+%   rngSeed               - Structure. The rngSeed state at the start of
+%                           the execution of the function.
 %
 % Examples:
 %{
     % Fit the discomfort data
-    fitTwoStageModel('modality','discomfort');
+    [~, figHandle2] = fitTwoStageModel('modality','discomfort');
+    % Save figure 2
+    saveas(figHandle2,'~/Desktop/discomfort_params.pdf')
 %}
 %{
     % Re-fit the discomfort data, locking the first two parameters
-    x0 = [0.63 1.75 1 1];
-    lb = [0.63 1.75 0 -10];
-    ub = [0.63 1.75 Inf 10];
-    fitTwoStageModel('modality','discomfort','x0',x0,'lb',lb,'ub',ub);
+    x0 = [0.6320 1.7369 1 1];
+    lb = [0.6320 1.7369 0 -10];
+    ub = [0.6320 1.7369 Inf 10];
+    figHandle1 = fitTwoStageModel('modality','discomfort','x0',x0,'lb',lb,'ub',ub);
+    % Save figure 1
+    saveas(figHandle1,'~/Desktop/discomfort_fit.pdf')
 %}
 %{
     % Fit the pupil data
     fitTwoStageModel('modality','pupil');
+    % Save figure 2
+    saveas(figHandle2,'~/Desktop/pupil_params.pdf')
 %}
 %{
     % Re-fit the pupil data, locking all parameters
@@ -46,6 +65,8 @@ function [figHandle1, figHandle2] = fitTwoStageModel(varargin)
     lb = [0.4179    0.8245  133.5397 -156.1173];
     ub = [0.4179    0.8245  133.5397 -156.1173];
     fitTwoStageModel('modality','pupil','x0',x0,'lb',lb,'ub',ub,'nBoots',2);
+    % Save figure 1
+    saveas(figHandle1,'~/Desktop/pupil_fit.pdf')
 %}
 
 
@@ -53,9 +74,11 @@ function [figHandle1, figHandle2] = fitTwoStageModel(varargin)
 p = inputParser;
 
 % Optional params
-p.addParameter('modality','pupil',@ischar);
+p.addParameter('modality','discomfort',@ischar);
 p.addParameter('areaMeasure','AUC',@ischar);
 p.addParameter('nBoots',1000,@isscalar);
+p.addParameter('rngSeed',[],@(x)(isempty(x) | isstruct(x)));
+p.addParameter('stimSymbols',{'o','o','o'},@iscell);
 p.addParameter('x0',[],@(x)(isempty(x) | isnumeric(x)));
 p.addParameter('lb',[],@(x)(isempty(x) | isnumeric(x)));
 p.addParameter('ub',[],@(x)(isempty(x) | isnumeric(x)));
@@ -68,6 +91,15 @@ p.parse(varargin{:})
 modality = p.Results.modality;
 areaMeasure = p.Results.areaMeasure;
 nBoots = p.Results.nBoots;
+stimSymbols = p.Results.stimSymbols;
+rngSeed = p.Results.rngSeed;
+
+
+%% Set the random number generator
+if isempty(rngSeed)
+    rngSeed = rng('default');
+end
+rng(rngSeed);
 
 % The norms to use for model fitting. While we would prefer to use the L1
 % norm to aggregate data across subjects within a stimulus, we find that
@@ -77,8 +109,8 @@ nBoots = p.Results.nBoots;
 % response measures across stimuli, and perform a non-parametric search
 % across model parameters to optimize the L2 norm. This model fitting is
 % performed across bootstraps. We observe that the parameters yielded
-% across bootstraps are not normally distributed, so we take the L1 norm to
-% get the central tendency of the params across bootstraps.
+% across bootstraps are not always normally distributed, so we take the L1
+% norm to get the central tendency of the params across bootstraps.
 subNorm = 2;
 stimNorm = 2;
 bootNorm = 1;
@@ -147,14 +179,13 @@ elseif strcmp(modality, 'pupil')
     
     % Define plotting behavior
     yLimFig1 = [0 400];
-    yLimFig2 = {[0 1],[0 4],[0 400],[0 400]};
+    yLimFig2 = {[0 1],[0 4],[0 500],[0 500]};
     
 end
 
 % Define some properties for the plots
 groupLabels = {'controls','mwa','mwoa'};
 groupColors = {'k','b','r'};
-stimSymbols = {'^','s','o'};
 yLabels = {'alpha','beta','slope','offset'};
 
 % Define the fmincon search options
@@ -219,7 +250,7 @@ for gg = 1:length(groupLabels)
     end
     
     % Prepare a sub-plot
-    subplot(3,1,gg);  hold on
+    subplot(1,3,gg);  hold on
     
     % The central tendency of the parameter values across bootstraps.
     switch bootNorm
@@ -273,6 +304,11 @@ for gg = 1:length(groupLabels)
     title(groupLabels{gg});
     
 end
+
+% Add a title to the figure
+str = ['Model fit to the ' modality ' data'];
+suptitle(str);
+
 
 
 %% Plot the central tendency and SEM of the parameters
@@ -355,3 +391,8 @@ for pp=1:length(yLabels)
     
 end
 
+% Add a title to the figure
+str = ['Parameter fits [+-2SEM] for the ' modality ' data'];
+suptitle(str);
+
+end % Function
