@@ -1,190 +1,234 @@
+%% fitTwoStageModel
+%
+% Implements a two-stage, non-linear, log-linear fit to across-subject
+% discomfort and pupil data from the melaSquint project.
+
+
+%% Define script behavior
+
+% Which modality to analyze: {'pupil','discomfort'}
 modality = 'pupil';
 
-if strcmp(modality, 'discomfortRatings')
-    resultsStruct = loadDiscomfortRatings();
+% For the pupil data, we have two ways to estimate the data amplitude, the
+% options being: {'AUC','TPUP'}
+areaMeasure = 'AUC';
+
+% The norms to use for model fitting. Following our pre-registered
+% protocol, we adopt the L1 norm for aggregating the measurements across
+% subjects within a stimulus. We fit the model to the median response
+% measures across stimuli, and perform a non-parametric search across model
+% parameters to optimize the L2 norm. This model fitting is performed
+% across bootstraps. We observe that the parameters yielded across
+% bootstraps are not normally distributed, so we take the L1 norm to get
+% the central tendency of the params across bootstraps.
+subNorm = 1;
+stimNorm = 2;
+bootNorm = 1;
+
+% How many boot-straps to peform for the fitting
+nBoots = 1000;
+
+
+%% Hard-coded variables
+
+% Hard-coded values regarding the model
+nParams = 4;
+
+% Hard-coded values regarding the dataset
+nStimuli = 3;
+nGroups = 3;
+nSubjectsPerGroup = 20;
+
+% Data and parameters that vary by modality
+if strcmp(modality, 'discomfort')
+    
+    % Load the data
+    [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus] = loadDiscomfortRatings();
+    
+    % Bounds for the parameters
+    x0 = [1 2 1 1];
+    lb = [0.1 0.1 0 -10];
+    ub = [2 3 Inf 10];
+    
+    % Define plotting behavior
+    yLimFig1 = [0 10];
+    yLimFig2 = {[0 1],[0 4],[0 6],[0 6]};
+    
 elseif strcmp(modality, 'pupil')
-    resultsStruct = loadPupilResponses();
-    resultsStruct = resultsStruct.AUC;
+    
+    % Load the data
+    [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus] = loadPupilResponses();
+    resultsStruct = resultsStruct.(areaMeasure);
+    
+    % Bounds for the parameters
+    x0 = [1 1 200 200];
+    lb = [0.1 0.1 0 -800];
+    ub = [2 3 Inf 800];
+    
+    % Define plotting behavior
+    yLimFig1 = [0 400];
+    yLimFig2 = {[0 1],[0 4],[0 400],[0 400]};
 end
 
+% Define some properties for the plots
 groups = {'controls','mwa','mwoa'};
 colors = {'k','b','r'};
-params = {'melScale','minkowski','slope','intercept'};
+stimSymbols = {'^','s','o'};
+paramLabels = {'melScale','minkowski','slope','intercept'};
 BinWidths = [0.025,0.1,0.1,0.25];
-yLims = {[0 1],[0 4],[0 6],[0 6]};
 yLabels = {'alpha','beta','slope','offset'};
-nBoots = 1000;
-figure
+
+% Open a figure to plot the data
+figHandle1 = figure();
+
+% Define the fmincon search options
 options = optimset('fmincon');
 options.Display = 'off';
 
-p =[];
-pB = [];
-
-for ii = 1:length(groups)
+% Loop over the studied groups
+pB = []; % All of the param values across bootstraps
+for gg = 1:length(groups)
     
-    dVeridcal = [];
-    Mc = [];
-    Lc = [];
-    
-    % Assemble the melanopsin and cone contrasts for each discomfort rating.
-    % We treat light flux stimuli as having equal contrast on the mel and LMS
-    % photoreceptor pools.
-    McFull = [ ...
-        repmat(100,1,20); ...
-        repmat(200,1,20); ...
-        repmat(400,1,20); ...
-        repmat(0,1,20); ...
-        repmat(0,1,20); ...
-        repmat(0,1,20); ...
-        repmat(100,1,20); ...
-        repmat(200,1,20); ...
-        repmat(400,1,20); ...
-        ];
-    
-    Mc = reshape(McFull,1,180);
-    
-    LcFull = [ ...
-        repmat(0,1,20); ...
-        repmat(0,1,20); ...
-        repmat(0,1,20); ...
-        repmat(100,1,20); ...
-        repmat(200,1,20); ...
-        repmat(400,1,20); ...
-        repmat(100,1,20); ...
-        repmat(200,1,20); ...
-        repmat(400,1,20); ...
-        ];
-    
-    Lc = reshape(LcFull,1,180);
-    
-    % Assemble the discomfort ratings
-    groupField = [groups{ii}];
+    % Assemble the data to be fit
     dVeridical = [ ...
-        resultsStruct.(groupField).Melanopsin.Contrast100; ...
-        resultsStruct.(groupField).Melanopsin.Contrast200; ...
-        resultsStruct.(groupField).Melanopsin.Contrast400; ...
-        resultsStruct.(groupField).LMS.Contrast100; ...
-        resultsStruct.(groupField).LMS.Contrast200; ...
-        resultsStruct.(groupField).LMS.Contrast400; ...
-        resultsStruct.(groupField).LightFlux.Contrast100; ...
-        resultsStruct.(groupField).LightFlux.Contrast200; ...
-        resultsStruct.(groupField).LightFlux.Contrast400; ...
+        resultsStruct.(groups{gg}).Melanopsin.Contrast100; ...
+        resultsStruct.(groups{gg}).Melanopsin.Contrast200; ...
+        resultsStruct.(groups{gg}).Melanopsin.Contrast400; ...
+        resultsStruct.(groups{gg}).LMS.Contrast100; ...
+        resultsStruct.(groups{gg}).LMS.Contrast200; ...
+        resultsStruct.(groups{gg}).LMS.Contrast400; ...
+        resultsStruct.(groups{gg}).LightFlux.Contrast100; ...
+        resultsStruct.(groups{gg}).LightFlux.Contrast200; ...
+        resultsStruct.(groups{gg}).LightFlux.Contrast400; ...
         ];
     
-    % Anonymous functions for the model
-    myModel = @(k) ((k(1).*Mc).^k(2) + Lc.^k(2)).^(1/k(2));
-    myMedianModel = @(k) ((k(1).*median(McFull,2)).^k(2) + median(LcFull,2).^k(2)).^(1/k(2));    
-    myLogLinFit = @(k,m) m(1).*log10(myModel(k))+m(2);
-        
+    % Stage 1 of the model transforms mel and cone contrast into log10
+    % "ipRGC" contrast
+    myModelStage1 = @(k) log10(((k(1).*MelContrastByStimulus).^k(2) + LMSContrastByStimulus.^k(2)).^(1/k(2)));
+    
+    % The full model then applies a slope and intercept parameter to log
+    % ipRGC contrast
+    myModel = @(k,m) m(1).*myModelStage1(k) + m(2);
+    
     %% Bootstrap
     for bb = 1:nBoots
         
         % Resample across columns (subjects) with replacement
-        d = dVeridical(:,datasample(1:20,20));
-                
-        % Reshape the values into a vector
-        d = reshape(d,1,180);
-
-        % L1 objective function to optimize for the median
-        %myObj = @(p) sum(abs(d - myLogLinFit(p(1:2),p(3:4))));
-
-        % L2 objective function to optimize for the mean
-        myObj = @(p) sqrt(sum( (d - myLogLinFit(p(1:2),p(3:4))).^2 ));
-
+        d = dVeridical(:,datasample(1:nSubjectsPerGroup,nSubjectsPerGroup));
+        
+        % How do we aggregate the values across subjects?
+        switch subNorm
+            case 1
+                % Fit the median value across subjects
+                d = median(d,2)';
+            case 2
+                % Fit the mean value across subjects
+                d = mean(d,2)';
+        end
+        
+        % How do we minimize error in the search across stimuli?
+        myObj = @(p) norm(d - myModel(p(1:2),p(3:4)),stimNorm);
+        
         % Fit that sucker
-        pB(ii,bb,:) = fmincon(myObj,[1 1 1 1],[],[],[],[],[0.1 0.1 0 -10],[2 5 Inf 10],[],options);
-       
+        pB(gg,bb,:) = fmincon(myObj,x0,[],[],[],[],lb,ub,[],options);
+        
     end
     
-    % Obtain the median param values and plot these
-    p = median(squeeze(pB(ii,:,:)));    
-    subplot(1,3,ii);  hold on
-    %h = scatter(log10(myModel(p(1:2))),reshape(dVeridical,1,180),'o','MarkerFaceColor',colors{ii},'MarkerEdgeColor','none');
+    % Obtain the central tendency of the param values and plot these
+    subplot(1,3,gg);  hold on
     
-    dVeridical_reshaped = reshape(dVeridical,1,180);
+    % The central tendency of the parameter values across bootstraps.
+    switch bootNorm
+        case 1
+            p = median(squeeze(pB(gg,:,:)));
+        case 2
+            p = mean(squeeze(pB(gg,:,:)));
+    end
     
-    ipRGCContrastValues = unique(log10(myModel(p(1:2))));
-    ipRGCContrastValues_Mel = [ipRGCContrastValues(1), ipRGCContrastValues(4), ipRGCContrastValues(7)];
-    ipRGCContrastValues_LMS = [ipRGCContrastValues(2), ipRGCContrastValues(5), ipRGCContrastValues(8)];
-    ipRGCContrastValues_LightFlux = [ipRGCContrastValues(3), ipRGCContrastValues(6), ipRGCContrastValues(9)];
+    % The ipRGC contrast values implied by the stage 1 parameters, brpken
+    % down into the different stimulus types. These are the x-values for
+    % the plot
+    ipRGCContrastValues = unique(myModelStage1(p(1:2)));
+    xSetsByStim = {[1 4 7],[2 5 8],[3 6 9]};
     
-    melResponses = dVeridical(1:3,:);
-    lmsResponses = dVeridical(4:6,:);
-    LFResponses = dVeridical(7:9,:);
+    % The subject responses by stimulus type; these are the y-values for
+    % the plot.
+    ySetsByStim = {[1 2 3],[4 5 6],[7 8 9]};
     
-    m = scatter(repmat(ipRGCContrastValues_Mel, 1, 20), melResponses(:), '^', 'MarkerFaceColor',colors{ii},'MarkerEdgeColor','none');
-    m.MarkerFaceAlpha = .2;
+    % Plot the data for each subject in this group, using different plot
+    % symbols for each stimulus type
+    for ss = 1:3
+        x = ipRGCContrastValues(xSetsByStim{ss});
+        y = dVeridical(ySetsByStim{ss},:)';
+        h = scatter(repmat(x, 1, nSubjectsPerGroup), y(:), stimSymbols{ss}, 'MarkerFaceColor',colors{gg},'MarkerEdgeColor','none');
+        h.MarkerFaceAlpha = .2;
+        
+        % Add the central tendency of the response across subjects for each
+        % stimulus type
+        switch normToUse
+            case 'L1'
+                plot(x, median(y), [stimSymbols{ss} colors{gg}],'MarkerSize',14);
+            case 'L2'
+                plot(x, mean(y), [stimSymbols{ss} colors{gg}],'MarkerSize',14);
+        end
+        
+    end
     
-    lms = scatter(repmat(ipRGCContrastValues_LMS, 1, 20), lmsResponses(:), 's', 'MarkerFaceColor',colors{ii},'MarkerEdgeColor','none');
-    lms.MarkerFaceAlpha = .2;
-    
-    lf = scatter(repmat(ipRGCContrastValues_LightFlux, 1, 20), LFResponses(:), 'o', 'MarkerFaceColor',colors{ii},'MarkerEdgeColor','none');
-    lf.MarkerFaceAlpha = .2;
-    
-   
-    
-    % Add the median discomfort ratings across subjects
-    % plot(log10(myMedianModel(p(1:2))),median(dVeridical,2),['o' colors{ii}],'MarkerSize',14)
-    melMedian = plot(ipRGCContrastValues_Mel, [median(resultsStruct.(groupField).Melanopsin.Contrast100), median(resultsStruct.(groupField).Melanopsin.Contrast200), median(resultsStruct.(groupField).Melanopsin.Contrast400)], ['^' colors{ii}],'MarkerSize',14);
-    lmsMedian = plot(ipRGCContrastValues_LMS, [median(resultsStruct.(groupField).LMS.Contrast100), median(resultsStruct.(groupField).LMS.Contrast200), median(resultsStruct.(groupField).LMS.Contrast400)], ['s' colors{ii}],'MarkerSize',16);
-    LFMedian = plot(ipRGCContrastValues_LightFlux, [median(resultsStruct.(groupField).LightFlux.Contrast100), median(resultsStruct.(groupField).LightFlux.Contrast200), median(resultsStruct.(groupField).LightFlux.Contrast400)], ['o' colors{ii}],'MarkerSize',14);
-
-    
-    % Add the model fit line
+    % Add the model fit line using the central tendency of the parameters
+    % from stage 2
     reflineHandle = refline(p(3),p(4));
-    reflineHandle.Color = colors{ii};
-    ylim([0 10]);
-    xlim([1.5 3]);
+    reflineHandle.Color = colors{gg};
+    
+    % Clean up the plot
+    ylim(yLimFig1);
+    xlim([1 3]);
     xticks([log10(50) log10(100) log10(200) log10(400) log10(800)])
     xticklabels({'0.5','1','2','4','8'})
-    title(groups{ii});
-    
-    if ii == 1
-        [legendHandle, icons] = legend([melMedian, lmsMedian, LFMedian], 'Melanopsin', 'Cones', 'LightFlux', 'Location', 'NorthWest', 'box', 'off');
-        icons(5).MarkerSize = 7;
-        icons(7).MarkerSize = 7;
-        icons(9).MarkerSize = 7;
-    end
+    title(groups{gg});
     
 end
 
-% Convert the intercept into the response at log(200%)
+% Convert the intercept into the response at log(200%) ipRGC contrast
 pB(:,:,4) = pB(:,:,4)+pB(:,:,3).*log10(200);
-params = {'melScale','minkowski','slope','amplitudeAt200'};
+paramLabels = {'melScale','minkowski','slope','amplitudeAt200'};
 
-% Plot the median and 95% CI of the parameters
-figure
-for pp=1:4
+% Plot the central tendency and 95% CI of the parameters
+figHandle2 = figure();
+for pp=1:length(paramLabels)
     subplot(1,4,pp);
-    outline = [params{pp} ' [95 CI] --- '];
-    for ii = 1:3
-        vals = sort(squeeze(pB(ii,:,pp)));
-        p = median(vals);        
-        p95low = vals(round(nBoots*0.025));
+    outline = [paramLabels{pp} ' [95 CI] --- '];
+    for gg = 1:3
+        vals = sort(squeeze(pB(gg,:,pp)));
+        p = median(vals);
+        p95low = vals(max([round(nBoots*0.025) 1]));
         p95hi = vals(round(nBoots*0.925));
-        plot(ii,p,['o',colors{ii}]);
+        plot(gg,p,['o',colors{gg}]);
         hold on
-        plot([ii ii],[p95low p95hi],['-',colors{ii}]);
-        outline = sprintf([outline groups{ii} ': %2.2f [%2.2f - %2.2f]; '],p,p95low,p95hi);
-        if ii>1
+        plot([gg gg],[p95low p95hi],['-',colors{gg}]);
+        outline = sprintf([outline groups{gg} ': %2.2f [%2.2f - %2.2f]; '],p,p95low,p95hi);
+        if gg>1
             df=20;
             controlVals = sort(squeeze(pB(1,:,pp)));
-            medC = median(controlVals);
-            medV = median(vals);
+            switch bootNorm
+                case 1
+                    medC = median(controlVals);
+                    medV = median(vals);
+                case 2
+                    medC = mean(controlVals);
+                    medV = mean(vals);
+            end
             sdC = sqrt(std(controlVals));
             sdV = sqrt(std(vals));
             sdPooled = sqrt( ((df-1)*sdC^2 + (df-1)*sdV^2)/(df*2-2) );
             se = sdPooled * sqrt( 1/df + 1/df);
             t = (medV - medC)/se;
             prob = 2*tpdf(t,df*2-2);
-            outline = sprintf([outline groups{ii} '-control, p=%.2d; '],prob);
+            outline = sprintf([outline groups{gg} '-control, p=%.2d; '],prob);
         end
     end
     xlim([0 4]);
-    ylim(yLims{pp});
+    ylim(yLimFig2{pp});
     ylabel(yLabels{pp});
     fprintf([outline '\n']);
 end
 
-% Plot the median parameter value and 
