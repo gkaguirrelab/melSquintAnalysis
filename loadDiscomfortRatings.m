@@ -1,4 +1,4 @@
-function [ discomfortRatingsStruct, subjectIDsStruct ] = loadDiscomfortRatings(varargin)
+function [ discomfortRatingsStruct, subjectIDsStruct,  MelContrastByStimulus, LMSContrastByStimulus ] = loadDiscomfortRatings(varargin)
 
 %% Input parser
 p = inputParser; p.KeepUnmatched = true;
@@ -122,5 +122,15 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
         end
     end
 end
+
+
+
+% Assemble the melanopsin and cone contrasts for each stimulus type. We
+% treat light flux stimuli as having equal contrast on the mel and LMS
+% photoreceptor pools.
+MelContrastByStimulus = [100 200 400 0 0 0 100 200 400];
+LMSContrastByStimulus = [0 0 0 100 200 400 100 200 400];
+
+
 
 end

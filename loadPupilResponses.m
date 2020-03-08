@@ -1,4 +1,4 @@
-function [resultsStruct] = loadPupilResponses(varargin)
+function [resultsStruct, subjectIDsStruct, MelContrastByStimulus, LMSContrastByStimulus] = loadPupilResponses(varargin)
 
 %% Input parser
 p = inputParser; p.KeepUnmatched = true;
@@ -7,6 +7,11 @@ p.addParameter('protocol', 'SquintToPulse' ,@isstr);
 p.addParameter('experimentNumber', [] ,@isstr);
 
 p.parse(varargin{:})
+
+
+%% Silence anticipated warnings
+warningState = warning;
+warning('off','MATLAB:table:ModifiedAndSavedVarnames');
 
 
 %% Load subjectListStruct
@@ -353,6 +358,24 @@ resultsStruct.amplitude = amplitudeStruct;
 resultsStruct.percentPersistent = percentPersistentStruct;
 resultsStruct.subjects = subjectListStruct;
 resultsStruct.peakAmplitude = peakAmplitudeStruct;
+
+
+% Restore the warning state
+warning(warningState);
+
+
+% Defining this empty variable to maintain parallel structure with
+% loadDiscomfortRatings.m
+subjectIDsStruct = [];
+
+
+
+% Assemble the melanopsin and cone contrasts for each stimulus type. We
+% treat light flux stimuli as having equal contrast on the mel and LMS
+% photoreceptor pools.
+MelContrastByStimulus = [100 200 400 0 0 0 100 200 400];
+LMSContrastByStimulus = [0 0 0 100 200 400 100 200 400];
+
 
 
 end
