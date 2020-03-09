@@ -756,3 +756,51 @@ set(gcf, 'Position', [600 558 1060 620]);
 set(gcf, 'Renderer', 'painters');
 
 export_fig(gcf, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'summary_groupxstimulus.pdf'))
+
+%% New plot for paper, showing in a 3x3 stimulus x contrast matrix, average constriction for each group
+close all;
+% load in data
+%[ pupilStruct ] = loadPupilResponses('protocol', 'SquintToPulse');
+
+% define some experimental conditions
+stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
+contrasts = {100, 200, 400};
+groups = {'controls', 'mwa', 'mwoa'};
+colorToPlot = {'k', 'b', 'r'};
+
+% basic plotting parameters
+initialPlotPointsToCensor = 40;
+endingPlotPointsToCensor = 40;
+timebase = 0:1/60:18.5;
+
+
+% do the plotting
+for stimulus = 1:length(stimuli)
+    for contrast = 1:length(contrasts)
+        cellNumber = ((stimulus-1)*3)+contrast;
+        subplot(3,3,cellNumber); hold on;
+        for group = 1:length(groups)
+            title([stimuli{stimulus}, ' Contrast ', num2str(contrasts{contrast}), '%']);
+            groupMean = nanmean(pupilStruct.responseOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+            ax.(['ax', num2str(group)]) = plot(timebase(initialPlotPointsToCensor:end-endingPlotPointsToCensor)-1, groupMean(initialPlotPointsToCensor:end-endingPlotPointsToCensor), 'Color', colorToPlot{group});
+
+        end
+        ylim([-0.8 0.1]);
+        yticks([-0.5 0]);
+        yticklabels({'50%', '0%'});
+        ylabel('Pupil Area (% Change from Baseline)');
+        xlim([0 17]);
+        xticks([0 5 10 15])
+        xticklabels([0 5 10 15])
+        xlabel('Time (s)');
+        
+        if cellNumber == 3
+            legend('Controls', 'MwA', 'MwoA', 'Location', 'SouthEast');
+            legend('boxoff');
+        end
+
+    end
+end
+
+set(gcf, 'Position', [440 86 987 712]);
+export_fig(gcf, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'contrastXstimulus_byGroup.pdf'))
