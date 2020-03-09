@@ -30,7 +30,6 @@ useExtremeYLims = false;
 
 
 
-plotFig = figure; hold on;
 [ha, pos] = tight_subplot(1,length(stimuli), 0.08);
 
 for stimulus = 1:length(stimuli)
@@ -203,7 +202,7 @@ savePath = fileparts(p.Results.saveName);
 if ~exist(savePath, 'dir')
     mkdir(savePath)
 end
-set(plotFig, 'Position', [-1811 170 1025 767], 'Units', 'pixels');
-export_fig(plotFig, fullfile(p.Results.saveName));
+set(gcf, 'Position', [-1811 170 1025 767], 'Units', 'pixels');
+export_fig(gcf, fullfile(p.Results.saveName));
 
 end
