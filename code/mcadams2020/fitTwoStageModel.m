@@ -46,16 +46,16 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
 %}
 %{
     % Re-fit the discomfort data, locking the first two parameters
-    x0 = [0.6320 1.7369 1 1];
-    lb = [0.6320 1.7369 0 -10];
-    ub = [0.6320 1.7369 Inf 10];
+    x0 = [0.6333, 1.7473, 1, 1];
+    lb = [0.6333, 1.7473, 0, -10];
+    ub = [0.6333, 1.7473, Inf, 10];
     figHandle1 = fitTwoStageModel('modality','discomfort','x0',x0,'lb',lb,'ub',ub);
     % Save figure 1
     saveas(figHandle1,'~/Desktop/discomfort_fit.pdf')
 %}
 %{
     % Fit the pupil data
-    fitTwoStageModel('modality','pupil');
+    [~, figHandle2] = fitTwoStageModel('modality','pupil');
     % Save figure 2
     saveas(figHandle2,'~/Desktop/pupil_params.pdf')
 %}
@@ -64,7 +64,7 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
     x0 = [0.4179    0.8245  133.5397 -156.1173];
     lb = [0.4179    0.8245  133.5397 -156.1173];
     ub = [0.4179    0.8245  133.5397 -156.1173];
-    fitTwoStageModel('modality','pupil','x0',x0,'lb',lb,'ub',ub,'nBoots',2);
+    figHandle1 = fitTwoStageModel('modality','pupil','x0',x0,'lb',lb,'ub',ub,'nBoots',2);
     % Save figure 1
     saveas(figHandle1,'~/Desktop/pupil_fit.pdf')
 %}
@@ -114,7 +114,7 @@ rng(rngSeed);
 subNorm = 2;
 stimNorm = 2;
 bootNorm = 1;
-
+groupNorm = 2;
 
 
 %% Hard-coded variables
@@ -178,8 +178,8 @@ elseif strcmp(modality, 'pupil')
     end
     
     % Define plotting behavior
-    yLimFig1 = [0 400];
-    yLimFig2 = {[0 1],[0 4],[0 500],[0 500]};
+    yLimFig1 = [0 500];
+    yLimFig2 = {[0 1],[0 4],[0 400],[0 400]};
     
 end
 
@@ -310,6 +310,22 @@ str = ['Model fit to the ' modality ' data'];
 suptitle(str);
 
 
+%% Report the central tendency of the parameters across all groups
+switch bootNorm
+    case 1
+        m=squeeze(median(pB,2));
+    case 2
+        m=squeeze(mean(pB,2));
+end
+switch groupNorm
+    case 1
+        m=median(m);
+    case 2
+        m=mean(m);
+end
+str = sprintf('central tendency params across bootstraps and groups: [%2.4f, %2.4f, %2.4f, %2.4f]\n\n',m);
+fprintf(str);
+
 
 %% Plot the central tendency and SEM of the parameters
 figHandle2 = figure();
@@ -380,6 +396,12 @@ for pp=1:length(yLabels)
             df = nSubjectsPerGroup;
             t = (medV - medC)/norm([semC semV]);
             prob = 2*tpdf(t,df*2-2);
+            
+            % Add this result to the plot
+            yPos = yLimFig2{pp}(2) .* (0.81.^(1/(gg-1)));
+            plot([1 gg],[yPos yPos],'-k');
+            str = sprintf('p=%2.5f',prob);
+            text(1,yPos,str,'VerticalAlignment','bottom');
             
             % Add this result to the output line
             outline = sprintf([outline groupLabels{gg} '-control, p=%2.5f; '],prob);
