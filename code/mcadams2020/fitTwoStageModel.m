@@ -42,7 +42,7 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
     % Fit the discomfort data
     [~, figHandle2] = fitTwoStageModel('modality','discomfort');
     % Save figure 2
-    saveas(figHandle2,'~/Desktop/discomfort_params.pdf')
+    print(figHandle2, '~/Desktop/discomfort_params.pdf', '-dpdf', '-fillpage')
 %}
 %{
     % Re-fit the discomfort data, locking the first two parameters
@@ -51,7 +51,7 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
     ub = [0.6333, 1.7473, Inf, 10];
     figHandle1 = fitTwoStageModel('modality','discomfort','x0',x0,'lb',lb,'ub',ub);
     % Save figure 1
-    saveas(figHandle1,'~/Desktop/discomfort_fit.pdf')
+    print(figHandle1, '~/Desktop/discomfort_fit.pdf', '-dpdf', '-fillpage')
 %}
 %{
     % Fit the pupil data
@@ -61,12 +61,12 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
 %}
 %{
     % Re-fit the pupil data, locking all parameters
-    x0 = [0.4142, 0.8211, 133.1729, -154.7144];
-    lb = [0.4142, 0.8211, 133.1729, -154.7144];
-    ub = [0.4142, 0.8211, 133.1729, -154.7144];
+    x0 = [0.4142, 0.8265, 133.5325, -156.0782];
+    lb = [0.4142, 0.8265, 133.5325, -156.0782];
+    ub = [0.4142, 0.8265, 133.5325, -156.0782];
     figHandle1 = fitTwoStageModel('modality','pupil','x0',x0,'lb',lb,'ub',ub,'nBoots',2);
     % Save figure 1
-    saveas(figHandle1,'~/Desktop/pupil_fit.pdf')
+    print(figHandle1, '~/Desktop/pupil_fit.pdf', '-dpdf', '-fillpage')
 %}
 
 
@@ -101,6 +101,10 @@ if isempty(rngSeed)
 end
 rng(rngSeed);
 
+
+
+%% Hard-coded variables
+
 % The norms to use for model fitting. While we would prefer to use the L1
 % norm to aggregate data across subjects within a stimulus, we find that
 % this leads to unstable model fits for the discomfort data, as these data
@@ -115,9 +119,6 @@ subNorm = 2;
 stimNorm = 2;
 bootNorm = 1;
 groupNorm = 2;
-
-
-%% Hard-coded variables
 
 % The number of model params
 nParams = 4;
@@ -183,17 +184,22 @@ elseif strcmp(modality, 'pupil')
     
 end
 
+% Define the fmincon search options
+options = optimset('fmincon');
+options.Display = 'off';
+
+
+%% Set up the plot figure
+
 % Define some properties for the plots
 groupLabels = {'controls','mwa','mwoa'};
 groupColors = {'k','b','r'};
 yLabels = {'alpha','beta','slope','offset'};
 
-% Define the fmincon search options
-options = optimset('fmincon');
-options.Display = 'off';
-
 % Open a figure to plot the data
 figHandle1 = figure();
+orient(figHandle1,'landscape');
+
 
 
 %% Bootstrap fitting
@@ -288,7 +294,7 @@ for gg = 1:length(groupLabels)
             case 2
                 plot(x, mean(y), [stimSymbols{ss} groupColors{gg}],'MarkerSize',14);
         end
-        
+                
     end
     
     % Add the model fit line using the central tendency of the parameters
@@ -296,12 +302,17 @@ for gg = 1:length(groupLabels)
     reflineHandle = refline(p(3),p(4));
     reflineHandle.Color = groupColors{gg};
     
+    % Add a text report of the parameters used for the fit
+    str = sprintf('[%2.2f, %2.2f, %2.2f, %2.2f]',p);
+    text(log10(25),yLimFig1(2)*0.9,str,'VerticalAlignment','bottom');
+    
     % Clean up the plot
     ylim(yLimFig1);
     xlim([log10(25) log10(1000)]);
     xticks([log10(50) log10(100) log10(200) log10(400) log10(800)])
     xticklabels({'0.5','1','2','4','8'})
     title(groupLabels{gg});
+    pbaspect([1.5 1 1])
     
 end
 
@@ -386,6 +397,7 @@ for pp=1:length(yLabels)
         xlim([0 4]);
         ylim(yLimFig2{pp});
         ylabel(yLabels{pp});
+        pbaspect([1 2.5 1])
 
         % Report the result to the console
         outline = sprintf([outline groupLabels{gg} ': %2.2f [%2.2f]; '],medV,semV);
