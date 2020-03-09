@@ -369,7 +369,7 @@ for pp=1:length(yLabels)
                 medC = median(controlVals);
                 medV = median(vals);
                 
-                % For normally distrubuted data, SD = IQR / 1.35. Demo:
+                % For normally distributed data, SD = IQR / 1.35. Demo:
                 %{
                     mu = 0; sd = 1;
                     iqr(normrnd(mu,sd,1000,1))
