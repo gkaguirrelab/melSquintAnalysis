@@ -46,9 +46,9 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
 %}
 %{
     % Re-fit the discomfort data, locking the first two parameters
-    x0 = [0.6333, 1.7473, 1, 1];
-    lb = [0.6333, 1.7473, 0, -10];
-    ub = [0.6333, 1.7473, Inf, 10];
+    x0 = [0.6364, 1.7572, 1, 1];
+    lb = [0.6364, 1.7572, 0, -10];
+    ub = [0.6364, 1.7572, Inf, 10];
     figHandle1 = fitTwoStageModel('modality','discomfort','x0',x0,'lb',lb,'ub',ub);
     % Save figure 1
     print(figHandle1, '~/Desktop/discomfort_fit.pdf', '-dpdf', '-fillpage')
@@ -58,15 +58,6 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
     [~, figHandle2] = fitTwoStageModel('modality','pupil');
     % Save figure 2
     saveas(figHandle2,'~/Desktop/pupil_params.pdf')
-%}
-%{
-    % Re-fit the pupil data, locking the first two parameters
-    x0 = [0.4142, 0.8265, 200 -200];
-    lb = [0.4142, 0.8265, 0 -800];
-    ub = [0.4142, 0.8265, Inf 800];
-    figHandle1 = fitTwoStageModel('modality','pupil','x0',x0,'lb',lb,'ub',ub,'nBoots',2);
-    % Save figure 1
-    print(figHandle1, '~/Desktop/pupil_fit.pdf', '-dpdf', '-fillpage')
 %}
 %{
     % Re-fit the pupil data, locking all parameters
@@ -188,7 +179,7 @@ elseif strcmp(modality, 'pupil')
     end
     
     % Define plotting behavior
-    yLimFig1 = [0 500];
+    yLimFig1 = [-50 500];
     yLimFig2 = {[0 1],[0 4],[0 400],[0 400]};
     
 end
@@ -290,7 +281,7 @@ for gg = 1:length(groupLabels)
     for ss = 1:nStimuli
         x = ipRGCContrastValues(xSetsByStim{ss});
         y = dVeridical(ySetsByStim{ss},:)';
-        h = scatter(repmat(x, 1, nSubjectsPerGroup), y(:), stimSymbols{ss});
+        h = scatter(repmat(x, 1, nSubjectsPerGroup), y(:), 7, stimSymbols{ss});
         h.MarkerFaceColor = groupColors{gg};
         h.MarkerEdgeColor = 'none';
         h.MarkerFaceAlpha = 0.2;
@@ -299,9 +290,9 @@ for gg = 1:length(groupLabels)
         % stimulus type
         switch subNorm
             case 1
-                plot(x, median(y), [stimSymbols{ss} groupColors{gg}],'MarkerSize',14);
+                plot(x, median(y), [stimSymbols{ss} groupColors{gg}],'MarkerSize',7);
             case 2
-                plot(x, mean(y), [stimSymbols{ss} groupColors{gg}],'MarkerSize',14);
+                plot(x, mean(y), [stimSymbols{ss} groupColors{gg}],'MarkerSize',7);
         end
                 
     end
@@ -317,9 +308,9 @@ for gg = 1:length(groupLabels)
     
     % Clean up the plot
     ylim(yLimFig1);
-    xlim([log10(25) log10(1000)]);
-    xticks([log10(50) log10(100) log10(200) log10(400) log10(800)])
-    xticklabels({'0.5','1','2','4','8'})
+    xlim([log10(25) log10(800)]);
+    xticks([log10(25) log10(50) log10(100) log10(200) log10(400) log10(800)])
+    xticklabels({'0.25','0.5','1','2','4','8'})
     title(groupLabels{gg});
     pbaspect([1.5 1 1])
     
@@ -395,13 +386,16 @@ for pp=1:length(yLabels)
                 semV = std(vals);
         end
         
-        % Plot the central tendency value
-        plot(gg,medV,['o',groupColors{gg}]);
-        hold on
-        
-        % Add error bars (+- 2 SEM)
+        % Plot the error bars (+- 2 SEM)
         plot([gg gg],[medV+2*semV medV-2*semV],['-',groupColors{gg}]);
-        
+        hold on
+
+        % Plot the central tendency value
+        h = plot(gg,medV,['o',groupColors{gg}]);
+        h.MarkerFaceColor = groupColors{gg};
+        h.MarkerEdgeColor = 'w';        
+        h.MarkerSize = 12;        
+                
         % Clean up the plot
         xlim([0 4]);
         ylim(yLimFig2{pp});
