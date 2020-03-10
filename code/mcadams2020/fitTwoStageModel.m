@@ -61,9 +61,9 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
 %}
 %{
     % Re-fit the pupil data, locking all parameters
-    x0 = [0.4142, 0.8265, 133.5325, -156.0782];
-    lb = [0.4142, 0.8265, 133.5325, -156.0782];
-    ub = [0.4142, 0.8265, 133.5325, -156.0782];
+    x0 = [0.4160, 0.8336, 133.6898, -156.3575];
+    lb = [0.4160, 0.8336, 133.6898, -156.3575];
+    ub = [0.4160, 0.8336, 133.6898, -156.3575];
     figHandle1 = fitTwoStageModel('modality','pupil','x0',x0,'lb',lb,'ub',ub,'nBoots',2);
     % Save figure 1
     print(figHandle1, '~/Desktop/pupil_fit.pdf', '-dpdf', '-fillpage')
