@@ -629,8 +629,8 @@ plotSpreadResults(totalResponseAmplitude, 'contrasts', {100,200, 400}, 'yLims', 
 stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
 groups = {'controls', 'mwa', 'mwoa'};
 
-[ pupilStruct ] = loadPupilResponses;
-[ slope, intercept, meanRating ] = fitLineToResponseModality('pupil', 'makePlots', false, 'makeCSV', false, 'responseMetric', 'AUC');
+%[ pupilStruct ] = loadPupilResponses;
+%[ slope, intercept, meanRating ] = fitLineToResponseModality('pupil', 'makePlots', false, 'makeCSV', false, 'responseMetric', 'AUC');
 
 x = [log10(100), log10(200), log10(400)];
 
@@ -656,7 +656,7 @@ for stimulus = 1:length(stimuli)
         
         plotSpread(data', 'xValues', x, 'xNames', {'100%', '200%', '400%'}, 'distributionColors', color)
         set(findall(gcf,'type','line'),'markerSize',13)
-        yticks([0 5 10])
+
         
         if group  == 1
             if stimulus == 1
@@ -670,11 +670,12 @@ for stimulus = 1:length(stimuli)
             end
             
            
-            yticks([0:100:500]);
-            yticklabels([0 100 200 300 400 500]);
+        yticks([0, 0.25*1031, 0.5*1031]);
+        yticklabels({'0' '25%' '50%'});
         end
-         ylim([0 500]);
-        
+         ylim([0 0.5*1031]);
+                yticks([0, 0.25*1031, 0.5*1031]);
+
         counter = counter + 1;
         
         
