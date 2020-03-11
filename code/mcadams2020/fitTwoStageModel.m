@@ -40,31 +40,31 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
 % Examples:
 %{
     % Fit the discomfort data
-    [~, figHandle2] = fitTwoStageModel('modality','discomfort');
+    [~, figHandle2] = fitTwoStageModel('modality','discomfort','rngSeed',1000);
     % Save figure 2
     print(figHandle2, '~/Desktop/discomfort_params.pdf', '-dpdf', '-fillpage')
 %}
 %{
     % Re-fit the discomfort data, locking the first two parameters
-    x0 = [0.6364, 1.7572, 1, 1];
-    lb = [0.6364, 1.7572, 0, -10];
-    ub = [0.6364, 1.7572, Inf, 10];
-    figHandle1 = fitTwoStageModel('modality','discomfort','x0',x0,'lb',lb,'ub',ub);
+    x0 = [0.6323, 1.7488, 1, 1];
+    lb = [0.6323, 1.7488, 0, -10];
+    ub = [0.6323, 1.7488, Inf, 10];
+    figHandle1 = fitTwoStageModel('modality','discomfort','x0',x0,'lb',lb,'ub',ub,'rngSeed',1000);
     % Save figure 1
     print(figHandle1, '~/Desktop/discomfort_fit.pdf', '-dpdf', '-fillpage')
 %}
 %{
     % Fit the pupil data
-    [~, figHandle2] = fitTwoStageModel('modality','pupil');
+    [~, figHandle2] = fitTwoStageModel('modality','pupil','rngSeed',1000);
     % Save figure 2
     saveas(figHandle2,'~/Desktop/pupil_params.pdf')
 %}
 %{
     % Re-fit the pupil data, locking all parameters
-    x0 = [0.4160, 0.8336, 133.6898, -156.3575];
-    lb = [0.4160, 0.8336, 133.6898, -156.3575];
-    ub = [0.4160, 0.8336, 133.6898, -156.3575];
-    figHandle1 = fitTwoStageModel('modality','pupil','x0',x0,'lb',lb,'ub',ub,'nBoots',2);
+    x0 = [0.4152, 0.8292, 133.6280, -155.8546];
+    lb = [0.4152, 0.8292, 133.6280, -155.8546];
+    ub = [0.4152, 0.8292, 133.6280, -155.8546];
+    figHandle1 = fitTwoStageModel('modality','pupil','x0',x0,'lb',lb,'ub',ub,'nBoots',2,'rngSeed',1000);
     % Save figure 1
     print(figHandle1, '~/Desktop/pupil_fit.pdf', '-dpdf', '-fillpage')
 %}
@@ -77,7 +77,7 @@ p = inputParser;
 p.addParameter('modality','discomfort',@ischar);
 p.addParameter('areaMeasure','AUC',@ischar);
 p.addParameter('nBoots',1000,@isscalar);
-p.addParameter('rngSeed',[],@(x)(isempty(x) | isstruct(x)));
+p.addParameter('rngSeed',[],@(x)(isempty(x)| isnumeric(x) | isstruct(x)));
 p.addParameter('stimSymbols',{'o','o','o'},@iscell);
 p.addParameter('x0',[],@(x)(isempty(x) | isnumeric(x)));
 p.addParameter('lb',[],@(x)(isempty(x) | isnumeric(x)));
@@ -347,7 +347,9 @@ pB(:,:,4) = pB(:,:,4)+pB(:,:,3).*log10(200);
 % Loop over params
 for pp=1:length(yLabels)
     
-    subplot(1,nParams,pp);
+    % We make some small gaps between the subplots to make sure that the
+    % sizes of the plot 
+    subplot(1,nParams*6-1,[(pp-1)*5+pp (pp-1)*5+2+pp]);
     outline = [yLabels{pp} ' [SEM] --- '];
 
     % Loop over the groups
@@ -394,13 +396,13 @@ for pp=1:length(yLabels)
         h = plot(gg,medV,['o',groupColors{gg}]);
         h.MarkerFaceColor = groupColors{gg};
         h.MarkerEdgeColor = 'w';        
-        h.MarkerSize = 12;        
+        h.MarkerSize = 6;        
                 
         % Clean up the plot
         xlim([0 4]);
         ylim(yLimFig2{pp});
         ylabel(yLabels{pp});
-        pbaspect([1 2.5 1])
+        pbaspect([1 2.5 1]);
 
         % Report the result to the console
         outline = sprintf([outline groupLabels{gg} ': %2.2f [%2.2f]; '],medV,semV);
