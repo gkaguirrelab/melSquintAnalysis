@@ -1,11 +1,50 @@
 function applySceneGeometry(subjectID, session, acquisitionNumber, trialNumber, varargin)
+% Function to apply scene geometry to an individual trial
+
+% Description:
+%   This routine is intended to apply scene geometry constraints to an 
+%   individual trial. The routine first loads the relative scene geometry file 
+%   corresponding tthat should previously have been hand-tuned to the
+%   individual session. This scene geometry is then shifted vertically and
+%   horizontally depending on how much the center of the pupil has moved
+%   from the trial of interest with reference to the initial trial (most
+%   often the pupil calibration run) in which the reference scene geometry
+%   was created. Finally, transparentTrack stages 8 through 10 are implied:
+%   8 to apply the scene geomtry, 9 to perform bayesian smoothing, and 0 to
+%   make the fit video.
+%
+% Inputs:
+%   - subjectID             - a string corresponding to the MELA_ID of the
+%                             subject of interest
+%   - session               - a string or number specifying the session of
+%                             interst. If a number is provided, the routine
+%                             tries to determine the string corresponding
+%                             to the full session label.
+%   - acquisitionNumber     - a number specifying which acquisition the
+%                             trial of interest occurs in
+%   - trialNumber           - a number specifying the trial number of
+%                             interest
+%
+% Optional key-value pairs:
+%   - Protocol              - a string specifying which protocol the video
+%                             to be processed belongs to. The default is
+%                             SquintToPulse for the migraine squint study,
+%                             but Deuteranopes is another workable
+%                             protocol.
+%   - experimentNumber      - a string specifying the experiment number
+%                             to which the video to be processed belongs.
+%                             The default is an empty variable, which is
+%                             appropriate because some protocols
+%                             (SquintToPulse) do not have an
+%                             experimentNumber. For deuteranopes, the
+%                             workable options include 'experiment_1' and
+%                             'experiment_2'
+
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('Protocol', 'SquintToPulse', @ischar);
 p.addParameter('experimentNumber', []);
-p.addParameter('pickVideo',[],@isnumeric);
-p.addParameter('adjust', false, @islogical);
 
 % Parse and check the parameters
 p.parse(varargin{:});
