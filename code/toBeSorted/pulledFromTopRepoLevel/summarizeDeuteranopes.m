@@ -182,26 +182,6 @@ for ss = 1:5
     
     
 end
-%% Fit TPUP to all subject averages
-for experiment = experiments
-    experimentName = ['experiment_', num2str(experiment)];
-    
-    if experiment == 1
-        contrasts = {100, 200, 400};
-        [modeledResponses] = fitTPUP('group', 'protocol', 'Deuteranopes', 'experimentName', 'experiment_1');
-        persistentGammaTau = modeledResponses.LightFlux.params.paramMainMatrix(3);
-    elseif experiment == 2
-        contrasts = {400, 800, 1200};
-        [modeledResponses] = fitTPUP('group', 'protocol', 'Deuteranopes', 'experimentName', 'experiment_2');
-        persistentGammaTau = modeledResponses.LightFlux.params.paramMainMatrix(3);
-    end
-    
-    for contrast = 1:length(contrasts)
-        summarizeTPUP(persistentGammaTau, 'protocol', 'Deuteranopes', 'experimentName', ['experiment_', num2str(experiment)], 'contrast', contrasts{contrast}, 'saveName', ['TPUPParams_', num2str(contrasts{contrast}), 'Contrast.csv']);
-    end
-    
-end
-
 %% Plot some TPUP results
 [deuteranopeResultsStruct] = loadPupilResponses('protocol', 'Deuteranopes');
 totalResponseAmplitude = deuteranopeResultsStruct.amplitude;
