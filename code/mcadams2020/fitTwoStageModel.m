@@ -201,7 +201,7 @@ elseif strcmp(modality, 'pupil')
         end
         
         % Define plotting behavior
-        yLimFig1 = [-50 500];
+        yLimFig1 = [0 0.5];
         yLimFig2 = {[0 1],[0 4],[0 0.2],[0 0.2]};
         
     end
