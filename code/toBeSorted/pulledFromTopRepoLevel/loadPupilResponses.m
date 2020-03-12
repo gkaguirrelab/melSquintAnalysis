@@ -5,6 +5,8 @@ p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('protocol', 'SquintToPulse' ,@isstr);
 p.addParameter('experimentNumber', [] ,@isstr);
+p.addParameter('runFitTPUP', false ,@islogical);
+
 
 p.parse(varargin{:})
 
@@ -151,10 +153,20 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     subjectListStruct.controlSubjects = controlSubjects;
     
     
-    
+    % Now TPUP stuff
     stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
     contrasts = {100, 200, 400};
     amplitudes = {'Transient', 'Sustained', 'Persistent'};
+
+    runFitTPUP = p.Results.runFitTPUP;
+    if runFitTPUP
+        [modeledResponses] = fitTPUP('group');
+        persistentGammaTau = modeledResponses.LightFlux.params.paramMainMatrix(3);
+        for contrast = 1:length(contrasts)
+            summarizeTPUP(persistentGammaTau, 'contrast', contrasts{contrast}, 'saveName', ['TPUPParams_', num2str(contrasts{contrast}), 'Contrast.csv']);
+        end
+
+    end
     
     
     
@@ -290,7 +302,29 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
         end
     end
     
-    % amplitude and percent persistent
+    % TPUP stuff
+    runFitTPUP = p.Results.runFitTPUP;;
+    if runFitTPUP
+        for experiment = experiments
+            experimentName = ['experiment_', num2str(experiment)];
+            
+            if experiment == 1
+                contrasts = {100, 200, 400};
+                [modeledResponses] = fitTPUP('group', 'protocol', 'Deuteranopes', 'experimentName', 'experiment_1');
+                persistentGammaTau = modeledResponses.LightFlux.params.paramMainMatrix(3);
+            elseif experiment == 2
+                contrasts = {400, 800, 1200};
+                [modeledResponses] = fitTPUP('group', 'protocol', 'Deuteranopes', 'experimentName', 'experiment_2');
+                persistentGammaTau = modeledResponses.LightFlux.params.paramMainMatrix(3);
+            end
+            
+            for contrast = 1:length(contrasts)
+                summarizeTPUP(persistentGammaTau, 'protocol', 'Deuteranopes', 'experimentName', ['experiment_', num2str(experiment)], 'contrast', contrasts{contrast}, 'saveName', ['TPUPParams_', num2str(contrasts{contrast}), 'Contrast.csv']);
+            end
+            
+        end
+    end
+
     for experiment = 1:2
         
         if experiment == 1
