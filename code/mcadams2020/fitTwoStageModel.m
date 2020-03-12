@@ -75,7 +75,7 @@ p = inputParser;
 
 % Optional params
 p.addParameter('modality','discomfort',@ischar);
-p.addParameter('areaMeasure','AUC',@ischar);
+p.addParameter('areaMeasure','normalizedAUC',@ischar);
 p.addParameter('nBoots',1000,@isscalar);
 p.addParameter('rngSeed',[],@(x)(isempty(x)| isnumeric(x) | isstruct(x)));
 p.addParameter('stimSymbols',{'o','o','o'},@iscell);
@@ -162,25 +162,49 @@ elseif strcmp(modality, 'pupil')
     resultsStruct = resultsStruct.(areaMeasure);
     
     % Bounds for the parameters
-    if isempty(p.Results.x0)
-        x0 = [1 1 200 -200];
-    else
-        x0 = p.Results.x0;
+    if strcmp(p.Results.areaMeasure, 'AUC')
+        if isempty(p.Results.x0)
+            x0 = [1 1 200 -200];
+        else
+            x0 = p.Results.x0;
+        end
+        if isempty(p.Results.lb)
+            lb = [0 0 0 -800];
+        else
+            lb = p.Results.lb;
+        end
+        if isempty(p.Results.ub)
+            ub = [2 3 Inf 800];
+        else
+            ub = p.Results.ub;
+        end
+        
+        % Define plotting behavior
+        yLimFig1 = [-50 500];
+        yLimFig2 = {[0 1],[0 4],[0 400],[0 400]};
+        
+    elseif strcmp(p.Results.areaMeasure, 'normalizedAUC')
+        if isempty(p.Results.x0)
+            x0 = [1 1 200 -200];
+        else
+            x0 = p.Results.x0;
+        end
+        if isempty(p.Results.lb)
+            lb = [0 0 0 -800];
+        else
+            lb = p.Results.lb;
+        end
+        if isempty(p.Results.ub)
+            ub = [2 3 Inf 800];
+        else
+            ub = p.Results.ub;
+        end
+        
+        % Define plotting behavior
+        yLimFig1 = [-50 500];
+        yLimFig2 = {[0 1],[0 4],[0 0.2],[0 0.2]};
+        
     end
-    if isempty(p.Results.lb)
-        lb = [0 0 0 -800];
-    else
-        lb = p.Results.lb;
-    end
-    if isempty(p.Results.ub)
-        ub = [2 3 Inf 800];
-    else
-        ub = p.Results.ub;
-    end
-    
-    % Define plotting behavior
-    yLimFig1 = [-50 500];
-    yLimFig2 = {[0 1],[0 4],[0 400],[0 400]};
     
 end
 
