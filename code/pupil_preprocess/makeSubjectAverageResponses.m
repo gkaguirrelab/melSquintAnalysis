@@ -581,6 +581,7 @@ for ss = sessions
                             trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.session = sessionIDs{ss};
                             trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.acquisition = aa;
                             trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.trial = tt;
+                            trialInfoStruct.(directionName).(['Contrast', contrast]){nRow+1}.baselineSize = baselineSizePartTwo;
                             
                             [~, pulseOnsetIndex ] = min(abs(p.Results.pulseOnset-trialData.response.timebase));
                             [~, pulseOffsetIndex ] = min(abs(p.Results.pulseOffset-trialData.response.timebase));

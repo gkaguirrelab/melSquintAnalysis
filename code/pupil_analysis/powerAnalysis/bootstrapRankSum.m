@@ -1,3 +1,5 @@
+% routine for power analysis that was part of pre-registration
+
 sampleSize = 20;
 alpha = 0.05;
 statistic = 'exponentialTau';
