@@ -5,6 +5,8 @@ p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('protocol', 'SquintToPulse' ,@isstr);
 p.addParameter('experimentNumber', [] ,@isstr);
+p.addParameter('runFitTPUP', false ,@islogical);
+
 
 p.parse(varargin{:})
 
@@ -59,6 +61,11 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
             mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             combinedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             
+            controlNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            mwaNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            mwoaNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            combinedNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            
             controlPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             mwaPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             mwoaPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
@@ -94,12 +101,14 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
                     controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
                     controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM'])(end+1,:) = SEM;
                     controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
+                    controlNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC/1031;
                     controlPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = abs(min(subjectAverageResponse));
                     controlSubjects{end+1} = subjectIDs{ss};
                 elseif strcmp(group, 'mwa')
                     mwaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
                     mwaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM'])(end+1,:) = SEM;
                     mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
+                    mwaNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC/1031;
                     mwaPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = abs(min(subjectAverageResponse));
                     mwaSubjects{end+1} = subjectIDs{ss};
                 elseif strcmp(group, 'mwoa')
@@ -107,6 +116,7 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
                     mwoaPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM'])(end+1,:) = SEM;
                     mwoaPeakAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = abs(min(subjectAverageResponse));
                     mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
+                    mwoaNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC/1031;
                     mwoaSubjects{end+1} = subjectIDs{ss};
                 else
                     fprintf('Subject %s has group %s\n', subjectIDs{ss}, group);
@@ -124,6 +134,10 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     AUCStruct.mwoa = mwoaAUC;
     AUCStruct.controls = controlAUC;
     
+    normalizedAUCStruct.mwa = mwaNormalizedAUC;
+    normalizedAUCStruct.mwoa = mwoaNormalizedAUC;
+    normalizedAUCStruct.controls = controlNormalizedAUC;
+    
     peakAmplitudeStruct.mwa = mwaPeakAmplitude;
     peakAmplitudeStruct.mwoa = mwoaPeakAmplitude;
     peakAmplitudeStruct.controls = controlPeakAmplitude;
@@ -139,10 +153,20 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     subjectListStruct.controlSubjects = controlSubjects;
     
     
-    
+    % Now TPUP stuff
     stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
     contrasts = {100, 200, 400};
     amplitudes = {'Transient', 'Sustained', 'Persistent'};
+
+    runFitTPUP = p.Results.runFitTPUP;
+    if runFitTPUP
+        [modeledResponses] = fitTPUP('group');
+        persistentGammaTau = modeledResponses.LightFlux.params.paramMainMatrix(3);
+        for contrast = 1:length(contrasts)
+            summarizeTPUP(persistentGammaTau, 'contrast', contrasts{contrast}, 'saveName', ['TPUPParams_', num2str(contrasts{contrast}), 'Contrast.csv']);
+        end
+
+    end
     
     
     
@@ -278,7 +302,29 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
         end
     end
     
-    % amplitude and percent persistent
+    % TPUP stuff
+    runFitTPUP = p.Results.runFitTPUP;;
+    if runFitTPUP
+        for experiment = experiments
+            experimentName = ['experiment_', num2str(experiment)];
+            
+            if experiment == 1
+                contrasts = {100, 200, 400};
+                [modeledResponses] = fitTPUP('group', 'protocol', 'Deuteranopes', 'experimentName', 'experiment_1');
+                persistentGammaTau = modeledResponses.LightFlux.params.paramMainMatrix(3);
+            elseif experiment == 2
+                contrasts = {400, 800, 1200};
+                [modeledResponses] = fitTPUP('group', 'protocol', 'Deuteranopes', 'experimentName', 'experiment_2');
+                persistentGammaTau = modeledResponses.LightFlux.params.paramMainMatrix(3);
+            end
+            
+            for contrast = 1:length(contrasts)
+                summarizeTPUP(persistentGammaTau, 'protocol', 'Deuteranopes', 'experimentName', ['experiment_', num2str(experiment)], 'contrast', contrasts{contrast}, 'saveName', ['TPUPParams_', num2str(contrasts{contrast}), 'Contrast.csv']);
+            end
+            
+        end
+    end
+
     for experiment = 1:2
         
         if experiment == 1
@@ -354,6 +400,7 @@ end
 
 resultsStruct.responseOverTime = responseOverTimeStruct;
 resultsStruct.AUC = AUCStruct;
+resultsStruct.normalizedAUC = normalizedAUCStruct;
 resultsStruct.amplitude = amplitudeStruct;
 resultsStruct.percentPersistent = percentPersistentStruct;
 resultsStruct.subjects = subjectListStruct;

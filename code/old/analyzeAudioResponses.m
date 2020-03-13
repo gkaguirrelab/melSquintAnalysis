@@ -1,4 +1,4 @@
-function [medianResponseStruct, trialStruct] = saveOutAudioResponses(subjectID, varargin)
+function [medianResponseStruct, trialStruct] = analyzeAudioResponses(subjectID, varargin)
 % Analyzes a single subject's verbal discomfort ratings  from the OLApproach_Squint,
 % SquintToPulse Experiment
 %
@@ -31,6 +31,17 @@ function [medianResponseStruct, trialStruct] = saveOutAudioResponses(subjectID, 
 %                           audioTrialStruct_repetition.mat. This
 %                           functionality has been added so we can have
 %                           more than one rating of the same subject.
+%   nSessions             - A number. Describes how many sessions to
+%                           analyze.
+%   nTrials               - A number. Describes how many trials within an
+%                           acquisition
+%   nAcqusitions          - A number. Describes how many acquisitions
+%                           within a session
+%   confidenceInterval    - A 2x1 vector, where the first number describes
+%                           the lower bound and second number describese
+%                           upper bound for a confidence interval to
+%                           summarize across trials of the same stimulus
+%                           type
 
 % Outputs:
 %   medianResponseStruct - A 3x1 structure, where each subfield
@@ -72,14 +83,17 @@ function [medianResponseStruct, trialStruct] = saveOutAudioResponses(subjectID, 
 
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
+
+% Control params
 p.addParameter('resume',false,@islogical);
 p.addParameter('repeat',false,@islogical);
+
+% Experiment params
 p.addParameter('nTrials',10,@isnumeric);
 p.addParameter('nAcquisitions',6,@isnumeric);
 p.addParameter('nSessions',4,@isnumeric);
 
-
-
+% Analysis params
 p.addParameter('confidenceInterval', [10 90], @isnumeric);
 
 

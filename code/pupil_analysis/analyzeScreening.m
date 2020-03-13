@@ -1,5 +1,29 @@
 function [ passStatus, percentGoodFramesPerTrial ] = analyzeScreening(subjectID)
+% Routine to determine whethere a potential subject passes our pupillometry
+% screening criteria.
 
+% Syntax:
+%   [ passStatus, percentGoodFramesPerTrial ] = analyzeScreening(subjectID)
+
+% Description:
+%  Following a screening session, we apply pre-registered critria to
+%  determine whether the obtained pupillometry was of high enough quality
+%  for th subject to be enrolled for archival data collection. The routine
+%  loads up the screening pupillometry results, loops over the 10 screening
+%  trials, and for each trial determines the number of "good frames". The
+%  designation "good frame" is judged based on frames without an ellipse
+%  fit, frames without poor ellipse fits, and frames that are not
+%  duplicates of the previous frame (indicative of camera stuttering).
+
+% Inputs:
+%   - subjectID:        A string defining the MELA_ID to be analyzed.
+%
+% Outputs:
+%   - passStatus:       A binary, where 1 means the subject has passed
+%                       screening, and 0 means subject has failed
+%   - percentGoodFramesPerTrial A 1x10 vector, where each item references 
+%                       the percentage of frames deemed "good" in that
+%                       number trial
 
 threshold = 5;
 %% find the relevant DataFiles dir
