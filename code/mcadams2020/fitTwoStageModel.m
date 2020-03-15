@@ -15,6 +15,11 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
 %  'areaMeasure'          - Char vector. For the pupil data, we have two 
 %                           ways to estimate the data amplitude, the
 %                           options being: {'AUC','TPUP'}
+%  'pupilScalar'          - Scalar. The pupil response data are recorded as
+%                           integrated (over time) response area. By
+%                           dividing these values by this scalar, we obtain
+%                           the pupil response as expressed as mean %
+%                           change area over time.
 %  'nBoots'               - Scalar. The number of boot-strap resamplings to
 %                           perform in estimating the variation in the
 %                           model parameters.
@@ -61,9 +66,9 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
 %}
 %{
     % Re-fit the pupil data, locking all parameters
-    x0 = [0.4152, 0.8292, 133.6280, -155.8546];
-    lb = [0.4152, 0.8292, 133.6280, -155.8546];
-    ub = [0.4152, 0.8292, 133.6280, -155.8546];
+    x0 = [0.4152, 0.8292, 0.1296, -0.1512];
+    lb = [0.4152, 0.8292, 0.1296, -0.1512];
+    ub = [0.4152, 0.8292, 0.1296, -0.1512];
     figHandle1 = fitTwoStageModel('modality','pupil','x0',x0,'lb',lb,'ub',ub,'nBoots',2,'rngSeed',1000);
     % Save figure 1
     print(figHandle1, '~/Desktop/pupil_fit.pdf', '-dpdf', '-fillpage')
@@ -75,7 +80,8 @@ p = inputParser;
 
 % Optional params
 p.addParameter('modality','discomfort',@ischar);
-p.addParameter('areaMeasure','normalizedAUC',@ischar);
+p.addParameter('areaMeasure','AUC',@ischar);
+p.addParameter('pupilScalar',1031,@isscalar);
 p.addParameter('nBoots',1000,@isscalar);
 p.addParameter('rngSeed',[],@(x)(isempty(x)| isnumeric(x) | isstruct(x)));
 p.addParameter('stimSymbols',{'o','o','o'},@iscell);
@@ -129,83 +135,60 @@ nGroups = 3;
 nSubjectsPerGroup = 20;
 
 % Data and parameters that vary by modality
-if strcmp(modality, 'discomfort')
-    
-    % Load the data
-    [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus] = loadDiscomfortRatings();
-    
-    % Bounds for the parameters
-    if isempty(p.Results.x0)
-        x0 = [1 2 1 1];
-    else
-        x0 = p.Results.x0;
-    end
-    if isempty(p.Results.lb)
-        lb = [0 0 0 -10];
-    else
-        lb = p.Results.lb;
-    end
-    if isempty(p.Results.ub)
-        ub = [2 3 Inf 10];
-    else
-        ub = p.Results.ub;
-    end
+switch modality
+    case 'discomfort'
         
-    % Define plotting behavior
-    yLimFig1 = [-1 10];
-    yLimFig2 = {[0 1],[0 4],[0 6],[0 6]};
-    
-elseif strcmp(modality, 'pupil')
-    
-    % Load the data
-    [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus] = loadPupilResponses();
-    resultsStruct = resultsStruct.(areaMeasure);
-    
-    % Bounds for the parameters
-    if strcmp(p.Results.areaMeasure, 'AUC')
+        % Load the data
+        [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus] = loadDiscomfortRatings();
+        
+        % Bounds for the parameters
         if isempty(p.Results.x0)
-            x0 = [1 1 200 -200];
+            x0 = [1 2 1 1];
         else
             x0 = p.Results.x0;
         end
         if isempty(p.Results.lb)
-            lb = [0 0 0 -800];
+            lb = [0 0 0 -10];
         else
             lb = p.Results.lb;
         end
         if isempty(p.Results.ub)
-            ub = [2 3 Inf 800];
+            ub = [2 3 Inf 10];
         else
             ub = p.Results.ub;
         end
         
         % Define plotting behavior
-        yLimFig1 = [-50 500];
-        yLimFig2 = {[0 1],[0 4],[0 400],[0 400]};
+        yLimFig1 = [-1 10];
+        yLimFig2 = {[0 1],[0 4],[0 6],[0 6]};
         
-    elseif strcmp(p.Results.areaMeasure, 'normalizedAUC')
+    case 'pupil'
+        
+        % Load the data
+        [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus] = loadPupilResponses();
+        resultsStruct = resultsStruct.(areaMeasure);
+        
+        % Bounds for the parameters
         if isempty(p.Results.x0)
-            x0 = [1 1 200 -200];
+            x0 = [1 1 0.2 -0.2];
         else
             x0 = p.Results.x0;
         end
         if isempty(p.Results.lb)
-            lb = [0 0 0 -800];
+            lb = [0 0 0 -0.8];
         else
             lb = p.Results.lb;
         end
         if isempty(p.Results.ub)
-            ub = [2 3 Inf 800];
+            ub = [2 3 Inf 0.8];
         else
             ub = p.Results.ub;
         end
         
         % Define plotting behavior
-        yLimFig1 = [0 0.5];
-        yLimFig2 = {[0 1],[0 4],[0 0.2],[0 0.2]};
+        yLimFig1 = [-0.05 0.5];
+        yLimFig2 = {[0 1],[0 4],[0 0.4],[0 0.4]};
         
-    end
-    
 end
 
 % Define the fmincon search options
@@ -247,6 +230,13 @@ for gg = 1:length(groupLabels)
         resultsStruct.(groupLabels{gg}).LightFlux.Contrast400; ...
         ];
     
+    % If these are pupil data, convert the data values from total area
+    % under the curve to the units "mean constriction over time expressed
+    % in units of percentage change from baseline"
+    if strcmp(modality,'pupil')
+        dVeridical = dVeridical./p.Results.pupilScalar;
+    end
+    
     % Stage 1 of the model transforms mel and cone contrast into log10
     % "ipRGC" contrast
     myModelStage1 = @(k) log10(((k(1).*MelContrastByStimulus).^k(2) + LMSContrastByStimulus.^k(2)).^(1/k(2)));
@@ -285,15 +275,15 @@ for gg = 1:length(groupLabels)
     % The central tendency of the parameter values across bootstraps.
     switch bootNorm
         case 1
-            p = median(squeeze(pB(gg,:,:)));
+            params = median(squeeze(pB(gg,:,:)));
         case 2
-            p = mean(squeeze(pB(gg,:,:)));
+            params = mean(squeeze(pB(gg,:,:)));
     end
     
     % The ipRGC contrast values implied by the stage 1 parameters, brpken
     % down into the different stimulus types. These are the x-values for
     % the plot
-    ipRGCContrastValues = unique(myModelStage1(p(1:2)));
+    ipRGCContrastValues = unique(myModelStage1(params(1:2)));
     xSetsByStim = {[1 4 7],[2 5 8],[3 6 9]};
     
     % The subject responses by stimulus type; these are the y-values for
@@ -323,11 +313,11 @@ for gg = 1:length(groupLabels)
     
     % Add the model fit line using the central tendency of the parameters
     % from stage 2
-    reflineHandle = refline(p(3),p(4));
+    reflineHandle = refline(params(3),params(4));
     reflineHandle.Color = groupColors{gg};
     
     % Add a text report of the parameters used for the fit
-    str = sprintf('[%2.2f, %2.2f, %2.2f, %2.2f]',p);
+    str = sprintf('[%2.2f, %2.2f, %2.2f, %2.2f]',params);
     text(log10(25),yLimFig1(2)*0.9,str,'VerticalAlignment','bottom');
     
     % Clean up the plot
