@@ -212,10 +212,13 @@ orient(figHandle1,'landscape');
 %% Bootstrap fitting
 
 % All of the param values across bootstraps
-pB = [];
+pBoot = [];
+
+% The R2 of the model by group across bootstraps
+r2byGroupByBoot = nan(nGroups,nBoots);
 
 % Loop over groups
-for gg = 1:length(groupLabels)
+for gg = 1:nGroups
     
     % Assemble the data to be fit
     dVeridical = [ ...
@@ -265,7 +268,17 @@ for gg = 1:length(groupLabels)
         myObj = @(p) norm(d - myModel(p(1:2),p(3:4)),stimNorm);
         
         % Fit that sucker
-        pB(gg,bb,:) = fmincon(myObj,x0,[],[],[],[],lb,ub,[],options);
+        pB = fmincon(myObj,x0,[],[],[],[],lb,ub,[],options);
+        
+        % Save the params
+        pBoot(gg,bb,:) = pB;
+        
+        % Obtain the r2 between the model and the data
+        dFit = myModel(pB(1:2),pB(3:4));
+        mss = sum(dFit.^2);
+        rss = sum((dFit-d).^2);
+        
+        r2byGroupByBoot(gg,bb) = mss/(mss+rss);
         
     end
     
@@ -275,9 +288,9 @@ for gg = 1:length(groupLabels)
     % The central tendency of the parameter values across bootstraps.
     switch bootNorm
         case 1
-            params = median(squeeze(pB(gg,:,:)));
+            params = median(squeeze(pBoot(gg,:,:)));
         case 2
-            params = mean(squeeze(pB(gg,:,:)));
+            params = mean(squeeze(pBoot(gg,:,:)));
     end
     
     % The ipRGC contrast values implied by the stage 1 parameters, brpken
@@ -338,9 +351,9 @@ suptitle(str);
 %% Report the central tendency of the parameters across all groups
 switch bootNorm
     case 1
-        m=squeeze(median(pB,2));
+        m=squeeze(median(pBoot,2));
     case 2
-        m=squeeze(mean(pB,2));
+        m=squeeze(mean(pBoot,2));
 end
 switch groupNorm
     case 1
@@ -352,11 +365,27 @@ str = sprintf('central tendency params across bootstraps and groups: [%2.4f, %2.
 fprintf(str);
 
 
+%% Report the R2 (±SEM) for each group across bootstraps
+str = 'model R2 [±SEM] by group: ';
+for gg = 1:nGroups
+    switch bootNorm
+        case 1
+            r2=median(r2byGroupByBoot(gg,:));
+            r2SEM=iqr(r2byGroupByBoot(gg,:))/1.35;
+        case 2
+            r2=mean(r2byGroupByBoot(gg,:));
+            r2SEM=std(r2byGroupByBoot(gg,:));
+    end
+    str = [str groupLabels{gg} sprintf(': %2.3f \x00B1 %2.5f; ',r2,r2SEM)];
+end
+fprintf([str '\n']);
+
+
 %% Plot the central tendency and SEM of the parameters
 figHandle2 = figure();
 
 % Convert the intercept into the response at log(200%) ipRGC contrast
-pB(:,:,4) = pB(:,:,4)+pB(:,:,3).*log10(200);
+pBoot(:,:,4) = pBoot(:,:,4)+pBoot(:,:,3).*log10(200);
 
 % Loop over params
 for pp=1:length(yLabels)
@@ -373,8 +402,8 @@ for pp=1:length(yLabels)
         % obtain these measures for the control group in every pass through
         % the data, so that they are available for calculating
         % between-group t-tests.
-        vals = sort(squeeze(pB(gg,:,pp)));
-        controlVals = sort(squeeze(pB(1,:,pp)));
+        vals = sort(squeeze(pBoot(gg,:,pp)));
+        controlVals = sort(squeeze(pBoot(1,:,pp)));
 
         % Which norm are we using for the measures across boot straps? Note
         % that the SD of the param values across bootstraps gives the SEM
