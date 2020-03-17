@@ -274,7 +274,11 @@ for gg = 1:nGroups
         pBoot(gg,bb,:) = pB;
         
         % Obtain the r2 between the model and the data
-        r2byGroupByBoot(gg,bb) = corr(d',myModel(pB(1:2),pB(3:4))')^2;
+        dFit = myModel(pB(1:2),pB(3:4));
+        mss = sum(dFit.^2);
+        rss = sum((dFit-d).^2);
+        
+        r2byGroupByBoot(gg,bb) = mss/(mss+rss);
         
     end
     
@@ -372,7 +376,7 @@ for gg = 1:nGroups
             r2=mean(r2byGroupByBoot(gg,:));
             r2SEM=std(r2byGroupByBoot(gg,:));
     end
-    str = [str groupLabels{gg} sprintf(': %2.4f [%2.4f]\t',r2,r2SEM)];
+    str = [str groupLabels{gg} sprintf(': %2.3f \x00B1 %2.5f; ',r2,r2SEM)];
 end
 fprintf([str '\n']);
 
