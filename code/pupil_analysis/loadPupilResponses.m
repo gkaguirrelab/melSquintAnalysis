@@ -1,4 +1,63 @@
 function [resultsStruct, subjectIDsStruct, MelContrastByStimulus, LMSContrastByStimulus] = loadPupilResponses(varargin)
+% This function loads in pupil results for Squint and Deuteranope
+% experiments.
+
+% Syntax: 
+%   [resultsStruct, subjectIDsStruct, MelContrastByStimulus, LMSContrastByStimulus] = loadPupilResponses('protocol', 'SquintToPulse')
+
+% Description:
+%   Depending on the specific experiment of interest, this function loads
+%   up the pupil results of various types. The function loads for each 
+%   individual subject for each stimulus condition: 1) the raw pupil time 
+%   series for each individual subject, the area under the curve,
+%   normalized area under the curve (AUC divided by the number of indicies
+%   over which this was calculated), TPUP total response amplitude (sum of
+%   amplitude of each component), and TPUP percent persistent.
+
+% Outputs:
+%   - resultsStruct         - a struct, where the first level contains the
+%                             different result types (responseOverTime,
+%                             AUC, normalized AUC, percentPersistent, TPUP
+%                             amplitude). Second level contains either
+%                             migraine group for the Squint study, or
+%                             experimentNumber for Deuteranopes. Third
+%                             level is stimulus type, fourth level is
+%                             contrast level. At the final level we have
+%                             the result in question for each individual
+%                             subject.
+%   - subjectIDsStruct      - a struct which gives the subjectIDs for the
+%                             given experiment. The ordering of subjects
+%                             corresponds to the ordering of results within
+%                             the resultsStruct.
+%   - mel/LMSContrastByStimulus - Each is a 1x9 vector which reflects the
+%                             amount of either melanopsin or LMS contrast
+%                             for each stimulus type for each contrast
+%                             level. Stimuli range from Melanopsin -> LMS
+%                             -> LightFlux, ascending from 100-200-400%
+%                             contrast for each stimulus type.
+
+% Key-value pairs:
+%   - protocol              - a string specifying which protocol the video
+%                             to be processed belongs to. The default is
+%                             SquintToPulse for the migraine squint study,
+%                             but Deuteranopes is another workable
+%                             protocol.
+%   - experimentNumber      - a string specifying the experiment number
+%                             to which the video to be processed belongs.
+%                             The default is an empty variable, which is
+%                             appropriate because some protocols
+%                             (SquintToPulse) do not have an
+%                             experimentNumber. For deuteranopes, the
+%                             workable options include 'experiment_1' and
+%                             'experiment_2'
+%   - runFitTPUP            - a logical used to control fitting behavior.
+%                             If set to true, this routine will fit average
+%                             responses with the TPUP model and extract
+%                             parameters from this fit. If false, the
+%                             routine will load up a recently fitted
+%                             results.
+
+
 
 %% Input parser
 p = inputParser; p.KeepUnmatched = true;
@@ -17,8 +76,8 @@ warning('off','MATLAB:table:ModifiedAndSavedVarnames');
 
 
 %% Load subjectListStruct
+% Which will vary depending on which experiment
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
-
 if strcmp(p.Results.protocol, 'SquintToPulse')
     load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', 'subjectListStruct.mat'));
     subjectIDs = fieldnames(subjectListStruct);
@@ -28,20 +87,25 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
 end
 
 % For AUC, how many noisy indices to exclude from beginning and end:
+% Essentially, the first and last indices are unstable and would lead to
+% funny answers. This step will exclude the noisy indices.
 beginningNumberOfIndicesToExclude = 40;
 endingNumberOfIndicesToExclude = 40;
 
 
 
-%% Pool pupil traces
-
+%% SquintToPulse Experiment
 if strcmp(p.Results.protocol, 'SquintToPulse')
+    
+    % define stimulus parameters
+    stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
+    contrasts = {100, 200, 400};
+
+    % pre-allocate variables
     controlPupilResponses = [];
     mwaPupilResponses = [];
     mwoaPupilResponses = [];
-    
-    stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
-    contrasts = {100, 200, 400};
+   
     
     for stimulus = 1:length(stimuli)
         for contrast = 1:length(contrasts)
@@ -78,7 +142,8 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     mwaSubjects = [];
     mwoaSubjects = [];
     
-    
+    % Loop over subjects, ultimately extracting average response over time
+    % for each stimulus condition
     for ss = 1:length(subjectIDs)
         
         
@@ -92,11 +157,16 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
         for stimulus = 1:length(stimuli)
             for contrast = 1:length(contrasts)
                 
+                % define average response over time
                 subjectAverageResponse = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast',num2str(contrasts{contrast})]));
+                
+                % define SEM over time
                 SEM = nanstd(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]))/sqrt(size(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1));
                 
+                % calculate AUC from response over time
                 AUC = abs(trapz(subjectAverageResponse(beginningNumberOfIndicesToExclude:end-endingNumberOfIndicesToExclude)));
                 
+                % stash result, depending on group
                 if strcmp(group, 'c')
                     controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
                     controlPupilResponses.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM'])(end+1,:) = SEM;
@@ -126,6 +196,7 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
         
     end
     
+    % save out result
     responseOverTimeStruct.mwa = mwaPupilResponses;
     responseOverTimeStruct.mwoa = mwoaPupilResponses;
     responseOverTimeStruct.controls = controlPupilResponses;
@@ -154,10 +225,10 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     
     
     % Now TPUP stuff
-    stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
-    contrasts = {100, 200, 400};
+    % define amplitude components
     amplitudes = {'Transient', 'Sustained', 'Persistent'};
 
+    % only fitTPUP if specified
     runFitTPUP = p.Results.runFitTPUP;
     if runFitTPUP
         [modeledResponses] = fitTPUP('group');
@@ -169,7 +240,7 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     end
     
     
-    
+    % Otherwise, just load in recent analysis
     for stimulus = 1:length(stimuli)
         for contrast = 1:length(contrasts)
             controlPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
@@ -190,23 +261,37 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
         for stimulus = 1:length(stimuli)
             for contrast = 1:length(contrasts)
                 
+                % load up CSV file, which contains TPUP results for all
+                % subjects for a given contrast level
                 csvFileName = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis/pupil/TPUP/', ['TPUPParams_Contrast', num2str(contrasts{contrast}),  '.csv']);
+                
+                % load CSV contents as table
                 TPUPParamsTable = readtable(csvFileName);
+
+                % Figure out column labels of the table
                 columnsNames = TPUPParamsTable.Properties.VariableNames;
+
+                % Find row for the given subject
                 subjectRow = find(contains(TPUPParamsTable{:,1}, subjectIDs{ss}));
                 
+                % Identify which columns correspond to amplitude of each
+                % component
                 transientAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'TransientAmplitude']));
                 sustainedAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'SustainedAmplitude']));
                 persistentAmplitudeColumn = find(contains(columnsNames, [stimuli{stimulus}, 'PersistentAmplitude']));
                 
+                % Extract these amplitudes
                 transientAmplitude = TPUPParamsTable{subjectRow, transientAmplitudeColumn};
                 sustainedAmplitude = TPUPParamsTable{subjectRow, sustainedAmplitudeColumn};
                 persistentAmplitude = TPUPParamsTable{subjectRow, persistentAmplitudeColumn};
                 
+                % Calculate percent persistnet:
                 percentPersistent = (persistentAmplitude)/(transientAmplitude + sustainedAmplitude + persistentAmplitude)*100;
                 
+                % Calculate total response amplitude
                 amplitude = (transientAmplitude + sustainedAmplitude + persistentAmplitude);
                 
+                % Stash result by group
                 if strcmp(group, 'c')
                     controlPercentPersistent.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = percentPersistent;
                     controlTotalResponseAmplitude.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = -amplitude;
@@ -227,6 +312,7 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
         end
     end
     
+    % Save out result
     amplitudeStruct.mwa = mwaTotalResponseAmplitude;
     amplitudeStruct.mwoa = mwoaTotalResponseAmplitude;
     amplitudeStruct.controls = controlTotalResponseAmplitude;
@@ -234,15 +320,24 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     percentPersistentStruct.mwa = mwaPercentPersistent;
     percentPersistentStruct.mwoa = mwoaPercentPersistent;
     percentPersistentStruct.controls = controlPercentPersistent;
+
+%% Now Deuteranope experiment
 elseif strcmp(p.Results.protocol, 'Deuteranopes')
-    % pupil responses
+    % First load up average pupil responses
+
+    % define some specific pupil parameters (which fits to load)
     fitType = 'radiusSmoothed';
-    stimuli = {'LightFlux', 'Melanopsin', 'LS'};
     saveNameSuffix = '';
+
+    % Define experimental conditions
+    stimuli = {'LightFlux', 'Melanopsin', 'LS'};
     
     experiments = 1:2;
+    % we're dealing with 5 subjects for the deuteranope experiment
     subjectIndices = 1:5;
     
+    % We don't need to actually run makeSubjectAverageResponse, so we'll
+    % just load output from previous iterations
     runMakeSubjectAverageResponses = false;
     
     for experiment = experiments
@@ -275,8 +370,11 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
             
         end
         
+        % loop over subjects
         for ss = subjectIndices
             subjectID = subjectIDs{ss};
+
+            % load trial struct
             if runMakeSubjectAverageResponses
                 
                 makeSubjectAverageResponses(subjectID, 'experimentName', experimentName, 'stimuli', stimuli, 'contrasts', contrasts, 'Protocol', 'Deuteranopes', 'protocolShortName', 'Deuteranopes','blinkBufferFrames', [3 6], 'saveNameSuffix', saveNameSuffix, 'sessions', subjectStruct.(['experiment', num2str(experiment)]).(subjectID), 'fitLabel', fitType)
@@ -286,12 +384,20 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
                 load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/Deuteranopes/DataFiles', subjectID, experimentName, ['trialStruct_', fitType, '.mat']));
             end
             
+            % Get the pupil data of interest
             for stimulus = 1:length(stimuli)
                 for contrast = 1:length(contrasts)
+                    
+                    % calculate average response timeseries
                     subjectAverageResponse = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                    
+                    % calculate SEM over time
                     SEM = nanstd(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]))/sqrt(size(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1));
+                    
+                    % calculate AUC
                     AUC = abs(trapz(subjectAverageResponse(numberOfIndicesToExclude:end-numberOfIndicesToExclude)));
                     
+                    % stash result
                     responseOverTimeStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
                     responseOverTimeStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_SEM'])(end+1,:) = SEM;
                     AUCStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss) = AUC;
@@ -303,7 +409,9 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
     end
     
     % TPUP stuff
-    runFitTPUP = p.Results.runFitTPUP;;
+    runFitTPUP = p.Results.runFitTPUP;
+
+    % fit TPUP, if specified
     if runFitTPUP
         for experiment = experiments
             experimentName = ['experiment_', num2str(experiment)];
@@ -325,6 +433,7 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
         end
     end
 
+    % Load TPUP results
     for experiment = 1:2
         
         if experiment == 1

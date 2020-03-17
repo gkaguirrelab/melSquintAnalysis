@@ -1,4 +1,121 @@
 function [ modeledResponses, averageResponses ] = fitTPUP(subjectID, varargin)
+% Fit TPUP model to pupil data
+%
+% Description:
+%   This routine fits pupil responses using the three-component pupil model
+%   (TPUP). Prior to fitting an individual subject, however, the routine
+%   first needs to determine one parameter, the persistentGammaTau. This
+%   parameter can be considered an extra free parameter, and allowed to
+%   vary for an individual subjet to best fit the shape of pupil response.
+%   Alternatively, it can be locked in place by fitting the same model to
+%   group average responses and applied to subsequent modeling. The routine
+%   also provides plots of model performance and saves out model
+%   parameters.
+%
+%   This model is a tweak of the TPUP implemented in Spitschan PNAS and
+%   McAdams IOVS. For subsequent experiments, we started using 4-s pulses
+%   (up from 3-s) and the longer response profile required the ability for
+%   the model to extend later in time. We accomplished this using the
+%   'persistentGammaTau' parameter, which controls a second convolution
+%   with the persistent component, effectively shifting this component
+%   later in time. Another tweak from the original TPUP is that we are now
+%   fixing the gammaTau (applied to all components) across stimulus
+%   conditions.
+%
+%
+% Input:
+%   - subjectID:                - a string which determines which subject
+%                                 we're analyzing. If left blank, the user
+%                                 can manually input specific pupil time
+%                                 series. 'group' is also an acceptable
+%                                 input, allowing the model to fit to the
+%                                 group average response.
+%
+% Optional key-value pairs:
+%   - method                   - a string which controls the specific model
+%                                to be implemented. The default is the
+%                                'HPUP', which describes our improved model
+%                                to better fit the Squint responses to 4-s
+%                                pulses. This model performs a second
+%                                convolution on the persistent component
+%                                (with the persistentGammaTau) to shift the
+%                                persistent component later in time. The
+%                                other option is 'TPUP', which was the
+%                                original model, employed in McAdams 2018
+%                                IOVS, but it performs worse for the 4-s
+%                                pulses used subsequently.
+%   - methodForDeterminingPersistentGammaTau   - a string which defines how
+%                                to determine the persistentGammaTau. This
+%                                persistentGammaTau is a parameter of the
+%                                model used to shift the persistent
+%                                component later in time to better fit the
+%                                4-s pulses. This value can function as a
+%                                free parameter to fit to a given response,
+%                                and this can be accomplished using
+%                                'fitToIndividualSubject.' Alternatively,
+%                                we can use one less free paramater by
+%                                locking this in place a priori. We
+%                                accomplish this by allowing this parameter
+%                                to vary while fitting the group average
+%                                response, and then this persistentGammaTau
+%                                is locked into place for the subsequent
+%                                fit to the responses for individual
+%                                subjects. This is the default behavior,
+%                                corresponding to 'fitToGroupAverage'. The
+%                                last option is to simply provide a number,
+%                                which the routine will interpret as the
+%                                specified persistentGammaTau. The idea is
+%                                we can separately fit the model to the
+%                                group data and extract persistentGammaTau
+%                                once, and then manually apply this to any
+%                                subsequent attempts.
+%   - numberOfResponseIndicesToExclude   - a number, which determines how
+%                                many indices at the beginning and end of
+%                                the pupil response to exclude. At the
+%                                individual subject level, the first and
+%                                last indices tend to be unstable and
+%                                noisy, and this allows us to ignore them.
+%   - plotGroupAverageFits     - a logical which controls whether to save
+%                                out plots of fits to group average responses.
+%   - plotFits                 - a logical which controls whether to save
+%                                out plots of fits to subject average
+%                                responses.
+%   - closePlots               - a logical which controls whether to close
+%                                plots upon completion of the routine.
+%                                Useful when looping.
+%   - plotComponents           - a logical. If true, will plot individual
+%                                components on any summary plot.
+%   - printParams              - a logical. If true, will print to console
+%                                summary model params
+%   - savePath                 - a string which describes the path of where
+%                                any plots should be saved
+%   - saveName                 - a string which specifies the name of the
+%                                file for any plots to be saved.
+%   - protocol                 - a string specifying which protocol the video
+%                                to be processed belongs to. The default is
+%                                SquintToPulse for the migraine squint study,
+%                                but Deuteranopes is another workable
+%                                protocol.
+%   - experimentNumber         - a string specifying the experiment number
+%                                to which the video to be processed belongs.
+%                                The default is an empty variable, which is
+%                                appropriate because some protocols
+%                                (SquintToPulse) do not have an
+%                                experimentNumber. For deuteranopes, the
+%                                workable options include 'experiment_1' and
+%                                'experiment_2'
+%   - LMS/Melanopsin/LightFluxResponse - The default is blank meaning no
+%                                change to the routine and the routine will
+%                                load pupil responses itself. This
+%                                key-value pair functions to allow the user
+%                                to manually specify these pupil responses
+%                                as vector. The routine will then fit to
+%                                these responses, rather than whatever it
+%                                loads. To use these, input a vector for
+%                                each response type and specify the subject
+%                                as '' (empty)
+
+% Example:
 %{
 subjectID = 'MELA_0126';
 
