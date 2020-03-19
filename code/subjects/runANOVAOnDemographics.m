@@ -29,13 +29,14 @@ resultColumn = find(contains(columnNames, resultType));
 
 for ss = 1:length(subjectIDs)
     subjectRow = find(contains(surveyTable{:,1}, subjectIDs{ss}));
-    result = (cell2mat(surveyTable{subjectRow,resultColumn}));
+    result = surveyTable{subjectRow,resultColumn};
+    %result = (cell2mat(surveyTable{subjectRow,resultColumn}));
     
     if strcmp(result, 'Male')
         result = 1;
     elseif strcmp(result, 'Female')
         result = 0;
-    else
+    elseif isstr(result)
         result = str2num(result);
     end
     
