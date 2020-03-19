@@ -21,8 +21,8 @@ if strcmp(responseModality, 'discomfortRatings') || strcmp(responseModality, 'di
     [ resultsStruct, subjectIDsStruct ] = loadDiscomfortRatings;
 
     mwaResult = resultsStruct.mwa;
-    mwoaResult = discomfortRatingsStruct.mwoaDiscomfort;
-    controlResult = discomfortRatingsStruct.controlDiscomfort;
+    mwoaResult = resultsStruct.mwoa;
+    controlResult = resultsStruct.controls;
 elseif strcmp(responseModality, 'emg')
     [ emgRMSStruct, subjectIDsStruct ] = loadEMG;
     
