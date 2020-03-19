@@ -67,5 +67,11 @@ table = vertcat(controlResults, mwaResults, mwoaResults);
 [p,tbl,stats] = anova1(table')
 
 fprintf('<strong>Post-hoc testing results:</strong>\n')
-multcompare(stats)
+[COMPARISON,MEANS,H,GNAMES] = multcompare(stats)
+
+% multcompare will not give a direct t-statistic as output, but it seems
+% relatively simple to derive it from what they do output. specifically,
+% one can get the standard error of the specific comparison from the second
+% column of the MEANS output and the estimate of the difference from the
+% fourth column of the comparisons column.
 end
