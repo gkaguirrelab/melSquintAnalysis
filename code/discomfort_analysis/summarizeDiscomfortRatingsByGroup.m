@@ -135,7 +135,7 @@ export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), '
 
 %% summary figrue proposed by geoff:
 stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
-groups = {'control', 'mwa', 'mwoa'};
+groups = {'controls', 'mwa', 'mwoa'};
 
 [ discomfortRatingsStruct ] = loadDiscomfortRatings;
 [ slope, intercept, meanRating ] = fitLineToResponseModality('discomfortRatings', 'makePlots', false, 'makeCSV', false);
@@ -149,7 +149,7 @@ for stimulus = 1:length(stimuli)
     
     for group = 1:length(groups)
         
-        if strcmp(groups{group}, 'control')
+        if strcmp(groups{group}, 'controls')
             color = 'k';
         elseif strcmp(groups{group}, 'mwa')
             color = 'b';
@@ -159,7 +159,7 @@ for stimulus = 1:length(stimuli)
         
         
         axes(ha(counter)); hold on;
-        result = discomfortRatingsStruct.([groups{group}, 'Discomfort']);
+        result = discomfortRatingsStruct.([groups{group}]);
         data = [result.(stimuli{stimulus}).Contrast100; result.(stimuli{stimulus}).Contrast200; result.(stimuli{stimulus}).Contrast400];
         
         plotSpread(data', 'xValues', x, 'xNames', {'100%', '200%', '400%'}, 'distributionColors', color)
@@ -199,13 +199,13 @@ axes(ha(3));
 title({'\fontsize{15} MwoA'});
 
 
-% add medians
+% add means
 counter = 1;
 for stimulus = 1:length(stimuli)
     
     for group = 1:length(groups)
         
-        if strcmp(groups{group}, 'control')
+        if strcmp(groups{group}, 'controls')
             color = 'k';
         elseif strcmp(groups{group}, 'mwa')
             color = 'b';
@@ -214,9 +214,9 @@ for stimulus = 1:length(stimuli)
         end
         
         axes(ha(counter)); hold on;
-        result = discomfortRatingsStruct.([groups{group}, 'Discomfort']);
+        result = discomfortRatingsStruct.([groups{group}]);
         
-        plot(x, [median(result.(stimuli{stimulus}).Contrast100), median(result.(stimuli{stimulus}).Contrast200), median(result.(stimuli{stimulus}).Contrast400)], '.', 'Color', color, 'MarkerSize', 25)
+        plot(x, [mean(result.(stimuli{stimulus}).Contrast100), mean(result.(stimuli{stimulus}).Contrast200), mean(result.(stimuli{stimulus}).Contrast400)], '.', 'Color', color, 'MarkerSize', 25)
         counter = counter + 1;
     end
 end
@@ -228,7 +228,7 @@ for stimulus = 1:length(stimuli)
     for group = 1:length(groups)
         
         
-        if strcmp(groups{group}, 'control')
+        if strcmp(groups{group}, 'controls')
             color = 'k';
             groupName = 'controls';
         elseif strcmp(groups{group}, 'mwa')

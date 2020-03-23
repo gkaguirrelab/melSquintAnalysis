@@ -59,7 +59,7 @@ export_fig(gcf, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melS
 export_fig(figHandle2, fullfile(paperDir, '4b.pdf'));
 export_fig(figHandle1, fullfile(paperDir, '4c.pdf'));
 
-%% Supplementary Figure XX
+%% Supplementary Figure 1
 stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
 groups = {'controls', 'mwa', 'mwoa'};
 
@@ -125,7 +125,7 @@ axes(ha(3));
 title({'\fontsize{15} MwoA'});
 
 
-% add medians
+% add means
 counter = 1;
 for stimulus = 1:length(stimuli)
     
@@ -142,7 +142,7 @@ for stimulus = 1:length(stimuli)
         axes(ha(counter)); hold on;
         result = pupilResponses.normalizedAUC.([groups{group}]);
         
-        plot(x, [median(result.(stimuli{stimulus}).Contrast100), median(result.(stimuli{stimulus}).Contrast200), median(result.(stimuli{stimulus}).Contrast400)], '.', 'Color', color, 'MarkerSize', 25)
+        plot(x, [mean(result.(stimuli{stimulus}).Contrast100), mean(result.(stimuli{stimulus}).Contrast200), mean(result.(stimuli{stimulus}).Contrast400)], '.', 'Color', color, 'MarkerSize', 25)
         counter = counter + 1;
     end
 end
