@@ -26,9 +26,9 @@ if strcmp(responseModality, 'discomfortRatings') || strcmp(responseModality, 'di
 elseif strcmp(responseModality, 'emg')
     [ emgRMSStruct, subjectIDsStruct ] = loadEMG;
     
-    mwaResult = emgRMSStruct.mwaRMS;
-    mwoaResult= emgRMSStruct.mwoaRMS;
-    controlResult = emgRMSStruct.controlRMS;
+    mwaResult = emgRMSStruct.(p.Results.responseMetric).mwa;
+    mwoaResult= emgRMSStruct.(p.Results.responseMetric).mwoa;
+    controlResult = emgRMSStruct.(p.Results.responseMetric).controls;
     
 elseif strcmp(responseModality, 'pupil')
     
