@@ -62,7 +62,7 @@ export_fig(figHandle1, fullfile(paperDir, '4c.pdf'));
 stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
 groups = {'controls', 'mwa', 'mwoa'};
 
-[ slope, intercept, meanRating ] = fitLineToResponseModality('emg', 'makePlots', false, 'makeCSV', false, 'responseMetric', 'normalizedAUC');
+[ slope, intercept, meanRating ] = fitLineToResponseModality('emg', 'makePlots', false, 'makeCSV', false, 'responseMetric', 'normalizedPulseAUC');
 
 x = [log10(100), log10(200), log10(400)];
 
@@ -83,7 +83,7 @@ for stimulus = 1:length(stimuli)
         
         
         axes(ha(counter)); hold on;
-        result = emgResponses.normalizedAUC.([groups{group}]);
+        result = emgResponses.normalizedPulseAUC.([groups{group}]);
         data = [result.(stimuli{stimulus}).Contrast100; result.(stimuli{stimulus}).Contrast200; result.(stimuli{stimulus}).Contrast400];
         
         plotSpread(data', 'xValues', x, 'xNames', {'100%', '200%', '400%'}, 'distributionColors', color)
@@ -102,11 +102,11 @@ for stimulus = 1:length(stimuli)
             end
             
             
-            yticks([0,  0.5, 1]);
-            yticklabels({'0' '50%','100%'});
+            yticks([0, 1, 2, 3]);
+            yticklabels({'0' '100%','200%', '300%'});
         end
-        ylim([0 1]);
-        yticks([0, 0.5, 1]);
+        ylim([-0.3 3]);
+            yticks([0, 1, 2, 3]);
         
         counter = counter + 1;
         
@@ -139,7 +139,7 @@ for stimulus = 1:length(stimuli)
         end
         
         axes(ha(counter)); hold on;
-        result = emgResponses.normalizedAUC.([groups{group}]);
+        result = emgResponses.normalizedPulseAUC.([groups{group}]);
         
         plot(x, [mean(result.(stimuli{stimulus}).Contrast100), mean(result.(stimuli{stimulus}).Contrast200), mean(result.(stimuli{stimulus}).Contrast400)], '.', 'Color', color, 'MarkerSize', 25)
         counter = counter + 1;

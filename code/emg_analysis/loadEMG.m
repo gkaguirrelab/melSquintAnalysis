@@ -44,6 +44,10 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
             controlNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             mwaNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             mwoaNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            
+            controlNormalizedPulseAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            mwaNormalizedPulseAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            mwoaNormalizedPulseAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
         end
     end
     
@@ -151,11 +155,20 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
                 AUC = (trapz(responseOverTime_withoutNaNs));
                 normalizedAUC = AUC/(length(responseOverTime_withoutNaNs));
                 
+                % timebase, which is hard-coded for what was used for these
+                % response over time calculations:
+                timebase = 0:0.1:17.5;
+                windowOnsetIndex = find(timebase == 2.5);
+                windowOffsetIndex = find(timebase == 4.5);
+                normalizedPulseAUC = sum(responseOverTime(windowOnsetIndex:windowOffsetIndex))/(windowOffsetIndex - windowOnsetIndex + 1);
+
+                
                 if strcmp(group, 'c')
                     controlResponseOverTime.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = responseOverTime;
                     controlSubjects{end+1} = subjectIDs{ss};
                     controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     controlNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedAUC;
+                    controlNormalizedPulseAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedPulseAUC;
 
                     
                 elseif strcmp(group, 'mwa')
@@ -163,13 +176,16 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
                     mwaSubjects{end+1} = subjectIDs{ss};
                     mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     mwaNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedAUC;
+                    mwaNormalizedPulseAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedPulseAUC;
 
                 elseif strcmp(group, 'mwoa')
                     mwoaResponseOverTime.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = responseOverTime;
                     mwoaSubjects{end+1} = subjectIDs{ss};
                     mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     mwoaNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedAUC;
+                    mwoaNormalizedPulseAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedPulseAUC;
 
+                    
                 else
                     fprintf('Subject %s has group %s\n', subjectIDs{ss}, group);
                 end
@@ -203,6 +219,10 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     emgRMSStruct.normalizedAUC.mwoa = mwoaNormalizedAUC;
     emgRMSStruct.normalizedAUC.controls = controlNormalizedAUC;
     
+    
+    emgRMSStruct.normalizedPulseAUC.mwa = mwaNormalizedPulseAUC;
+    emgRMSStruct.normalizedPulseAUC.mwoa = mwoaNormalizedPulseAUC;
+    emgRMSStruct.normalizedPulseAUC.controls = controlNormalizedPulseAUC;
     
     subjectIDsStruct.mwaSubjects = mwaSubjects;
     subjectIDsStruct.mwoaSubjects = mwoaSubjects;
