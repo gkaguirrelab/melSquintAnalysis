@@ -3,7 +3,7 @@ function [droppedFramesTrialStruct, droppedFramesMeanStruct] = analyzeDroppedFra
 % Function used to analyze frames in which subject is not receiving the
 % intended light stimulus (AKA dropped frames)
 
-% Syntax: 
+% Syntax:
 %   [droppedFramesTrialStruct, droppedFramesMeanStruct] = analyzeDroppedFrames
 %
 % Description:
@@ -14,7 +14,7 @@ function [droppedFramesTrialStruct, droppedFramesMeanStruct] = analyzeDroppedFra
 %   look at the stimulus less (meaning they blink more, they look away,
 %   they close their eyes). This routien attempts to quantify any behavior
 %   which would reduce the amount of light stimulus that they receive,
-%   which might then produce less pupil constriction. 
+%   which might then produce less pupil constriction.
 %
 %   This routine currently only works with Squint subjects, but should be
 %   modified in the future to also analyze Deuteranopes.
@@ -43,6 +43,7 @@ p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('range','shiftedPulse',@ischar);
 p.addParameter('whichBadFrames','blinks',@ischar);
+p.addParameter('makePlots',false, @islogical);
 
 % Parse and check the parameters
 p.parse(varargin{:});
@@ -64,7 +65,7 @@ for group = 1:length(groups)
         for contrast = 1:length(contrasts)
             droppedFramesTrialStruct.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             droppedFramesMeanStruct.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-
+            
         end
     end
 end
@@ -72,7 +73,7 @@ end
 
 %% Loop over subjects
 for ss = 1:length(subjectIDs)
-
+    
     % load trialStruct with trialInfoStruct
     load(fullfile(getpref('melSquintAnalysis', 'melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectIDs{ss}, 'trialStruct_radiusSmoothed_droppedFramesAnalysis.mat'));
     
@@ -123,7 +124,7 @@ for ss = 1:length(subjectIDs)
                 droppedFramesTrialStruct.(groupLabel).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(tt) = length(droppedFrames);
                 
                 droppedFramesForStimulusType = [length(droppedFrames), droppedFramesForStimulusType];
-
+                
             end
             
             % save out average results for all trials of the same stimulus
@@ -135,77 +136,78 @@ for ss = 1:length(subjectIDs)
 end
 
 %% Do some summary plotting
-close all;
-droppedFramesMeanStructForPlotting.Controls = droppedFramesMeanStruct.controls;
-droppedFramesMeanStructForPlotting.MwA = droppedFramesMeanStruct.mwa;
-droppedFramesMeanStructForPlotting.MwoA = droppedFramesMeanStruct.mwoa;
-
-savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'droppedFramesAnalysis');
-if ~exist(savePath)
-    mkdir(savePath);
-end
-
-if strcmp(p.Results.whichBadFrames, 'blinks')
-    saveName = ['droppedFramesAnalysis_blinksOnly_', p.Results.range];
-else
-    saveName = ['droppedFramesAnalysis_allBadFrames_', p.Results.range];
-
-end
-
-if strcmp(p.Results.range, 'pulse') || strcmp(p.Results.range, 'shiftedPulse')
-    yLims = [0 90];
+if p.Results.makePlots
+    close all;
+    droppedFramesMeanStructForPlotting.Controls = droppedFramesMeanStruct.controls;
+    droppedFramesMeanStructForPlotting.MwA = droppedFramesMeanStruct.mwa;
+    droppedFramesMeanStructForPlotting.MwoA = droppedFramesMeanStruct.mwoa;
     
-elseif strcmp(p.Results.range, 'wholeTrial')
-    yLims = [0 500];
-end
-
-plotSpreadResults(droppedFramesMeanStructForPlotting, 'yLims', yLims, 'saveName', fullfile(savePath, saveName))
-
-
-[ pupilStruct ] = loadPupilResponses;
-for group = 1:length(groups)
-    plotFig = figure;
-    for stimulus = 1:length(stimuli)
-        for contrast = 1:length(contrasts)
-            subplot(3,3, (((stimulus-1)*3)+contrast)); hold on
-            x = droppedFramesMeanStruct.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
-            y = pupilStruct.AUC.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
-            plot(x, y, 'o', 'Color', groupColors{group});
-            
-            coeffs = polyfit(x, y, 1);
-            fittedX = linspace(min(x), max(x), 200);
-            fittedY = polyval(coeffs, fittedX);
-            ax.ax1 = plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'k');
-            pearsonCorrelation = corr2(x, y);
-            
-            title([stimuli{stimulus}, ' Contrast ', num2str(contrasts{contrast}), '%, r = ' num2str(pearsonCorrelation)]);
-
-            
-            xlabel('Mean Dropped Frames');
-            ylabel('Pupil Constriction AUC');
-            ylim([0 450]);
-            
-            if strcmp(p.Results.range, 'pulse')
-                xlim([0 100]);
-            else
-                xlim([0 500]);
-            end
-            
-        end
+    savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'droppedFramesAnalysis');
+    if ~exist(savePath)
+        mkdir(savePath);
     end
-    set(plotFig, 'Position', [88 180 1152 798]);
+    
     if strcmp(p.Results.whichBadFrames, 'blinks')
-        export_fig(plotFig, fullfile(savePath, ['droppedFrames_blinks_', p.Results.range, 'XAUC_', groups{group}, '.pdf']));
+        saveName = ['droppedFramesAnalysis_blinksOnly_', p.Results.range];
     else
-        export_fig(plotFig, fullfile(savePath, ['droppedFrames_allBadFrames_', p.Results.range, 'XAUC_', groups{group}, '.pdf']));
+        saveName = ['droppedFramesAnalysis_allBadFrames_', p.Results.range];
+        
     end
-
-end
-
-plotFig = figure;
-for group = 1:length(groups)
     
-    for stimulus = 1:length(stimuli)
+    if strcmp(p.Results.range, 'pulse') || strcmp(p.Results.range, 'shiftedPulse')
+        yLims = [0 90];
+        
+    elseif strcmp(p.Results.range, 'wholeTrial')
+        yLims = [0 500];
+    end
+    
+    plotSpreadResults(droppedFramesMeanStructForPlotting, 'yLims', yLims, 'saveName', fullfile(savePath, saveName))
+    
+    
+    [ pupilStruct ] = loadPupilResponses;
+    for group = 1:length(groups)
+        plotFig = figure;
+        for stimulus = 1:length(stimuli)
+            for contrast = 1:length(contrasts)
+                subplot(3,3, (((stimulus-1)*3)+contrast)); hold on
+                x = droppedFramesMeanStruct.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
+                y = pupilStruct.AUC.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]);
+                plot(x, y, 'o', 'Color', groupColors{group});
+                
+                coeffs = polyfit(x, y, 1);
+                fittedX = linspace(min(x), max(x), 200);
+                fittedY = polyval(coeffs, fittedX);
+                ax.ax1 = plot(fittedX, fittedY, 'LineWidth', 1, 'Color', 'k');
+                pearsonCorrelation = corr2(x, y);
+                
+                title([stimuli{stimulus}, ' Contrast ', num2str(contrasts{contrast}), '%, r = ' num2str(pearsonCorrelation)]);
+                
+                
+                xlabel('Mean Dropped Frames');
+                ylabel('Pupil Constriction AUC');
+                ylim([0 450]);
+                
+                if strcmp(p.Results.range, 'pulse')
+                    xlim([0 100]);
+                else
+                    xlim([0 500]);
+                end
+                
+            end
+        end
+        set(plotFig, 'Position', [88 180 1152 798]);
+        if strcmp(p.Results.whichBadFrames, 'blinks')
+            export_fig(plotFig, fullfile(savePath, ['droppedFrames_blinks_', p.Results.range, 'XAUC_', groups{group}, '.pdf']));
+        else
+            export_fig(plotFig, fullfile(savePath, ['droppedFrames_allBadFrames_', p.Results.range, 'XAUC_', groups{group}, '.pdf']));
+        end
+        
+    end
+    
+    plotFig = figure;
+    for group = 1:length(groups)
+        
+        for stimulus = 1:length(stimuli)
             subplot(1,3, stimulus); hold on
             x = [median(droppedFramesMeanStruct.(groups{group}).(stimuli{stimulus}).Contrast100), ...
                 median(droppedFramesMeanStruct.(groups{group}).(stimuli{stimulus}).Contrast200), ...
@@ -217,10 +219,10 @@ for group = 1:length(groups)
             
             plot(x, y, 'o', 'Color', groupColors{group});
             
-
+            
             
             title([stimuli{stimulus}]);
-
+            
             
             xlabel('Mean Dropped Frames');
             ylabel('Pupil Constriction AUC');
@@ -232,17 +234,17 @@ for group = 1:length(groups)
                 xlim([0 500]);
             end
             
+            
+        end
+        set(plotFig, 'Position', [88 180 1152 798]);
+        if strcmp(p.Results.whichBadFrames, 'blinks')
+            export_fig(plotFig, fullfile(savePath, ['droppedFrames_blinks_', p.Results.range, 'XAUC','.pdf']));
+        else
+            export_fig(plotFig, fullfile(savePath, ['droppedFrames_allBadFrames_', p.Results.range, 'XAUC', '.pdf']));
+        end
         
     end
-    set(plotFig, 'Position', [88 180 1152 798]);
-    if strcmp(p.Results.whichBadFrames, 'blinks')
-        export_fig(plotFig, fullfile(savePath, ['droppedFrames_blinks_', p.Results.range, 'XAUC','.pdf']));
-    else
-        export_fig(plotFig, fullfile(savePath, ['droppedFrames_allBadFrames_', p.Results.range, 'XAUC', '.pdf']));
-    end
-
+    
 end
-
-
 
 end
