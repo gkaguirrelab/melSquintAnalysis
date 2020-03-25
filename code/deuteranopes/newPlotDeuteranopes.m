@@ -21,18 +21,22 @@ p.parse(varargin{:})
 
 plotlabOBJ = plotlab();
 
-% Apply the default plotlab recipe overriding
-% the color order and the figure size
-plotlabOBJ.applyRecipe(...
-    'colorOrder', [1 0 0; 0 0 1; 0 0 0], ...
-    'lightTheme', 'light', ...
-    'lineMarkerSize', 12, ...
-    'figureWidthInches', p.Results.figureWidthInches, ...
-    'figureHeightInches', p.Results.figureHeightInches);
 
 
 hFig = figure(1); clf; hold on;
 if strcmp(p.Results.whichPlot, 'experimentComparison')
+    
+    % Apply the default plotlab recipe overriding
+    % the color order and the figure size
+    plotlabOBJ.applyRecipe(...
+        'colorOrder', [1 0 0; 0 0 1; 0 0 0], ...
+        'lightTheme', 'light', ...
+        'lineMarkerSize', 12, ...
+        'figureWidthInches', p.Results.figureWidthInches, ...
+        'figureHeightInches', p.Results.figureHeightInches);
+    
+    
+    hFig = figure(1); clf; hold on;
     
     if ~isempty(experiment1ResultsStruct)
         stimuli = fieldnames(experiment1ResultsStruct);
@@ -167,7 +171,93 @@ if strcmp(p.Results.whichPlot, 'experimentComparison')
         annotation('textbox', [xLocation, 1, 0, 0], 'string', stimuli{stimulus}, 'FontName', 'Helvetica', 'FontSize', 20, 'HorizontalAlignment','center')
         
     end
+    
+elseif strcmp(p.Results.whichPlot, '400Comparison')
+    
+    % Apply the default plotlab recipe overriding
+    % the color order and the figure size
+    plotlabOBJ.applyRecipe(...
+        'colorOrder', [1 0 0; 0 0 1; 0 0 0], ...
+        'lightTheme', 'light', ...
+        'lineMarkerSize', 12, ...
+        'figureWidthInches', p.Results.figureWidthInches, ...
+        'figureHeightInches', p.Results.figureHeightInches);
+    
+    
+    hFig = figure(1); clf; hold on;
+    stimuli = fieldnames(experiment1ResultsStruct);
+    shiftDistance = p.Results.shiftDistance;
+    xValues = [];
+    for stimulus = 1:length(stimuli)
+        
+        %         ax.(['ax', num2str(stimulus)]) = subplot(1,3,stimulus); hold on;
+        %         title(stimuli{stimulus})
+        
+        
+        %subplot(1,3,stimulus); hold on;
+        %title(stimuli{stimulus});
+        
+        
+        xShift = (stimulus - 1) * shiftDistance + (1*(stimulus-1));
+        xRange = [1 2];
+        
+        
+        xValues = [xValues, xRange+xShift];
+        
+        if ~isempty(trichromatStruct)
+            trichromatStimulusName = stimuli{stimulus};
+            if strcmp(trichromatStimulusName, 'LS')
+                trichromatStimulusName = 'LMS';
+            end
+            lineProps.col{1} = 'b';
+            if strcmp(p.Results.errorType, 'IQR')
+                errorLower = [[(median(trichromatStruct.(trichromatStimulusName).Contrast100)), (median(trichromatStruct.(trichromatStimulusName).Contrast200)), (median(trichromatStruct.(trichromatStimulusName).Contrast400))] - [(prctile(trichromatStruct.(trichromatStimulusName).Contrast100, 25)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast200, 25)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast400, 25))]];
+                errorUpper = ([(prctile(trichromatStruct.(trichromatStimulusName).Contrast100, 75)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast200, 75)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast400, 75))] - [(median(trichromatStruct.(trichromatStimulusName).Contrast100)), (median(trichromatStruct.(trichromatStimulusName).Contrast200)), (median(trichromatStruct.(trichromatStimulusName).Contrast400))]);
+            elseif strcmp(p.Results.errorType, 'SEM')
+                SEM = [std(trichromatStruct.(trichromatStimulusName).Contrast100)./sqrt(length(trichromatStruct.(trichromatStimulusName).Contrast100)), std(trichromatStruct.(trichromatStimulusName).Contrast200)./sqrt(length(trichromatStruct.(trichromatStimulusName).Contrast200)), std(trichromatStruct.(trichromatStimulusName).Contrast400)./sqrt(length(trichromatStruct.(trichromatStimulusName).Contrast400))];
+                errorUpper = SEM*2;
+                errorLower = SEM*2;
+            end
+            errorToPlot(1,1:2, 1) = [errorUpper(3) errorUpper(3)];
+            errorToPlot(1,1:2, 2) = [errorLower(3) errorLower(3)];
+            trichromatPlot = plot([0.75 2.25]+xShift, [(median(trichromatStruct.(trichromatStimulusName).Contrast400)) (median(trichromatStruct.(trichromatStimulusName).Contrast400))], 'Color', 'b');
+            mseb([0.75 2.25]+xShift, [(median(trichromatStruct.(trichromatStimulusName).Contrast400)) (median(trichromatStruct.(trichromatStimulusName).Contrast400))], ...
+                errorToPlot, lineProps, 1);
+        end
+        
+        for ss = 1:5
+            scatter([1, 2]+xShift, [experiment1ResultsStruct.(stimuli{stimulus}).Contrast400(ss), experiment2ResultsStruct.(stimuli{stimulus}).Contrast400(ss)], 'k')
+            plot([1, 2]+xShift, [experiment1ResultsStruct.(stimuli{stimulus}).Contrast400(ss), experiment2ResultsStruct.(stimuli{stimulus}).Contrast400(ss)], 'Color', 'k')
+
+        end
+        
+        xlim([xValues(1) - 0.5*shiftDistance, xValues(end) + 0.5*shiftDistance])        
+        xticks(xValues)
+        xticklabels({'Low Contrast', 'High Contrast', 'Low Contrast', 'High Contrast', 'Low Contrast', 'High Contrast'});
+        xtickangle(30);
+        ylabel(p.Results.yLabel);
+        ylim(p.Results.yLims);
+        
+        set(gca, 'XGrid', 'off')
+
+        
+        
+        
+        
+        
+    end
+    
+    for stimulus = 1:length(stimuli)
+        axisPosition = get(gca, 'Position');
+        xLocation = (((stimulus*2)-1)/6*axisPosition(3)+axisPosition(1))/p.Results.figureWidthInches;
+        annotation('textbox', [xLocation, 1, 0, 0], 'string', stimuli{stimulus}, 'FontName', 'Helvetica', 'FontSize', 20, 'HorizontalAlignment','center')
+        
+    end
+    
+    
 end
+
+
 
 plotlabOBJ.exportFig(hFig, 'pdf', p.Results.saveName, p.Results.savePath)
 
