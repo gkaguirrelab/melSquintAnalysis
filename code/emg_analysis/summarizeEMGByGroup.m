@@ -1,5 +1,5 @@
 %% Set up some preferences
-resultsDir = '~/Desktop'
+resultsDir = '~/Desktop';
 
 %% Load up EMG Data
 EMGStruct = loadEMG;
@@ -52,11 +52,54 @@ export_fig(gcf, fullfile(resultsDir, 'EMG_responseOverTime_byGroup.pdf'));
 
 %% Second plot: EMG AUC during the pulse by stimulus condition by group
 close all;
+
 makeStimulusByGroupPlot('emg', 'normalizedPulseAUC');
 
 export_fig(gcf, fullfile(resultsDir, 'EMG_AUC_contrastXgroup_pulse.pdf'));
 
 %% Dropped frames by stimulus condition by group
+close all
+
+makeStimulusByGroupPlot('droppedFrames', []);
+export_fig(gcf, fullfile(resultsDir, 'droppedFrames_contrastXgroup_pulse.pdf'));
+
+%% Compare dropped frames and squint:
+stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
+contrasts = {100, 200, 400};
+groups = {'controls', 'mwa', 'mwoa'};
+plotFig = figure;
+for group = 1:length(groups)
+    x = [];
+    y = [];
+   subplot(1,3,group); hold on
+   for stimulus = 1:length(stimuli)
+       for contrast = 1:length(contrasts)
+   
+             x = [x, EMGStruct.normalizedPulseAUC.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])];
+             y = [y, droppedFramesMeanStruct.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])];
+       end
+   end
+   
+   plot(x,y, 'o')
+   
+   coeffs = polyfit(x, y, 1);
+   fittedX = linspace(min(x), max(x), 200);
+   fittedY = polyval(coeffs, fittedX);
+   plot(fittedX, fittedY, '--', 'Color', 'k');
+   
+   r2 = corr2(x,y);
+   
+   xlabel('EMG Squint')
+   ylabel('Blinks')
+   xlim([-0.3 3]);
+   ylim([0 80]);
+             
+   title([groups{group}, ' r2 = ', num2str(r2)]);
+   
+   
+   
+end
+    
 
 %% Old
 % %% Determine list of studied subjects
