@@ -7,6 +7,7 @@ p.addParameter('savePath', [] ,@isstr);
 p.addParameter('saveName', [] ,@isstr);
 p.addParameter('yLims', [] ,@isnumeric);
 p.addParameter('yTicks', [0 5 10] ,@isnumeric);
+p.addParameter('yTickLabels', [0 5 10]);
 p.addParameter('shiftDistance', 0.5, @isnumeric);
 p.addParameter('stimulusLabelMultiplier', 1.2 ,@isnumeric);
 p.addParameter('figureWidthInches', 15, @isnumeric);
@@ -138,6 +139,7 @@ if strcmp(p.Results.whichPlot, 'experimentComparison')
         
         ylim([p.Results.yLims(1), p.Results.yLims(2)]);
         yticks(p.Results.yTicks);
+        yticklabels(p.Results.yTickLabels);
         xlim([xValues(1) - 0.5*shiftDistance, xValues(end) + 0.5*shiftDistance])
         
         if stimulus == 1
@@ -238,6 +240,8 @@ elseif strcmp(p.Results.whichPlot, '400Comparison')
         xtickangle(30);
         ylabel(p.Results.yLabel);
         ylim(p.Results.yLims);
+        yticks(p.Results.yTicks);
+        yticklabels(p.Results.yTickLabels);
         
         set(gca, 'XGrid', 'off')
 
