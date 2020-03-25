@@ -5,7 +5,7 @@ p = inputParser; p.KeepUnmatched = true;
 p.addParameter('fitType','withIntercept',@ischar);
 p.addParameter('makePlots',true,@islogical);
 p.addParameter('makeCSV',true,@islogical);
-p.addParameter('responseMetric',[],@ischar);
+p.addParameter('responseMetric',@ischar);
 
 
 % Parse and check the parameters
@@ -40,6 +40,14 @@ elseif strcmp(responseModality, 'pupil')
     
     
     subjectIDsStruct = resultsStruct.subjects;
+elseif strcmp(responseModality, 'droppedFrames')
+    
+    [~, resultsStruct] = analyzeDroppedFrames;
+    mwaResult = resultsStruct.mwa;
+    mwoaResult = resultsStruct.mwoa;
+    controlResult = resultsStruct.controls;
+    
+    [ ~, subjectIDsStruct ] = loadDiscomfortRatings;
     
     
 end
