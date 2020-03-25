@@ -8,6 +8,7 @@ p.addParameter('protocol','SquintToPulse', @ischar);
 p.parse(varargin{:});
 
 calculateRMS = p.Results.calculateRMS;
+calculateResponseOverTime = p.Results.calculateResponseOverTime;
 
 %% SquintToPulse
 
@@ -36,7 +37,7 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
             controlRMSnormalized.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             mwaRMSnormalized.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             mwoaRMSnormalized.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-                        
+            
             controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
@@ -142,7 +143,7 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
         resultsDir = fullfile(getpref('melSquintAnalysis','melaAnalysisPath'), 'melSquintAnalysis', 'EMG', 'responseOverTime', 'WindowLength_500MSecs', 'trialStructs');
         
         if p.Results.calculateResponseOverTime
-            calculateEMGResponseOverTime(subjectIDs{ss}, 'sessions', subjectListStruct.(subjectIDs{ss}), 'makePlots', false);   
+            calculateEMGResponseOverTime(subjectIDs{ss}, 'sessions', subjectListStruct.(subjectIDs{ss}), 'makePlots', false);
         end
         close all;
         for stimulus = 1:length(stimuli)
@@ -161,7 +162,7 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
                 windowOnsetIndex = find(timebase == 2.5);
                 windowOffsetIndex = find(timebase == 4.5);
                 normalizedPulseAUC = sum(responseOverTime(windowOnsetIndex:windowOffsetIndex))/(windowOffsetIndex - windowOnsetIndex + 1);
-
+                
                 
                 if strcmp(group, 'c')
                     controlResponseOverTime.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = responseOverTime;
@@ -169,7 +170,7 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
                     controlAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     controlNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedAUC;
                     controlNormalizedPulseAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedPulseAUC;
-
+                    
                     
                 elseif strcmp(group, 'mwa')
                     mwaResponseOverTime.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = responseOverTime;
@@ -177,14 +178,14 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
                     mwaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     mwaNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedAUC;
                     mwaNormalizedPulseAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedPulseAUC;
-
+                    
                 elseif strcmp(group, 'mwoa')
                     mwoaResponseOverTime.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = responseOverTime;
                     mwoaSubjects{end+1} = subjectIDs{ss};
                     mwoaAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
                     mwoaNormalizedAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedAUC;
                     mwoaNormalizedPulseAUC.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedPulseAUC;
-
+                    
                     
                 else
                     fprintf('Subject %s has group %s\n', subjectIDs{ss}, group);
@@ -199,7 +200,7 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     mwoaSubjects = unique(mwoaSubjects);
     controlSubjects = unique(controlSubjects);
     
-        subjectListStruct = [];
+    subjectListStruct = [];
     subjectListStruct.mwaSubjects = mwaSubjects;
     subjectListStruct.mwoaSubjects = mwoaSubjects;
     subjectListStruct.controlSubjects = controlSubjects;
@@ -249,7 +250,12 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
         for stimulus = 1:length(stimuli)
             for contrast = 1:length(contrasts)
                 
-                emgRMSStruct.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+                emgRMSStruct.RMS.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+                emgRMSStruct.responseOverTime.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+                emgRMSStruct.AUC.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+                emgRMSStruct.normalizedAUC.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+                emgRMSStruct.normalizedPulseAUC.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+                
             end
             
         end
@@ -277,11 +283,44 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
             end
             for stimulus = 1:length(stimuli)
                 for contrast = 1:length(contrasts)
-                    emgRMSStruct.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmean([medianRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_median']).left, medianRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_median']).right]);
+                    emgRMSStruct.RMS.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmean([medianRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_median']).left, medianRMS.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast}), '_median']).right]);
                 end
             end
             
         end
+        
+        % response over time stuff
+        for ss = 1:5
+            if calculateResponseOverTime
+                calculateEMGResponseOverTime(subjectIDs{ss}, 'protocol', 'Deuteranopes', 'experimentName', ['experiment_', num2str(experiment)], 'stimuli', {'LightFlux', 'Melanopsin', 'LS'}, 'contrasts', contrasts, 'sessions', subjectStruct.(['experiment', num2str(experiment)]).(subjectIDs{ss}))
+            end
+            
+            load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', 'responseOverTime', 'Deuteranopes', 'WindowLength_500MSecs', 'trialStructs', [subjectIDs{ss}, '_', 'experiment_', num2str(experiment), '.mat']));
+            
+            for stimulus = 1:length(stimuli)
+                for contrast = 1:length(contrasts)
+                    responseOverTime = nanmean(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]).combined);
+                    
+                    responseOverTime_withoutNaNs = responseOverTime(~isnan(responseOverTime));
+                    AUC = (trapz(responseOverTime_withoutNaNs));
+                    normalizedAUC = AUC/(length(responseOverTime_withoutNaNs));
+                    
+                    % timebase, which is hard-coded for what was used for these
+                    % response over time calculations:
+                    timebase = 0:0.1:17.5;
+                    windowOnsetIndex = find(timebase == 2.5);
+                    windowOffsetIndex = find(timebase == 4.5);
+                    normalizedPulseAUC = sum(responseOverTime(windowOnsetIndex:windowOffsetIndex))/(windowOffsetIndex - windowOnsetIndex + 1);
+                    
+                    
+                    emgRMSStruct.responseOverTime.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = responseOverTime;
+                    emgRMSStruct.AUC.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = AUC;
+                    emgRMSStruct.normalizedAUC.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedAUC;
+                    emgRMSStruct.normalizedPulseAUC.(['experiment_', num2str(experiment)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = normalizedPulseAUC;
+                end
+            end
+        end
+        
     end
     
 end
