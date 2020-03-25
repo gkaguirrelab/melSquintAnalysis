@@ -73,6 +73,12 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
     % Save figure 1
     print(figHandle1, '~/Desktop/pupil_fit.pdf', '-dpdf', '-fillpage')
 %}
+%{
+    % Fit the EMG data
+    [~, figHandle2] = fitTwoStageModel('modality','emg','responseMetric', 'normalizedPulseAUC', 'rngSeed',1000);
+    % Save figure 2
+    saveas(figHandle2,'~/Desktop/pupil_params.pdf')
+%}
 
 
 %% Parse input
@@ -80,7 +86,7 @@ p = inputParser;
 
 % Optional params
 p.addParameter('modality','discomfort',@ischar);
-p.addParameter('areaMeasure','AUC',@ischar);
+p.addParameter('responseMetric','AUC',@ischar);
 p.addParameter('pupilScalar',1031,@isscalar);
 p.addParameter('nBoots',1000,@isscalar);
 p.addParameter('rngSeed',[],@(x)(isempty(x)| isnumeric(x) | isstruct(x)));
@@ -95,7 +101,7 @@ p.parse(varargin{:})
 
 %% Extract parameters
 modality = p.Results.modality;
-areaMeasure = p.Results.areaMeasure;
+responseMetric = p.Results.responseMetric;
 nBoots = p.Results.nBoots;
 stimSymbols = p.Results.stimSymbols;
 rngSeed = p.Results.rngSeed;
@@ -166,7 +172,7 @@ switch modality
         
         % Load the data
         [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus] = loadPupilResponses();
-        resultsStruct = resultsStruct.(areaMeasure);
+        resultsStruct = resultsStruct.(responseMetric);
         
         % Bounds for the parameters
         if isempty(p.Results.x0)
@@ -188,6 +194,33 @@ switch modality
         % Define plotting behavior
         yLimFig1 = [-0.05 0.5];
         yLimFig2 = {[0 1],[0 4],[0 0.4],[0 0.4]};
+        
+    case 'emg'
+        
+        % Load the data
+        [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus] = loadEMG();
+        resultsStruct = resultsStruct.(responseMetric);
+        
+        % Bounds for the parameters
+        if isempty(p.Results.x0)
+            x0 = [1 1 0.2 -0.2];
+        else
+            x0 = p.Results.x0;
+        end
+        if isempty(p.Results.lb)
+            lb = [0 0 0 -0.8];
+        else
+            lb = p.Results.lb;
+        end
+        if isempty(p.Results.ub)
+            ub = [4 10 Inf 1];
+        else
+            ub = p.Results.ub;
+        end
+        
+        % Define plotting behavior
+        yLimFig1 = [-0.3 3];
+        yLimFig2 = {[0 5],[0 10],[0 1],[0 1]};
         
 end
 
