@@ -1,4 +1,4 @@
-function [ emgRMSStruct, subjectIDsStruct ] = loadEMG(varargin)
+function [ emgRMSStruct, subjectIDsStruct, MelContrastByStimulus, LMSContrastByStimulus] = loadEMG(varargin)
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('calculateRMS',false, @islogical);
@@ -199,6 +199,11 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     mwoaSubjects = unique(mwoaSubjects);
     controlSubjects = unique(controlSubjects);
     
+        subjectListStruct = [];
+    subjectListStruct.mwaSubjects = mwaSubjects;
+    subjectListStruct.mwoaSubjects = mwoaSubjects;
+    subjectListStruct.controlSubjects = controlSubjects;
+    
     emgRMSStruct.normalizedRMS.mwa = mwaRMSnormalized;
     emgRMSStruct.normalizedRMS.mwoa = mwoaRMSnormalized;
     emgRMSStruct.normalizedRMS.controls = controlRMSnormalized;
@@ -282,5 +287,10 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
 end
 
 
+% Assemble the melanopsin and cone contrasts for each stimulus type. We
+% treat light flux stimuli as having equal contrast on the mel and LMS
+% photoreceptor pools.
+MelContrastByStimulus = [100 200 400 0 0 0 100 200 400];
+LMSContrastByStimulus = [0 0 0 100 200 400 100 200 400];
 
 end
