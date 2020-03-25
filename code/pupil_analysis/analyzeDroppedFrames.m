@@ -41,7 +41,7 @@ function [droppedFramesTrialStruct, droppedFramesMeanStruct] = analyzeDroppedFra
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
 
-p.addParameter('range','pulse',@ischar);
+p.addParameter('range','shiftedPulse',@ischar);
 p.addParameter('whichBadFrames','blinks',@ischar);
 
 % Parse and check the parameters
@@ -89,12 +89,18 @@ for ss = 1:length(subjectIDs)
             
             % figure out the number of frames in the given trial
             nTrials = length(trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+            
+            droppedFramesForStimulusType = [];
             for tt = 1:nTrials
                 
                 % figure out index range over which we're looking for
                 % dropped pulses
                 if strcmp(p.Results.range, 'pulse')
                     rangeIndices = [trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.pulseOnsetIndex, trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.pulseOffsetIndex];
+                elseif strcmp(p.Results.range, 'shiftedPulse')
+                    [~, beginningIndex ] = min(abs(2.5-trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase));
+                    [~, endingIndex ] = min(abs(6.5-trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase));
+                    rangeIndices = [beginningIndex, endingIndex];
                 elseif strcmp(p.Results.range, 'wholeTrial')
                     rangeIndices = [1 length(trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase)];
                 end
@@ -116,7 +122,7 @@ for ss = 1:length(subjectIDs)
                 % save out results per trial
                 droppedFramesTrialStruct.(groupLabel).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(tt) = length(droppedFrames);
                 
-
+                droppedFramesForStimulusType = [length(droppedFrames), droppedFramesForStimulusType];
 
             end
             
@@ -146,7 +152,7 @@ else
 
 end
 
-if strcmp(p.Results.range, 'pulse')
+if strcmp(p.Results.range, 'pulse') || strcmp(p.Results.range, 'shiftedPulse')
     yLims = [0 90];
     
 elseif strcmp(p.Results.range, 'wholeTrial')
