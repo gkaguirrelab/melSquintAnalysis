@@ -246,25 +246,25 @@ plotDeuteranopeResult(AUC.experiment_1, AUC.experiment_2, trichromatAUCStruct, '
 savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'discomfortRatings', 'deuteranopes');
 
 % Plot experiment 1 results alone
-plotDeuteranopeResult(discomfortRatingsStruct.experiment_1, [], [], 'savePath', savePath, 'saveName', 'experiment1.pdf', 'yLims', [-0.5 10.1], 'yLabel', 'Discomfort Rating');
+newPlotDeuteranopes(discomfortRatingsStruct.experiment_1, [], [], 'savePath', savePath, 'saveName', 'experiment1', 'yLims', [-0.5 10.1], 'yLabel', 'Discomfort Rating');
 
 % Plot experiment 2 results alone
-plotDeuteranopeResult([], discomfortRatingsStruct.experiment_2, [], 'savePath', savePath, 'saveName', 'experiment2.pdf', 'yLims', [-0.5 10.1], 'yLabel', 'Discomfort Rating');
+newPlotDeuteranopes([], discomfortRatingsStruct.experiment_2, [], 'savePath', savePath, 'saveName', 'experiment2', 'yLims', [-0.5 10.1], 'yLabel', 'Discomfort Rating');
 
 
 % Plot comparison between high and low contrast experiments
-plotDeuteranopeResult(discomfortRatingsStruct.experiment_1, discomfortRatingsStruct.experiment_2, [], 'savePath', savePath, 'saveName', 'combinedExperiments.pdf', 'yLims', [-0.5 10.1], 'yLabel', 'Discomfort Rating');
+newPlotDeuteranopes(discomfortRatingsStruct.experiment_1, discomfortRatingsStruct.experiment_2, [], 'savePath', savePath, 'saveName', 'combinedExperiments', 'yLims', [-0.5 10.1], 'yLabel', 'Discomfort Rating');
 
 % Add trichomats for comparison
 [trichromatResultsStruct] = loadDiscomfortRatings('protocol', 'SquintToPulse');
-trichromatDiscomfortStruct = trichromatResultsStruct.controlDiscomfort;
+trichromatDiscomfortStruct = trichromatResultsStruct.controls;
 
-plotDeuteranopeResult(discomfortRatingsStruct.experiment_1, [], trichromatDiscomfortStruct, 'savePath', savePath, 'saveName', 'experiment1_withTrichromats.pdf', 'yLims', [-0.5 10.1], 'yLabel', 'Discomfort Rating');
-plotDeuteranopeResult(discomfortRatingsStruct.experiment_1, discomfortRatingsStruct.experiment_2, trichromatDiscomfortStruct, 'savePath', savePath, 'saveName', 'combinedExperiments_withTrichromats.pdf', 'yLims', [-0.5 10.1], 'yLabel', 'Discomfort Rating');
+newPlotDeuteranopes(discomfortRatingsStruct.experiment_1, [], trichromatDiscomfortStruct, 'savePath', savePath, 'saveName', 'experiment1_withTrichromats', 'yLims', [-0.5 10.1], 'yLabel', 'Discomfort Rating');
+newPlotDeuteranopes(discomfortRatingsStruct.experiment_1, discomfortRatingsStruct.experiment_2, trichromatDiscomfortStruct, 'savePath', savePath, 'saveName', 'combinedExperiments_withTrichromats', 'yLims', [-0.5 10.1], 'yLabel', 'Discomfort Rating');
 
 
 % 400% comparison
-plotDeuteranopeResult(discomfortRatingsStruct.experiment_1, discomfortRatingsStruct.experiment_2, trichromatDiscomfortStruct, 'savePath', savePath, 'saveName', '400ContrastComparison.pdf', 'whichPlot', '400Comparison', 'ylabel', 'Discomfort Rating to 400% Contrast');
+plotDeuteranopeResult(discomfortRatingsStruct.experiment_1, discomfortRatingsStruct.experiment_2, trichromatDiscomfortStruct, 'savePath', savePath, 'saveName', '400ContrastComparison', 'whichPlot', '400Comparison', 'ylabel', 'Discomfort Rating to 400% Contrast');
 
 
 
