@@ -9,7 +9,7 @@ if strcmp(responseModality, 'discomfortRatings')
     yLims = [0 10.5];
     yTicks = [0 5 10];
     yTickLabels = [0 5 10];
-    yLabel('Discomfort Ratings');
+    yLabel = 'Discomfort Ratings';
 elseif strcmp(responseModality, 'emg')
     [ resultsStruct ] = loadEMG;
      resultsStruct = resultsStruct.(responseMetric);
@@ -17,7 +17,7 @@ elseif strcmp(responseModality, 'emg')
      yLims = [-.3 3];
      yTicks = [0, 1 2 3];
      yTickLabels = {'0' '100%' '200%', '300%'};
-     ylabel('Squint');
+     yLabel = 'Squint';
 
 elseif strcmp(responseModality, 'pupil')
     [ resultsStruct ] = loadPupilResponses;
