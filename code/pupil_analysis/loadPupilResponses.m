@@ -320,6 +320,14 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
     percentPersistentStruct.mwa = mwaPercentPersistent;
     percentPersistentStruct.mwoa = mwoaPercentPersistent;
     percentPersistentStruct.controls = controlPercentPersistent;
+    
+    resultsStruct.responseOverTime = responseOverTimeStruct;
+    resultsStruct.AUC = AUCStruct;
+    resultsStruct.normalizedAUC = normalizedAUCStruct;
+    resultsStruct.amplitude = amplitudeStruct;
+    resultsStruct.percentPersistent = percentPersistentStruct;
+    resultsStruct.subjects = subjectListStruct;
+    resultsStruct.peakAmplitude = peakAmplitudeStruct;
 
 %% Now Deuteranope experiment
 elseif strcmp(p.Results.protocol, 'Deuteranopes')
@@ -395,7 +403,7 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
                     SEM = nanstd(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]))/sqrt(size(trialStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]),1));
                     
                     % calculate AUC
-                    AUC = abs(trapz(subjectAverageResponse(numberOfIndicesToExclude:end-numberOfIndicesToExclude)));
+                    AUC = abs(trapz(subjectAverageResponse(beginningNumberOfIndicesToExclude:end-endingNumberOfIndicesToExclude)));
                     
                     % stash result
                     responseOverTimeStruct.(experimentName).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1,:) = subjectAverageResponse;
@@ -503,17 +511,17 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
         end
     end
     
-    % percentPersistent
-    
-end
-
-resultsStruct.responseOverTime = responseOverTimeStruct;
+    resultsStruct.responseOverTime = responseOverTimeStruct;
 resultsStruct.AUC = AUCStruct;
-resultsStruct.normalizedAUC = normalizedAUCStruct;
+%resultsStruct.normalizedAUC = normalizedAUCStruct;
 resultsStruct.amplitude = amplitudeStruct;
 resultsStruct.percentPersistent = percentPersistentStruct;
 resultsStruct.subjects = subjectListStruct;
-resultsStruct.peakAmplitude = peakAmplitudeStruct;
+%resultsStruct.peakAmplitude = peakAmplitudeStruct;
+    
+end
+
+
 
 
 % Restore the warning state
