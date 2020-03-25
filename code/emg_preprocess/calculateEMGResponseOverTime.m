@@ -59,6 +59,11 @@ function [ trialStruct ] = calculateEMGResponseOverTime(subjectID, varargin)
 %                           RMS from each trial
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
+p.addParameter('protocol', 'SquintToPulse', @ischar);
+p.addParameter('experimentName', [], @ischar);
+p.addParameter('contrasts', {100, 200, 400}, @iscell);
+p.addParameter('stimuli', {'Melanopsin', 'LMS', 'LightFlux'}, @iscell);
+
 p.addParameter('makePlots',true,@islogical);
 p.addParameter('makeDebugPlots',false,@islogical);
 p.addParameter('normalize',true,@islogical);
@@ -71,8 +76,6 @@ p.addParameter('baselineOnset',0,@isnumeric);
 p.addParameter('baselineOffset',1.5,@isnumeric);
 p.addParameter('confidenceInterval', [10 90], @isnumeric);
 p.addParameter('sessions', {}, @iscell);
-p.addParameter('contrasts', {100, 200, 400}, @iscell);
-p.addParameter('stimuli', {'Melanopsin', 'LMS', 'LightFlux'}, @iscell);
 p.addParameter('nTimePointsToSkipPlotting', 40, @isnumeric);
 p.addParameter('savePath', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG/responseOverTime'), @ischar);
 p.addParameter('plotShift', 0, @isnumeric);
@@ -81,14 +84,20 @@ p.addParameter('pulseOffset', 5.5, @isnumeric);
 % Parse and check the parameters
 p.parse(varargin{:});
 %% Find the data
-analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', subjectID);
+if strcmp(p.Results.protocol, 'SquintToPulse')
+    protocolShortName = 'StP';
+elseif strcmp(p.Results.protocol, 'Deuteranopes')
+    protocolShortName = 'Deuteranopes';
+end
+
+analysisBasePath = fullfile(getpref('melSquintAnalysis','melaProcessingPath'), 'Experiments/OLApproach_Squint/',p.Results.protocol, '/DataFiles/', subjectID, p.Results.experimentName);
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 % figure out the number of completed sessions
-potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, '2*session*'));
+potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles', subjectID, p.Results.experimentName, '2*session*'));
 potentialNumberOfSessions = length(potentialSessions);
 % initialize outputStruct
-stimuli = {'Melanopsin', 'LMS', 'LightFlux'};
-contrasts = {100, 200, 400};
+stimuli = p.Results.stimuli;
+contrasts = p.Results.contrasts;
 for ss = 1:length(stimuli)
     for cc = 1:length(contrasts)
         trialStruct.(stimuli{ss}).(['Contrast', num2str(contrasts{cc})]).left = [];
@@ -104,7 +113,7 @@ if isempty(p.Results.sessions)
         for aa = 1:6
             trials = [];
             for tt = 1:10
-                if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d.mp4', tt)), 'file');
+                if exist(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles', subjectID, p.Results.experimentName, potentialSessions(ss).name, sprintf('videoFiles_acquisition_%02d', aa), sprintf('trial_%03d.mp4', tt)), 'file')
                     trials = [trials, tt];
                 end
             end
@@ -121,7 +130,7 @@ if isempty(p.Results.sessions)
     % get session IDs
     sessionIDs = [];
     for ss = numberOfCompletedSessions
-        potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sprintf('*session_%d*', ss)));
+        potentialSessions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles', subjectID, p.Results.experimentName, sprintf('*session_%d*', ss)));
         % in the event of more than one entry for a given session (which would
         % happen if something weird happened with a session and it was
         % restarted on a different day), it'll grab the later dated session,
@@ -141,7 +150,7 @@ sessionIDs = sessionIDs(~cellfun('isempty',sessionIDs));
 for ss = 1:length(sessionIDs)
     sessionNumber = strsplit(sessionIDs{ss}, 'session_');
     sessionNumber = sessionNumber{2};
-    availableAcquisitions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, 's*acquisition*_emg.mat'));
+    availableAcquisitions = dir(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, 's*acquisition*_emg.mat'));
     
     acquisitions = [];
     for aa = 1:length(availableAcquisitions)
@@ -154,9 +163,9 @@ for ss = 1:length(sessionIDs)
     
     
     for aa = acquisitions
-        stimulusDataFile = fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_base.mat', str2num(sessionNumber),aa));
+        stimulusDataFile = fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_base.mat', str2num(sessionNumber), protocolShortName, aa));
         if exist(stimulusDataFile)
-            acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles', subjectID, sessionIDs{ss}, sprintf('session_%d_StP_acquisition%02d_emg.mat', str2num(sessionNumber),aa)));
+            acquisitionData = load(fullfile(dataBasePath, 'Experiments/OLApproach_Squint/', p.Results.protocol, '/DataFiles', subjectID, p.Results.experimentName, sessionIDs{ss}, sprintf('session_%d_%s_acquisition%02d_emg.mat', str2num(sessionNumber),protocolShortName, aa)));
             stimulusData = load(stimulusDataFile);
             
             if p.Results.makeDebugPlots
@@ -175,8 +184,9 @@ for ss = 1:length(sessionIDs)
                     % adjust timebase for the delay in issuing the
                     % beginning recording command and the actual beginning
                     % of data recording
-                    trialData.response.timebase = trialData.response.timebase + p.Results.delayInSecs;
-                    
+                    if trialData.response.timebase(1) == 0
+                        trialData.response.timebase = trialData.response.timebase + p.Results.delayInSecs;
+                    end
                     % center the voltages at 0. we've noticed that for whatever
                     % reason, the baseline EMG results are not centered around
                     % 0, but are in fact shifted a bit negative. even more
@@ -249,15 +259,18 @@ for ss = 1:length(sessionIDs)
                     
                     % stash the trial
                     % first figure out what type of trial we're working with
-                    directionNameLong = stimulusData.trialList(tt).modulationData.modulationParams.direction;
-                    directionNameSplit = strsplit(directionNameLong, ' ');
-                    if strcmp(directionNameSplit{1}, 'Light')
-                        directionName = 'LightFlux';
-                    else
-                        directionName = directionNameSplit{1};
-                    end
-                    contrastLong = strsplit(directionNameLong, '%');
-                    contrast = contrastLong{1}(end-2:end);
+                        directionNameLong = stimulusData.trialList(tt).modulationData.modulationParams.direction;
+                        directionNameSplit = strsplit(directionNameLong, ' ');
+                        if strcmp(directionNameSplit{1}, 'Light')
+                            directionName = 'LightFlux';
+                        elseif strcmp(directionNameSplit{1}, 'L+S')
+                            directionName = 'LS';
+                        else
+                            directionName = directionNameSplit{1};
+                        end
+                        contrastLong = strsplit(directionNameLong, '%');
+                        contrastLong = strsplit(contrastLong{1}, ' ');
+                        contrast = contrastLong{end};
                     % pool the results
                     nItems = size((trialStruct.(directionName).(['Contrast', contrast]).left),1);
                     if (p.Results.normalize)
@@ -286,11 +299,20 @@ for ss = 1:length(sessionIDs)
 end
 
 % save out trialStruct
-fullSavePath = fullfile(p.Results.savePath, ['WindowLength_', num2str(p.Results.STDWindowSizeInMSecs), 'MSecs'], 'trialStructs');
+if strcmp(p.Results.protocol, 'SquintToPulse')
+    fullSavePath = fullfile(p.Results.savePath, ['WindowLength_', num2str(p.Results.STDWindowSizeInMSecs), 'MSecs'], 'trialStructs');
+elseif strcmp(p.Results.protocol, 'Deuteranopes')
+    fullSavePath = fullfile(p.Results.savePath, p.Results.protocol, ['WindowLength_', num2str(p.Results.STDWindowSizeInMSecs), 'MSecs'], 'trialStructs');  
+end
 if ~exist(fullSavePath)
     mkdir(fullSavePath);
 end
-save(fullfile(fullSavePath, subjectID), 'trialStruct');
+
+if strcmp(p.Results.protocol, 'SquintToPulse')
+    save(fullfile(fullSavePath, subjectID), 'trialStruct');
+elseif strcmp(p.Results.protocol, 'Deuteranopes')
+    save(fullfile(fullSavePath, [subjectID, '_', p.Results.experimentName]), 'trialStruct');
+end
 %% Plot to summarize
 makePlots = p.Results.makePlots;
 if makePlots
@@ -352,12 +374,22 @@ if makePlots
     
     linkaxes([ax.ax1, ax.ax2, ax.ax3]);
     
-    fullSavePath = fullfile(p.Results.savePath, ['WindowLength_', num2str(p.Results.STDWindowSizeInMSecs), 'MSecs']);
+    
+    if strcmp(p.Results.protocol, 'SquintToPulse')
+        fullSavePath = fullfile(p.Results.savePath, ['WindowLength_', num2str(p.Results.STDWindowSizeInMSecs), 'MSecs']);
+    elseif strcmp(p.Results.protocol, 'Deuteranopes')
+        fullSavePath = fullfile(p.Results.savePath, p.Results.protocol, ['WindowLength_', num2str(p.Results.STDWindowSizeInMSecs), 'MSecs']);
+    end
     
     if ~exist(fullSavePath)
         mkdir(fullSavePath)
     end
     
+     if strcmp(p.Results.protocol, 'SquintToPulse')
+    print(plotFig, fullfile(fullSavePath, subjectID), '-dpdf', '-fillpage')
+    elseif strcmp(p.Results.protocol, 'Deuteranopes')
+    print(plotFig, fullfile(fullSavePath, [subjectID, '_', p.Results.experimentName]), '-dpdf', '-fillpage')
+    end
     print(plotFig, fullfile(fullSavePath, subjectID), '-dpdf', '-fillpage')
     
 end
