@@ -9,14 +9,15 @@ if strcmp(responseModality, 'discomfortRatings')
     yLims = [0 10.5];
     yTicks = [0 5 10];
     yTickLabels = [0 5 10];
-
+    yLabel('Discomfort Ratings');
 elseif strcmp(responseModality, 'emg')
     [ resultsStruct ] = loadEMG;
      resultsStruct = resultsStruct.(responseMetric);
      
-         yLims = [-.3 3];
-    yTicks = [0, 1 2 3];
-    yTickLabels = {'0' '100%' '200%', '300%'};
+     yLims = [-.3 3];
+     yTicks = [0, 1 2 3];
+     yTickLabels = {'0' '100%' '200%', '300%'};
+     ylabel('Squint');
 
 elseif strcmp(responseModality, 'pupil')
     [ resultsStruct ] = loadPupilResponses;
@@ -25,6 +26,14 @@ elseif strcmp(responseModality, 'pupil')
     yLims = [0 0.5];
     yTicks = [0, 0.25, 0.5];
     yTickLabels = {'0' '25%' '50%'};
+    yLabel = 'Pupil Constriction';
+elseif strcmp(responseModality, 'droppedFrames')
+    [ ~, resultsStruct ] = analyzeDroppedFrames;
+    yLims = [0 80];
+    yTicks = [0 40 80];
+    yTickLabels = yTicks;
+    yLabel = '# Blink Frames';
+    
 end
 [ slope, intercept, meanRating ] = fitLineToResponseModality(responseModality, 'responseMetric', responseMetric, 'makePlots', false, 'makeCSV', false);
 
@@ -56,12 +65,12 @@ for stimulus = 1:length(stimuli)
         
         if group  == 1
             if stimulus == 1
-                ylabel({'{\bf\fontsize{15} Light Flux}'; 'Discomfort Rating'})
+                ylabel({'{\bf\fontsize{15} Light Flux}'; yLabel})
             elseif stimulus == 2
-                ylabel({'{\bf\fontsize{15} Melanopsin}'; 'Discomfort Rating'})
+                ylabel({'{\bf\fontsize{15} Melanopsin}'; yLabel})
                 
             elseif stimulus == 3
-                ylabel({'{\bf\fontsize{15} LMS}'; 'Discomfort Rating'})
+                ylabel({'{\bf\fontsize{15} LMS}'; yLabel})
                 
             end
             
