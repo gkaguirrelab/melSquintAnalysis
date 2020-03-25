@@ -6,6 +6,7 @@ p = inputParser; p.KeepUnmatched = true;
 p.addParameter('savePath', [] ,@isstr);
 p.addParameter('saveName', [] ,@isstr);
 p.addParameter('yLims', [] ,@isnumeric);
+p.addParameter('yTicks', [0 5 10] ,@isnumeric);
 p.addParameter('shiftDistance', 0.5, @isnumeric);
 p.addParameter('stimulusLabelMultiplier', 1.2 ,@isnumeric);
 p.addParameter('figureWidthInches', 15, @isnumeric);
@@ -136,7 +137,7 @@ if strcmp(p.Results.whichPlot, 'experimentComparison')
         end
         
         ylim([p.Results.yLims(1), p.Results.yLims(2)]);
-        yticks([0 5 10]);
+        yticks(p.Results.yTicks);
         xlim([xValues(1) - 0.5*shiftDistance, xValues(end) + 0.5*shiftDistance])
         
         if stimulus == 1
