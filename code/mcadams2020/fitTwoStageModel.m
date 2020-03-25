@@ -11,10 +11,14 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
 %
 % Optional key-value pairs:
 %  'modality'             - Char vector. Which data set to operate upon. 
-%                           Valid options are: {'pupil','discomfort'}
+%                           Valid options are:
+%                               {'pupil','discomfort','EMG'}
 %  'areaMeasure'          - Char vector. For the pupil data, we have two 
 %                           ways to estimate the data amplitude, the
-%                           options being: {'AUC','TPUP'}
+%                           options being:
+%                               {'AUC','TPUP'}
+%                           and for the EMG data, the options are:
+%                               {'normalizedPulseAUC'}
 %  'pupilScalar'          - Scalar. The pupil response data are recorded as
 %                           integrated (over time) response area. By
 %                           dividing these values by this scalar, we obtain
@@ -62,7 +66,7 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
     % Fit the pupil data
     [~, figHandle2] = fitTwoStageModel('modality','pupil','rngSeed',1000);
     % Save figure 2
-    saveas(figHandle2,'~/Desktop/pupil_params.pdf')
+    print(figHandle2,'~/Desktop/pupil_params.pdf')
 %}
 %{
     % Re-fit the pupil data, locking all parameters
@@ -75,9 +79,10 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
 %}
 %{
     % Fit the EMG data
-    [~, figHandle2] = fitTwoStageModel('modality','emg','responseMetric', 'normalizedPulseAUC', 'rngSeed',1000);
-    % Save figure 2
-    saveas(figHandle2,'~/Desktop/pupil_params.pdf')
+    [figHandle1, figHandle2] = fitTwoStageModel('modality','emg','responseMetric', 'normalizedPulseAUC', 'rngSeed',1000);
+    % Save figures
+    print(figHandle1, '~/Desktop/emg_fit.pdf', '-dpdf', '-fillpage')
+    print(figHandle2,'~/Desktop/emg_params.pdf')
 %}
 
 
@@ -90,6 +95,7 @@ p.addParameter('responseMetric','AUC',@ischar);
 p.addParameter('pupilScalar',1031,@isscalar);
 p.addParameter('nBoots',1000,@isscalar);
 p.addParameter('rngSeed',[],@(x)(isempty(x)| isnumeric(x) | isstruct(x)));
+p.addParameter('meanCenteredR2',true,@islogical);
 p.addParameter('stimSymbols',{'o','o','o'},@iscell);
 p.addParameter('x0',[],@(x)(isempty(x) | isnumeric(x)));
 p.addParameter('lb',[],@(x)(isempty(x) | isnumeric(x)));
@@ -120,8 +126,8 @@ rng(rngSeed);
 % The norms to use for model fitting. While we would prefer to use the L1
 % norm to aggregate data across subjects within a stimulus, we find that
 % this leads to unstable model fits for the discomfort data, as these data
-% are discrete. We therefore adopt the L2 norm for the analysis of both the
-% discomfort and pupil data for consistency. We fit the model to these mean
+% are discrete. We therefore adopt the L2 norm for the analysis of data of
+% all modalities for consistency. We fit the model to these mean
 % response measures across stimuli, and perform a non-parametric search
 % across model parameters to optimize the L2 norm. This model fitting is
 % performed across bootstraps. We observe that the parameters yielded
@@ -164,7 +170,13 @@ switch modality
             ub = p.Results.ub;
         end
         
+        % Define the parameter names
+        yLabels = {'alpha_{mel}','beta','slope','offset'};
+        
         % Define plotting behavior
+        xLimFig1 = [log10(25) log10(800)];
+        xticksFig1 = [log10(25) log10(50) log10(100) log10(200) log10(400) log10(800)];
+        xticklabelsFig1 = {'0.25','0.5','1','2','4','8'};
         yLimFig1 = [-1 10];
         yLimFig2 = {[0 1],[0 4],[0 6],[0 6]};
         
@@ -190,8 +202,14 @@ switch modality
         else
             ub = p.Results.ub;
         end
-        
+
+        % Define the parameter names
+        yLabels = {'alpha_{mel}','beta','slope','offset'};
+
         % Define plotting behavior
+        xLimFig1 = [log10(25) log10(800)];
+        xticksFig1 = [log10(25) log10(50) log10(100) log10(200) log10(400) log10(800)];
+        xticklabelsFig1 = {'0.25','0.5','1','2','4','8'};
         yLimFig1 = [-0.05 0.5];
         yLimFig2 = {[0 1],[0 4],[0 0.4],[0 0.4]};
         
@@ -203,24 +221,30 @@ switch modality
         
         % Bounds for the parameters
         if isempty(p.Results.x0)
-            x0 = [1 1 0.2 -0.2];
+            x0 = [1 100 0.05 0.1];
         else
             x0 = p.Results.x0;
         end
         if isempty(p.Results.lb)
-            lb = [0 0 0 -0.8];
+            lb = [0 100 0 0];
         else
             lb = p.Results.lb;
         end
         if isempty(p.Results.ub)
-            ub = [4 10 Inf 1];
+            ub = [10 100 Inf 1];
         else
             ub = p.Results.ub;
         end
         
+        % Define the parameter names
+        yLabels = {'alpha_{lms}','beta','slope','offset'};
+
         % Define plotting behavior
+        xLimFig1 = [log10(25) log10(800)];
+        xticksFig1 = [log10(25) log10(50) log10(100) log10(200) log10(400) log10(800)];
+        xticklabelsFig1 = {'0.25','0.5','1','2','4','8'};
         yLimFig1 = [-0.3 3];
-        yLimFig2 = {[0 5],[0 10],[0 1],[0 1]};
+        yLimFig2 = {[0 1],[0 100],[0 0.2],[0 0.5]};
         
 end
 
@@ -234,7 +258,6 @@ options.Display = 'off';
 % Define some properties for the plots
 groupLabels = {'controls','mwa','mwoa'};
 groupColors = {'k','b','r'};
-yLabels = {'alpha','beta','slope','offset'};
 
 % Open a figure to plot the data
 figHandle1 = figure();
@@ -275,7 +298,14 @@ for gg = 1:nGroups
     
     % Stage 1 of the model transforms mel and cone contrast into log10
     % "ipRGC" contrast
-    myModelStage1 = @(k) log10(((k(1).*MelContrastByStimulus).^k(2) + LMSContrastByStimulus.^k(2)).^(1/k(2)));
+    switch yLabels{1}
+        case 'alpha_{mel}'
+            myModelStage1 = @(k) log10(( (k(1).*MelContrastByStimulus).^k(2) + (LMSContrastByStimulus).^k(2) ).^(1/k(2)));
+        case 'alpha_{lms}'
+            myModelStage1 = @(k) log10(( (MelContrastByStimulus).^k(2) + (k(1).*LMSContrastByStimulus).^k(2) ).^(1/k(2)));
+        otherwise
+            error('Not a recognized form of the alpha parameter');
+    end
     
     % The full model then applies a slope and intercept parameter to log
     % ipRGC contrast
@@ -306,13 +336,6 @@ for gg = 1:nGroups
         % Save the params
         pBoot(gg,bb,:) = pB;
         
-        % Obtain the r2 between the model and the data
-        dFit = myModel(pB(1:2),pB(3:4));
-        mss = sum(dFit.^2);
-        rss = sum((dFit-d).^2);
-        
-        r2byGroupByBoot(gg,bb) = mss/(mss+rss);
-        
     end
     
     % Prepare a sub-plot
@@ -326,10 +349,49 @@ for gg = 1:nGroups
             params = mean(squeeze(pBoot(gg,:,:)));
     end
     
-    % The ipRGC contrast values implied by the stage 1 parameters, brpken
+    % Perform a second boot-strap to find the R2 of these parameters to the
+    % data. First, we get the model that is defined by the central tendency
+    % of the parameters
+    dFit = myModel(params(1:2),params(3:4));
+    if p.Results.meanCenteredR2
+        dFit = dFit - mean(dFit);
+    end
+    mss = sum(dFit.^2);
+
+    % Now loop over boots and obtain the R^2 of the fit to versions of the
+    % resampled data.
+    for bb = 1:nBoots
+        
+        % Resample across columns (subjects) with replacement
+        d = dVeridical(:,datasample(1:nSubjectsPerGroup,nSubjectsPerGroup));            
+
+        % How do we aggregate the values across subjects?
+        switch subNorm
+            case 1
+                % Fit the median value across subjects
+                d = median(d,2)';
+            case 2
+                % Fit the mean value across subjects
+                d = mean(d,2)';
+        end
+        
+        if p.Results.meanCenteredR2
+        d = d - mean(d);
+        end
+
+        % The residual sum of squares
+        rss = sum((dFit-d).^2);
+        
+        % The R2 is the proportion of the total variance that is explained
+        % by the model
+        r2byGroupByBoot(gg,bb) = mss/(mss+rss);
+        
+    end
+    
+    % The ipRGC contrast values implied by the stage 1 parameters, broken
     % down into the different stimulus types. These are the x-values for
     % the plot
-    ipRGCContrastValues = unique(myModelStage1(params(1:2)));
+    ipRGCContrastValues = myModelStage1(params(1:2));
     xSetsByStim = {[1 4 7],[2 5 8],[3 6 9]};
     
     % The subject responses by stimulus type; these are the y-values for
@@ -341,7 +403,7 @@ for gg = 1:nGroups
     for ss = 1:nStimuli
         x = ipRGCContrastValues(xSetsByStim{ss});
         y = dVeridical(ySetsByStim{ss},:)';
-        h = scatter(repmat(x, 1, nSubjectsPerGroup), y(:), 7, stimSymbols{ss});
+        h = scatter(repmat(x, 1, nSubjectsPerGroup), y(:), 7, 'o');
         h.MarkerFaceColor = groupColors{gg};
         h.MarkerEdgeColor = 'none';
         h.MarkerFaceAlpha = 0.2;
@@ -367,10 +429,10 @@ for gg = 1:nGroups
     text(log10(25),yLimFig1(2)*0.9,str,'VerticalAlignment','bottom');
     
     % Clean up the plot
+    xlim(xLimFig1);
+    xticks(xticksFig1)
+    xticklabels(xticklabelsFig1)
     ylim(yLimFig1);
-    xlim([log10(25) log10(800)]);
-    xticks([log10(25) log10(50) log10(100) log10(200) log10(400) log10(800)])
-    xticklabels({'0.25','0.5','1','2','4','8'})
     title(groupLabels{gg});
     pbaspect([1.5 1 1])
     
