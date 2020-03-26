@@ -25,7 +25,6 @@ plotlabOBJ = plotlab();
 
 
 
-hFig = figure(1); clf; hold on;
 if strcmp(p.Results.whichPlot, 'experimentComparison')
     
     % Apply the default plotlab recipe overriding
