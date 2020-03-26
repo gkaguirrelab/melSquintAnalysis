@@ -66,7 +66,7 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
     % Fit the pupil data
     [~, figHandle2] = fitTwoStageModel('modality','pupil','rngSeed',1000);
     % Save figure 2
-    saveas(figHandle2,'~/Desktop/pupil_params.pdf')
+    saveas(figHandle2,'~/Desktop/pupil_params.pdf', '-dpdf', '-fillpage')
 %}
 %{
     % Re-fit the pupil data, locking all parameters
@@ -82,7 +82,7 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
     [figHandle1, figHandle2] = fitTwoStageModel('modality','emg','responseMetric', 'normalizedPulseAUC', 'rngSeed',1000);
     % Save figures
     saveas(figHandle1, '~/Desktop/emg_fit.pdf', '-dpdf', '-fillpage')
-    saveas(figHandle2,'~/Desktop/emg_params.pdf')
+    saveas(figHandle2, '~/Desktop/emg_params.pdf', '-dpdf', '-fillpage')
 %}
 
 
@@ -97,6 +97,7 @@ p.addParameter('nBoots',1000,@isscalar);
 p.addParameter('rngSeed',[],@(x)(isempty(x)| isnumeric(x) | isstruct(x)));
 p.addParameter('meanCenteredR2',true,@islogical);
 p.addParameter('stimSymbols',{'o','o','o'},@iscell);
+p.addParameter('stimLabels',{'m','c','f'},@iscell);
 p.addParameter('x0',[],@(x)(isempty(x) | isnumeric(x)));
 p.addParameter('lb',[],@(x)(isempty(x) | isnumeric(x)));
 p.addParameter('ub',[],@(x)(isempty(x) | isnumeric(x)));
@@ -118,7 +119,6 @@ if isempty(rngSeed)
     rngSeed = rng('default');
 end
 rng(rngSeed);
-
 
 
 %% Hard-coded variables
@@ -143,6 +143,7 @@ nParams = 4;
 
 % Properties of the dataset
 nStimuli = 3;
+nContrasts = 3;
 nGroups = 3;
 nSubjectsPerGroup = 20;
 
@@ -409,14 +410,20 @@ for gg = 1:nGroups
         h.MarkerFaceAlpha = 0.2;
         
         % Add the central tendency of the response across subjects for each
-        % stimulus type
+        % stimulus type.
         switch subNorm
             case 1
-                plot(x, median(y), [stimSymbols{ss} groupColors{gg}],'MarkerSize',7);
+                y = median(y);
+                plot(x, y, [stimSymbols{ss} groupColors{gg}],'MarkerSize',7);
             case 2
-                plot(x, mean(y), [stimSymbols{ss} groupColors{gg}],'MarkerSize',7);
+                y = mean(y);
+                plot(x, y, [stimSymbols{ss} groupColors{gg}],'MarkerSize',7);
         end
-                
+
+        % Include a text label so we know which stimulus is which even if
+        % we use the same plot symbols
+        text(x, y, p.Results.stimLabels{ss}, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');        
+        
     end
     
     % Add the model fit line using the central tendency of the parameters
@@ -457,7 +464,7 @@ switch groupNorm
         m=mean(m);
 end
 str = sprintf('central tendency params across bootstraps and groups: [%2.4f, %2.4f, %2.4f, %2.4f]\n\n',m);
-fprintf(str);
+fsaveasf(str);
 
 
 %% Report the R2 (±SEM) for each group across bootstraps
@@ -473,7 +480,7 @@ for gg = 1:nGroups
     end
     str = [str groupLabels{gg} sprintf(': %2.3f \x00B1 %2.5f; ',r2,r2SEM)];
 end
-fprintf([str '\n']);
+fsaveasf([str '\n']);
 
 
 %% Plot the central tendency and SEM of the parameters
@@ -563,8 +570,8 @@ for pp=1:length(yLabels)
         end
     end
     
-    % Print the outline
-    fprintf([outline '\n']);
+    % saveas the outline
+    fsaveasf([outline '\n']);
     
 end
 
