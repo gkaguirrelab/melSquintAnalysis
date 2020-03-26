@@ -76,8 +76,8 @@ if strcmp(p.Results.whichPlot, 'experimentComparison')
             end
             lineProps.col{1} = 'b';
             if strcmp(p.Results.errorType, 'IQR')
-                errorLower = [[(median(trichromatStruct.(trichromatStimulusName).Contrast100)), (median(trichromatStruct.(trichromatStimulusName).Contrast200)), (median(trichromatStruct.(trichromatStimulusName).Contrast400))] - [(prctile(trichromatStruct.(trichromatStimulusName).Contrast100, 25)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast200, 25)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast400, 25))]];
-                errorUpper = ([(prctile(trichromatStruct.(trichromatStimulusName).Contrast100, 75)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast200, 75)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast400, 75))] - [(median(trichromatStruct.(trichromatStimulusName).Contrast100)), (median(trichromatStruct.(trichromatStimulusName).Contrast200)), (median(trichromatStruct.(trichromatStimulusName).Contrast400))]);
+                errorLower = [[(mean(trichromatStruct.(trichromatStimulusName).Contrast100)), (mean(trichromatStruct.(trichromatStimulusName).Contrast200)), (mean(trichromatStruct.(trichromatStimulusName).Contrast400))] - [(prctile(trichromatStruct.(trichromatStimulusName).Contrast100, 25)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast200, 25)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast400, 25))]];
+                errorUpper = ([(prctile(trichromatStruct.(trichromatStimulusName).Contrast100, 75)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast200, 75)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast400, 75))] - [(mean(trichromatStruct.(trichromatStimulusName).Contrast100)), (mean(trichromatStruct.(trichromatStimulusName).Contrast200)), (mean(trichromatStruct.(trichromatStimulusName).Contrast400))]);
             elseif strcmp(p.Results.errorType, 'SEM')
                 SEM = [std(trichromatStruct.(trichromatStimulusName).Contrast100)./sqrt(length(trichromatStruct.(trichromatStimulusName).Contrast100)), std(trichromatStruct.(trichromatStimulusName).Contrast200)./sqrt(length(trichromatStruct.(trichromatStimulusName).Contrast200)), std(trichromatStruct.(trichromatStimulusName).Contrast400)./sqrt(length(trichromatStruct.(trichromatStimulusName).Contrast400))];
                 errorUpper = SEM*2;
@@ -85,8 +85,8 @@ if strcmp(p.Results.whichPlot, 'experimentComparison')
             end
             errorToPlot(1,1:3, 1) = errorUpper;
             errorToPlot(1,1:3, 2) = errorLower;
-            trichromatPlot = plot([log10(100), log10(200), log10(400)]+xShift, [(median(trichromatStruct.(trichromatStimulusName).Contrast100)), (median(trichromatStruct.(trichromatStimulusName).Contrast200)), (median(trichromatStruct.(trichromatStimulusName).Contrast400))], 'Color', 'b');
-            mseb([log10(100), log10(200), log10(400)]+xShift, [(median(trichromatStruct.(trichromatStimulusName).Contrast100)), (median(trichromatStruct.(trichromatStimulusName).Contrast200)), (median(trichromatStruct.(trichromatStimulusName).Contrast400))], ...
+            trichromatPlot = plot([log10(100), log10(200), log10(400)]+xShift, [(mean(trichromatStruct.(trichromatStimulusName).Contrast100)), (mean(trichromatStruct.(trichromatStimulusName).Contrast200)), (mean(trichromatStruct.(trichromatStimulusName).Contrast400))], 'Color', 'b');
+            mseb([log10(100), log10(200), log10(400)]+xShift, [(mean(trichromatStruct.(trichromatStimulusName).Contrast100)), (mean(trichromatStruct.(trichromatStimulusName).Contrast200)), (mean(trichromatStruct.(trichromatStimulusName).Contrast400))], ...
                 errorToPlot, lineProps, 1);
             
             
@@ -111,13 +111,13 @@ if strcmp(p.Results.whichPlot, 'experimentComparison')
             data = [experiment2ResultsStruct.(stimuli{stimulus}).Contrast400; experiment2ResultsStruct.(stimuli{stimulus}).Contrast800; experiment2ResultsStruct.(stimuli{stimulus}).Contrast400];
             %plotSpread(data', 'xValues', [log10(100), log10(200), log10(400)], 'distributionColors', 'k')
             
-            experiment2Plot = plot([log10(400), log10(800), log10(1200)]+xShift, [median(experiment2ResultsStruct.(stimuli{stimulus}).Contrast400), median(experiment2ResultsStruct.(stimuli{stimulus}).Contrast800), median(experiment2ResultsStruct.(stimuli{stimulus}).Contrast1200)], 'Color', 'r');
-            %experiment1Plot = scatter([log10(400), log10(800), log10(1200)], [median(experiment2ResultsStruct.(stimuli{stimulus}).Contrast400), median(experiment2ResultsStruct.(stimuli{stimulus}).Contrast800), median(experiment2ResultsStruct.(stimuli{stimulus}).Contrast1200)], 300, 'ro', 'MarkerFaceAlpha',1);
+            experiment2Plot = plot([log10(400), log10(800), log10(1200)]+xShift, [mean(experiment2ResultsStruct.(stimuli{stimulus}).Contrast400), mean(experiment2ResultsStruct.(stimuli{stimulus}).Contrast800), mean(experiment2ResultsStruct.(stimuli{stimulus}).Contrast1200)], 'Color', 'r');
+            %experiment1Plot = scatter([log10(400), log10(800), log10(1200)], [mean(experiment2ResultsStruct.(stimuli{stimulus}).Contrast400), mean(experiment2ResultsStruct.(stimuli{stimulus}).Contrast800), mean(experiment2ResultsStruct.(stimuli{stimulus}).Contrast1200)], 300, 'ro', 'MarkerFaceAlpha',1);
         end
         
         if ~isempty(experiment1ResultsStruct)
-            experiment1Plot = plot([log10(100), log10(200), log10(400)]+xShift, [median(experiment1ResultsStruct.(stimuli{stimulus}).Contrast100), median(experiment1ResultsStruct.(stimuli{stimulus}).Contrast200), median(experiment1ResultsStruct.(stimuli{stimulus}).Contrast400)], 'Color', 'k');
-            %experiment1Plot = scatter([log10(100), log10(200), log10(400)], [median(experiment1ResultsStruct.(stimuli{stimulus}).Contrast100), median(experiment1ResultsStruct.(stimuli{stimulus}).Contrast200), median(experiment1ResultsStruct.(stimuli{stimulus}).Contrast400)], 300, 'ko', 'MarkerFaceAlpha',1);
+            experiment1Plot = plot([log10(100), log10(200), log10(400)]+xShift, [mean(experiment1ResultsStruct.(stimuli{stimulus}).Contrast100), mean(experiment1ResultsStruct.(stimuli{stimulus}).Contrast200), mean(experiment1ResultsStruct.(stimuli{stimulus}).Contrast400)], 'Color', 'k');
+            %experiment1Plot = scatter([log10(100), log10(200), log10(400)], [mean(experiment1ResultsStruct.(stimuli{stimulus}).Contrast100), mean(experiment1ResultsStruct.(stimuli{stimulus}).Contrast200), mean(experiment1ResultsStruct.(stimuli{stimulus}).Contrast400)], 300, 'ko', 'MarkerFaceAlpha',1);
         end
         
         if stimulus == 3
@@ -214,8 +214,8 @@ elseif strcmp(p.Results.whichPlot, '400Comparison')
             end
             lineProps.col{1} = 'b';
             if strcmp(p.Results.errorType, 'IQR')
-                errorLower = [[(median(trichromatStruct.(trichromatStimulusName).Contrast100)), (median(trichromatStruct.(trichromatStimulusName).Contrast200)), (median(trichromatStruct.(trichromatStimulusName).Contrast400))] - [(prctile(trichromatStruct.(trichromatStimulusName).Contrast100, 25)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast200, 25)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast400, 25))]];
-                errorUpper = ([(prctile(trichromatStruct.(trichromatStimulusName).Contrast100, 75)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast200, 75)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast400, 75))] - [(median(trichromatStruct.(trichromatStimulusName).Contrast100)), (median(trichromatStruct.(trichromatStimulusName).Contrast200)), (median(trichromatStruct.(trichromatStimulusName).Contrast400))]);
+                errorLower = [[(mean(trichromatStruct.(trichromatStimulusName).Contrast100)), (mean(trichromatStruct.(trichromatStimulusName).Contrast200)), (mean(trichromatStruct.(trichromatStimulusName).Contrast400))] - [(prctile(trichromatStruct.(trichromatStimulusName).Contrast100, 25)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast200, 25)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast400, 25))]];
+                errorUpper = ([(prctile(trichromatStruct.(trichromatStimulusName).Contrast100, 75)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast200, 75)), (prctile(trichromatStruct.(trichromatStimulusName).Contrast400, 75))] - [(mean(trichromatStruct.(trichromatStimulusName).Contrast100)), (mean(trichromatStruct.(trichromatStimulusName).Contrast200)), (mean(trichromatStruct.(trichromatStimulusName).Contrast400))]);
             elseif strcmp(p.Results.errorType, 'SEM')
                 SEM = [std(trichromatStruct.(trichromatStimulusName).Contrast100)./sqrt(length(trichromatStruct.(trichromatStimulusName).Contrast100)), std(trichromatStruct.(trichromatStimulusName).Contrast200)./sqrt(length(trichromatStruct.(trichromatStimulusName).Contrast200)), std(trichromatStruct.(trichromatStimulusName).Contrast400)./sqrt(length(trichromatStruct.(trichromatStimulusName).Contrast400))];
                 errorUpper = SEM*2;
@@ -223,8 +223,8 @@ elseif strcmp(p.Results.whichPlot, '400Comparison')
             end
             errorToPlot(1,1:2, 1) = [errorUpper(3) errorUpper(3)];
             errorToPlot(1,1:2, 2) = [errorLower(3) errorLower(3)];
-            trichromatPlot = plot([0.75 2.25]+xShift, [(median(trichromatStruct.(trichromatStimulusName).Contrast400)) (median(trichromatStruct.(trichromatStimulusName).Contrast400))], 'Color', 'b');
-            mseb([0.75 2.25]+xShift, [(median(trichromatStruct.(trichromatStimulusName).Contrast400)) (median(trichromatStruct.(trichromatStimulusName).Contrast400))], ...
+            trichromatPlot = plot([0.75 2.25]+xShift, [(mean(trichromatStruct.(trichromatStimulusName).Contrast400)) (mean(trichromatStruct.(trichromatStimulusName).Contrast400))], 'Color', 'b');
+            mseb([0.75 2.25]+xShift, [(mean(trichromatStruct.(trichromatStimulusName).Contrast400)) (mean(trichromatStruct.(trichromatStimulusName).Contrast400))], ...
                 errorToPlot, lineProps, 1);
         end
         
