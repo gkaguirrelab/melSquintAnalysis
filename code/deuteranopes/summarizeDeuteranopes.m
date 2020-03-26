@@ -217,25 +217,25 @@ AUC = deuteranopeResultsStruct.AUC;
 savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'TPUP', 'Deuteranopes');
 
 % Plot experiment 1 results alone
-plotDeuteranopeResult(AUC.experiment_1, [], [], 'savePath', savePath, 'saveName', 'AUC_experiment1', 'yLims', [0 .5*1031], 'yLabel', 'Amplitude of Constriction', 'yTicks', [0 .25*1031 .5*1031], 'yTickLabels', {'0%', '25%', '50%'});
+plotDeuteranopeResult(AUC.experiment_1, [], [], 'savePath', savePath, 'saveName', 'AUC_experiment1', 'yLims', [0 .51*1031], 'yLabel', 'Amplitude of Constriction', 'yTicks', [0 .25*1031 .5*1031], 'yTickLabels', {'0%', '25%', '50%'});
 
 % Plot experiment 2 results alone
-plotDeuteranopeResult([], AUC.experiment_2, [], 'savePath', savePath, 'saveName', 'AUC_experiment2', 'yLims', [0 .5*1031], 'yLabel', 'Amplitude of Constriction', 'yTicks', [0 .25*1031 .5*1031], 'yTickLabels', {'0%', '25%', '50%'});
+plotDeuteranopeResult([], AUC.experiment_2, [], 'savePath', savePath, 'saveName', 'AUC_experiment2', 'yLims', [0 .51*1031], 'yLabel', 'Amplitude of Constriction', 'yTicks', [0 .25*1031 .5*1031], 'yTickLabels', {'0%', '25%', '50%'});
 
 
 % Plot comparison between high and low contrast experiments
-plotDeuteranopeResult(AUC.experiment_1, AUC.experiment_2, [], 'savePath', savePath, 'saveName', 'AUC_combinedExperiments', 'yLims', [0 .5*1031], 'yLabel', 'Amplitude of Constriction', 'yTicks', [0 .25*1031 .5*1031], 'yTickLabels', {'0%', '25%', '50%'});
+plotDeuteranopeResult(AUC.experiment_1, AUC.experiment_2, [], 'savePath', savePath, 'saveName', 'AUC_combinedExperiments', 'yLims', [0 .51*1031], 'yLabel', 'Amplitude of Constriction', 'yTicks', [0 .25*1031 .5*1031], 'yTickLabels', {'0%', '25%', '50%'});
 
 % Add trichomats for comparison
 [trichromatResultsStruct] = loadPupilResponses('protocol', 'SquintToPulse');
 trichromatAUCStruct = trichromatResultsStruct.AUC.controls;
 
-plotDeuteranopeResult(AUC.experiment_1, [], trichromatAUCStruct, 'savePath', savePath, 'saveName', 'AUC_experiment1_withTrichromats', 'yLims', [0 .5*1031], 'yLabel', 'Amplitude of Constriction', 'yTicks', [0 .25*1031 .5*1031], 'yTickLabels', {'0%', '25%', '50%'});
-plotDeuteranopeResult(AUC.experiment_1, AUC.experiment_2, trichromatAUCStruct, 'savePath', savePath, 'saveName', 'AUC_combinedExperiments_withTrichromats', 'yLims', [0 .5*1031], 'yLabel', 'Amplitude of Constriction', 'yTicks', [0 .25*1031 .5*1031], 'yTickLabels', {'0%', '25%', '50%'});
+plotDeuteranopeResult(AUC.experiment_1, [], trichromatAUCStruct, 'savePath', savePath, 'saveName', 'AUC_experiment1_withTrichromats', 'yLims', [0 .51*1031], 'yLabel', 'Amplitude of Constriction', 'yTicks', [0 .25*1031 .5*1031], 'yTickLabels', {'0%', '25%', '50%'});
+plotDeuteranopeResult(AUC.experiment_1, AUC.experiment_2, trichromatAUCStruct, 'savePath', savePath, 'saveName', 'AUC_combinedExperiments_withTrichromats', 'yLims', [0 .51*1031], 'yLabel', 'Amplitude of Constriction', 'yTicks', [0 .25*1031 .5*1031], 'yTickLabels', {'0%', '25%', '50%'});
 
 
 % 400% comparison
-plotDeuteranopeResult(AUC.experiment_1, AUC.experiment_2, trichromatAUCStruct, 'savePath', savePath, 'saveName', 'AUC_400ContrastComparison', 'whichPlot', '400Comparison', 'ylabel', 'Amplitude of Constriction', 'yLims', [0 .5*1031], 'yTicks', [0 .25*1031 .5*1031], 'yTickLabels', {'0%', '25%', '50%'}, 'shiftDistance', 1);
+plotDeuteranopeResult(AUC.experiment_1, AUC.experiment_2, trichromatAUCStruct, 'savePath', savePath, 'saveName', 'AUC_400ContrastComparison', 'whichPlot', '400Comparison', 'ylabel', 'Amplitude of Constriction', 'yLims', [0 .51*1031], 'yTicks', [0 .25*1031 .5*1031], 'yTickLabels', {'0%', '25%', '50%'}, 'shiftDistance', 1);
 
 
 
