@@ -464,7 +464,7 @@ switch groupNorm
         m=mean(m);
 end
 str = sprintf('central tendency params across bootstraps and groups: [%2.4f, %2.4f, %2.4f, %2.4f]\n\n',m);
-fsaveasf(str);
+fprintf(str);
 
 
 %% Report the R2 (±SEM) for each group across bootstraps
@@ -480,7 +480,7 @@ for gg = 1:nGroups
     end
     str = [str groupLabels{gg} sprintf(': %2.3f \x00B1 %2.5f; ',r2,r2SEM)];
 end
-fsaveasf([str '\n']);
+fprintf([str '\n']);
 
 
 %% Plot the central tendency and SEM of the parameters
@@ -570,8 +570,8 @@ for pp=1:length(yLabels)
         end
     end
     
-    % saveas the outline
-    fsaveasf([outline '\n']);
+    % report the outline
+    fprintf([outline '\n']);
     
 end
 
