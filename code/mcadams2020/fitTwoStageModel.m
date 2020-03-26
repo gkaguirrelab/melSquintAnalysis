@@ -463,7 +463,7 @@ switch groupNorm
     case 2
         m=mean(m);
 end
-str = sprintf('central tendency params across bootstraps and groups: [%2.4f, %2.4f, %2.4f, %2.4f]\n\n',m);
+str = sprintf('central tendency params across bootstraps and groups: [%2.4f, %2.4f, %2.4f, %2.4f]\n',m);
 fprintf(str);
 
 

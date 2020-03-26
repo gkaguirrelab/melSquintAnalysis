@@ -11,7 +11,7 @@ close all
 %% Discomfort
 
 % Announce
-fprintf('Fitting the discomfort data, all parameters free...\n');
+fprintf('\nFitting the discomfort data, all parameters free...\n\n');
 
 % Fit the discomfort data
 [~, figHandle2] = fitTwoStageModel('modality','discomfort','rngSeed',1000);
@@ -19,7 +19,7 @@ fprintf('Fitting the discomfort data, all parameters free...\n');
 print(figHandle2, '~/Desktop/discomfort_params.pdf', '-dpdf', '-fillpage')
 
 % Announce
-fprintf('Fitting the discomfort data, locking Stage 1...\n');
+fprintf('\nFitting the discomfort data, locking Stage 1...\n\n');
 
 % Re-fit the discomfort data, locking the first two parameters
 x0 = [0.6323, 1.7488, 1, 1];
@@ -33,7 +33,7 @@ print(figHandle1, '~/Desktop/discomfort_fit.pdf', '-dpdf', '-fillpage')
 %% Pupil
 
 % Announce
-fprintf('Fitting the pupil data, all parameters free...\n');
+fprintf('\nFitting the pupil data, all parameters free...\n\n');
 
 % Fit the pupil data
 [~, figHandle2] = fitTwoStageModel('modality','pupil','rngSeed',1000);
@@ -41,7 +41,7 @@ fprintf('Fitting the pupil data, all parameters free...\n');
 print(figHandle2,'~/Desktop/pupil_params.pdf', '-dpdf', '-fillpage')
 
 % Announce
-fprintf('Fitting the pupil data, locking all params...\n');
+fprintf('\nFitting the pupil data, locking all params...\n\n');
 
 % Re-fit the pupil data, locking all parameters
 x0 = [0.4152, 0.8292, 0.1296, -0.1512];
@@ -55,7 +55,7 @@ print(figHandle1, '~/Desktop/pupil_fit.pdf', '-dpdf', '-fillpage')
 %% EMG
 
 % Announce
-fprintf('Fitting the EMG data, all parameters free...\n');
+fprintf('\nFitting the EMG data, all parameters free...\n\n');
 
 % Fit the EMG data
 [figHandle1, figHandle2] = fitTwoStageModel('modality','emg','responseMetric', 'normalizedPulseAUC', 'rngSeed',1000);
