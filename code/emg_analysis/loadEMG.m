@@ -1,4 +1,4 @@
-function [ emgRMSStruct, subjectIDsStruct, MelContrastByStimulus, LMSContrastByStimulus] = loadEMG(varargin)
+function [ emgRMSStruct, subjectIDsStruct, MelContrastByStimulus, LMSContrastByStimulus, localContrastByStimulus] = loadEMG(varargin)
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('calculateRMS',false, @islogical);
@@ -331,5 +331,6 @@ end
 % photoreceptor pools.
 MelContrastByStimulus = [100 200 400 0 0 0 100 200 400];
 LMSContrastByStimulus = [0 0 0 100 200 400 100 200 400];
+localContrastByStimulus = [100 200 400 100 200 400 100 200 400];
 
 end

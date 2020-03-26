@@ -51,7 +51,7 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
     % Fit the discomfort data
     [~, figHandle2] = fitTwoStageModel('modality','discomfort','rngSeed',1000);
     % Save figure 2
-    saveas(figHandle2, '~/Desktop/discomfort_params.pdf', '-dpdf', '-fillpage')
+    print(figHandle2, '~/Desktop/discomfort_params.pdf', '-dpdf', '-fillpage')
 %}
 %{
     % Re-fit the discomfort data, locking the first two parameters
@@ -60,13 +60,13 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
     ub = [0.6323, 1.7488, Inf, 10];
     figHandle1 = fitTwoStageModel('modality','discomfort','x0',x0,'lb',lb,'ub',ub,'rngSeed',1000);
     % Save figure 1
-    saveas(figHandle1, '~/Desktop/discomfort_fit.pdf', '-dpdf', '-fillpage')
+    print(figHandle1, '~/Desktop/discomfort_fit.pdf', '-dpdf', '-fillpage')
 %}
 %{
     % Fit the pupil data
     [~, figHandle2] = fitTwoStageModel('modality','pupil','rngSeed',1000);
     % Save figure 2
-    saveas(figHandle2,'~/Desktop/pupil_params.pdf', '-dpdf', '-fillpage')
+    print(figHandle2,'~/Desktop/pupil_params.pdf', '-dpdf', '-fillpage')
 %}
 %{
     % Re-fit the pupil data, locking all parameters
@@ -75,14 +75,14 @@ function [figHandle1, figHandle2, rngSeed] = fitTwoStageModel(varargin)
     ub = [0.4152, 0.8292, 0.1296, -0.1512];
     figHandle1 = fitTwoStageModel('modality','pupil','x0',x0,'lb',lb,'ub',ub,'nBoots',2,'rngSeed',1000);
     % Save figure 1
-    saveas(figHandle1, '~/Desktop/pupil_fit.pdf', '-dpdf', '-fillpage')
+    print(figHandle1, '~/Desktop/pupil_fit.pdf', '-dpdf', '-fillpage')
 %}
 %{
     % Fit the EMG data
     [figHandle1, figHandle2] = fitTwoStageModel('modality','emg','responseMetric', 'normalizedPulseAUC', 'rngSeed',1000);
     % Save figures
-    saveas(figHandle1, '~/Desktop/emg_fit.pdf', '-dpdf', '-fillpage')
-    saveas(figHandle2, '~/Desktop/emg_params.pdf', '-dpdf', '-fillpage')
+    print(figHandle1, '~/Desktop/emg_fit.pdf', '-dpdf', '-fillpage')
+    print(figHandle2, '~/Desktop/emg_params.pdf', '-dpdf', '-fillpage')
 %}
 
 
@@ -152,7 +152,7 @@ switch modality
     case 'discomfort'
         
         % Load the data
-        [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus] = loadDiscomfortRatings();
+        [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus, localContrastByStimulus ] = loadDiscomfortRatings();
         
         % Bounds for the parameters
         if isempty(p.Results.x0)
@@ -168,7 +168,7 @@ switch modality
         if isempty(p.Results.ub)
             ub = [2 3 Inf 10];
         else
-            ub = p.Results.ub;
+            ub = p.Results.ub;            
         end
         
         % Define the parameter names
@@ -184,7 +184,7 @@ switch modality
     case 'pupil'
         
         % Load the data
-        [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus] = loadPupilResponses();
+        [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus, localContrastByStimulus ] = loadPupilResponses();
         resultsStruct = resultsStruct.(responseMetric);
         
         % Bounds for the parameters
@@ -217,7 +217,7 @@ switch modality
     case 'emg'
         
         % Load the data
-        [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus] = loadEMG();
+        [resultsStruct, ~, MelContrastByStimulus, LMSContrastByStimulus, localContrastByStimulus ] = loadEMG();
         resultsStruct = resultsStruct.(responseMetric);
         
         % Bounds for the parameters
@@ -308,9 +308,10 @@ for gg = 1:nGroups
             error('Not a recognized form of the alpha parameter');
     end
     
-    % The full model then applies a slope and intercept parameter to log
+    % The stage 2 model then applies a slope and intercept parameter to log
     % ipRGC contrast
-    myModel = @(k,m) m(1).*myModelStage1(k) + m(2);
+    myModelStage2 = @(k,m) m(1).*myModelStage1(k) + m(2);
+        
     
     % Loop over bootstraps
     for bb = 1:nBoots
@@ -329,11 +330,11 @@ for gg = 1:nGroups
         end
         
         % How do we minimize error in the search across stimuli?
-        myObj = @(p) norm(d - myModel(p(1:2),p(3:4)),stimNorm);
+        myObj = @(p) norm(d - myModelStage2(p(1:2),p(3:4)),stimNorm);
         
         % Fit that sucker
         pB = fmincon(myObj,x0,[],[],[],[],lb,ub,[],options);
-        
+                
         % Save the params
         pBoot(gg,bb,:) = pB;
         
@@ -353,11 +354,11 @@ for gg = 1:nGroups
     % Perform a second boot-strap to find the R2 of these parameters to the
     % data. First, we get the model that is defined by the central tendency
     % of the parameters
-    dFit = myModel(params(1:2),params(3:4));
+    dFit = myModelStage2(params(1:2),params(3:4));
     if p.Results.meanCenteredR2
         dFit = dFit - mean(dFit);
     end
-    mss = sum(dFit.^2);
+    mss = sum((dFit - mean(dFit)).^2);
 
     % Now loop over boots and obtain the R^2 of the fit to versions of the
     % resampled data.
@@ -393,7 +394,7 @@ for gg = 1:nGroups
     % down into the different stimulus types. These are the x-values for
     % the plot
     ipRGCContrastValues = myModelStage1(params(1:2));
-    xSetsByStim = {[1 4 7],[2 5 8],[3 6 9]};
+    xSetsByStim = {[1 2 3],[4 5 6],[7 8 9]};
     
     % The subject responses by stimulus type; these are the y-values for
     % the plot.
@@ -430,7 +431,7 @@ for gg = 1:nGroups
     % from stage 2
     reflineHandle = refline(params(3),params(4));
     reflineHandle.Color = groupColors{gg};
-    
+        
     % Add a text report of the parameters used for the fit
     str = sprintf('[%2.2f, %2.2f, %2.2f, %2.2f]',params);
     text(log10(25),yLimFig1(2)*0.9,str,'VerticalAlignment','bottom');

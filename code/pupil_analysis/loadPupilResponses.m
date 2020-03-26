@@ -1,4 +1,4 @@
-function [resultsStruct, subjectIDsStruct, MelContrastByStimulus, LMSContrastByStimulus] = loadPupilResponses(varargin)
+function [resultsStruct, subjectIDsStruct, MelContrastByStimulus, LMSContrastByStimulus, localContrastByStimulus] = loadPupilResponses(varargin)
 % This function loads in pupil results for Squint and Deuteranope
 % experiments.
 
@@ -539,7 +539,7 @@ subjectIDsStruct = [];
 % photoreceptor pools.
 MelContrastByStimulus = [100 200 400 0 0 0 100 200 400];
 LMSContrastByStimulus = [0 0 0 100 200 400 100 200 400];
-
+localContrastByStimulus = [100 200 400 100 200 400 100 200 400];
 
 
 end
