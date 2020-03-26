@@ -271,29 +271,32 @@ plotDeuteranopeResult(discomfortRatingsStruct.experiment_1, discomfortRatingsStr
 
 %% Summarize EMG
 [ emgStruct ] = loadEMG('protocol', 'Deuteranopes');
+yLims = [-0.15 1.1];
+yTicks = [0 0.5 1];
+yTickLabels = {'0%', '50%', '100%'};
 
 savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'EMG', 'Deuteranopes');
 
 % Plot experiment 1 results alone
-plotDeuteranopeResult(emgStruct.experiment_1, [], [], 'savePath', savePath, 'saveName', 'experiment1.pdf', 'yLims', [-0.5 1], 'yLabel', 'RMS % Change from Baseline');
+plotDeuteranopeResult(emgStruct.normalizedPulseAUC.experiment_1, [], [], 'savePath', savePath, 'saveName', 'experiment1', 'yLims', yLims, 'yLabel', 'Squint Activity', 'yTicks', yTicks, 'yTickLabels', yTickLabels);
 
 % Plot experiment 2 results alone
-plotDeuteranopeResult([], emgStruct.experiment_2, [], 'savePath', savePath, 'saveName', 'experiment2.pdf', 'yLims', [-0.5 1], 'yLabel', 'RMS % Change from Baseline');
+plotDeuteranopeResult([], emgStruct.normalizedPulseAUC.experiment_2, [], 'savePath', savePath, 'saveName', 'experiment2', 'yLims', yLims, 'yLabel',  'Squint Activity', 'yTicks', yTicks, 'yTickLabels', yTickLabels);
 
 
 % Plot comparison between high and low contrast experiments
-plotDeuteranopeResult(emgStruct.experiment_1, emgStruct.experiment_2, [], 'savePath', savePath, 'saveName', 'combinedExperiments.pdf', 'yLims', [-0.5 1], 'yLabel', 'RMS % Change from Baseline');
+plotDeuteranopeResult(emgStruct.normalizedPulseAUC.experiment_1, emgStruct.normalizedPulseAUC.experiment_2, [], 'savePath', savePath, 'saveName', 'combinedExperiments', 'yLims', yLims, 'yLabel', 'Squint Activity', 'yTicks', yTicks, 'yTickLabels', yTickLabels);
 
 % Add trichomats for comparison
 [trichromatResultsStruct] = loadEMG('protocol', 'SquintToPulse');
-trichromatEMGStruct = trichromatResultsStruct.controlRMS;
+trichromatEMGStruct = trichromatResultsStruct.normalizedPulseAUC.controls;
 
-plotDeuteranopeResult(emgStruct.experiment_1, [], trichromatEMGStruct, 'savePath', savePath, 'saveName', 'experiment1_withTrichromats.pdf', 'yLims', [-0.5 1], 'yLabel', 'RMS % Change from Baseline');
-plotDeuteranopeResult(emgStruct.experiment_1, emgStruct.experiment_2, trichromatEMGStruct, 'savePath', savePath, 'saveName', 'combinedExperiments_withTrichromats.pdf', 'yLims', [-0.5 1], 'yLabel', 'RMS % Change from Baseline');
+plotDeuteranopeResult(emgStruct.normalizedPulseAUC.experiment_1, [], trichromatEMGStruct, 'savePath', savePath, 'saveName', 'experiment1_withTrichromats', 'yLims', yLims, 'yLabel',  'Squint Activity', 'yTicks', yTicks, 'yTickLabels', yTickLabels);
+plotDeuteranopeResult(emgStruct.normalizedPulseAUC.experiment_1, emgStruct.normalizedPulseAUC.experiment_2, trichromatEMGStruct, 'savePath', savePath, 'saveName', 'combinedExperiments_withTrichromats', 'yLims', yLims, 'yLabel',  'Squint Activity', 'yTicks', yTicks, 'yTickLabels', yTickLabels);
 
 
 % 400% comparison
-plotDeuteranopeResult(emgStruct.experiment_1, emgStruct.experiment_2, trichromatEMGStruct, 'savePath', savePath, 'saveName', '400ContrastComparison.pdf', 'whichPlot', '400Comparison', 'ylabel', 'RMS % Change from Baseline to 400% Contrast');
+plotDeuteranopeResult(emgStruct.normalizedPulseAUC.experiment_1, emgStruct.normalizedPulseAUC.experiment_2, trichromatEMGStruct, 'savePath', savePath, 'saveName', '400ContrastComparison', 'whichPlot', '400Comparison', 'ylabel',  'Squint Activity', 'yTicks', yTicks, 'yTickLabels', yTickLabels, 'yLims', [-0.16 yLims(2)], 'shiftDistance', 1);
 
 
 

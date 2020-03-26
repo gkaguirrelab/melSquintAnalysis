@@ -1,4 +1,4 @@
-function newPlotDeuteranopes(experiment1ResultsStruct, experiment2ResultsStruct, trichromatStruct, varargin)
+function plotDeuteranopeResult(experiment1ResultsStruct, experiment2ResultsStruct, trichromatStruct, varargin)
 
 %% Input parser
 p = inputParser; p.KeepUnmatched = true;
