@@ -1,4 +1,4 @@
-function [ discomfortRatingsStruct, subjectIDsStruct,  MelContrastByStimulus, LMSContrastByStimulus ] = loadDiscomfortRatings(varargin)
+function [ discomfortRatingsStruct, subjectIDsStruct,  MelContrastByStimulus, LMSContrastByStimulus, localContrastByStimulus ] = loadDiscomfortRatings(varargin)
 
 %% Input parser
 p = inputParser; p.KeepUnmatched = true;
@@ -130,6 +130,7 @@ end
 % photoreceptor pools.
 MelContrastByStimulus = [100 200 400 0 0 0 100 200 400];
 LMSContrastByStimulus = [0 0 0 100 200 400 100 200 400];
+localContrastByStimulus = [100 200 400 100 200 400 100 200 400];
 
 
 
