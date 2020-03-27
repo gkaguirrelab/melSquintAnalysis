@@ -97,6 +97,87 @@ for stimulus = 1:length(stimuli)
 end
 plotlabOBJ.exportFig(hFig, 'pdf', 'sparklines_400Only', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'deuteranopes'));
 
+%% Just Experiment 1
+plotlabOBJ = plotlab();
+
+ plotlabOBJ.applyRecipe(...
+        'colorOrder', [1 0 0; 0 0 1; 0 0 0], ...
+        'lightTheme', 'light', ...
+        'lineMarkerSize', 12, ...
+        'figureWidthInches', 10, ...
+        'figureHeightInches', 6);
+
+hFig = figure(1); clf; hold on;
+
+for ss = 1:(nSubjects)
+    for stimulus = 1:length(stimuli)
+        
+        x1 = (lastIndexToPlot - firstIndexToPlot)*(stimulus - 1) + xoffset*(stimulus - 1);
+        x = x1:x1+(lastIndexToPlot - firstIndexToPlot);
+        plot(x, pupilStruct.responseOverTime.experiment_1.(stimuli{stimulus}).Contrast100(ss,firstIndexToPlot:lastIndexToPlot) - yoffset*(ss-1), '-', 'Color',  [0.8 0.8 0.8])
+        plot(x, pupilStruct.responseOverTime.experiment_1.(stimuli{stimulus}).Contrast200(ss,firstIndexToPlot:lastIndexToPlot) - yoffset*(ss-1), '-', 'Color',  [0.4 0.4 0.4])
+        plot(x, pupilStruct.responseOverTime.experiment_1.(stimuli{stimulus}).Contrast400(ss,firstIndexToPlot:lastIndexToPlot) - yoffset*(ss-1), '-', 'Color',  [0 0 0])
+
+
+    end
+end
+set(gca, 'XGrid', 'off')
+set(gca, 'YGrid', 'off')
+axis off
+
+for stimulus = 1:length(stimuli)
+    x1 = (lastIndexToPlot - firstIndexToPlot)*(stimulus - 1) + xoffset*(stimulus - 1);
+    xEnd = x1+(lastIndexToPlot - firstIndexToPlot);
+    xMid = (x1+xEnd)/2;
+    
+    text(xMid, 0.3, stimuli{stimulus}, 'FontSize', 20, 'FontName', 'Helvetica', 'HorizontalAlignment', 'Center');
+    
+    
+end
+plotlabOBJ.exportFig(hFig, 'pdf', 'sparklines_experiment1', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'deuteranopes'));
+
+
+%% Just Experiment 2
+plotlabOBJ = plotlab();
+
+ plotlabOBJ.applyRecipe(...
+        'colorOrder', [1 0 0; 0 0 1; 0 0 0], ...
+        'lightTheme', 'light', ...
+        'lineMarkerSize', 12, ...
+        'figureWidthInches', 10, ...
+        'figureHeightInches', 6);
+
+hFig = figure(1); clf; hold on;
+
+for ss = 1:(nSubjects)
+    for stimulus = 1:length(stimuli)
+        
+        x1 = (lastIndexToPlot - firstIndexToPlot)*(stimulus - 1) + xoffset*(stimulus - 1);
+        x = x1:x1+(lastIndexToPlot - firstIndexToPlot);
+        plot(x, pupilStruct.responseOverTime.experiment_2.(stimuli{stimulus}).Contrast400(ss,firstIndexToPlot:lastIndexToPlot) - yoffset*(ss-1), '-', 'Color',  [1 0.8 0.8])
+        plot(x, pupilStruct.responseOverTime.experiment_2.(stimuli{stimulus}).Contrast800(ss,firstIndexToPlot:lastIndexToPlot) - yoffset*(ss-1), '-', 'Color',  [1 0.4 0.4])
+        plot(x, pupilStruct.responseOverTime.experiment_2.(stimuli{stimulus}).Contrast1200(ss,firstIndexToPlot:lastIndexToPlot) - yoffset*(ss-1), '-', 'Color',  [1 0 0])
+
+
+    end
+end
+set(gca, 'XGrid', 'off')
+set(gca, 'YGrid', 'off')
+axis off
+
+for stimulus = 1:length(stimuli)
+    x1 = (lastIndexToPlot - firstIndexToPlot)*(stimulus - 1) + xoffset*(stimulus - 1);
+    xEnd = x1+(lastIndexToPlot - firstIndexToPlot);
+    xMid = (x1+xEnd)/2;
+    
+    text(xMid, 0.3, stimuli{stimulus}, 'FontSize', 20, 'FontName', 'Helvetica', 'HorizontalAlignment', 'Center');
+    
+    
+end
+plotlabOBJ.exportFig(hFig, 'pdf', 'sparklines_experiment2', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'deuteranopes'));
+
+
+
 
     
     
