@@ -7,19 +7,20 @@ errorMetric = 'std';
 
 
 %% Make headache characteritics table
-headacheColumns = {'# Females', 'MIDAS', 'HIT6', 'Headache Days per 3 Months'}; % need to add meds when available
+headacheColumns = {'NumberFemales', 'MIDAS', 'HIT6', 'HeadacheDaysPer3Months'}; % need to add meds when available
 spreadsheetLabels = {'Sex', 'MIDAS', 'HIT6', 'HAdaysPer3Months'};
 countVariable = {true, false, false, false};
 
-headacheCellArray{1,1} = 'Group';
-headacheCellArray{2,1} = 'Controls';
-headacheCellArray{3,1} = 'MwA';
-headacheCellArray{4,1} = 'MwoA';
+%headacheCellArray{1,1} = 'Group';
+headacheCellArray{1,1} = 'Controls';
+headacheCellArray{2,1} = 'MwA';
+headacheCellArray{3,1} = 'MwoA';
 for ii = 1:length(headacheColumns)
-    headacheCellrray{1,ii+1} = headacheColumns{ii};
+    %headacheCellrray{1,ii} = headacheColumns{ii};
     
     [ resultsStruct ] = runANOVAOnDemographics(spreadsheetLabels{ii});
-    headacheCellArray{1,ii+1} = headacheColumns{ii};
+    close all;
+    %headacheCellArray{1,ii} = headacheColumns{ii};
     
     if countVariable{ii}
         
@@ -27,9 +28,9 @@ for ii = 1:length(headacheColumns)
         mwaCentralTendency = sum(resultsStruct.mwa);
         mwoaCentralTendency = sum(resultsStruct.mwoa);
         
-        headacheCellArray{2,ii+1} = sprintf('%4.2f', controlsCentralTendency);
-        headacheCellArray{3,ii+1} = sprintf('%4.2f', mwaCentralTendency);
-        headacheCellArray{4,ii+1} = sprintf('%4.2f', mwoaCentralTendency);
+        headacheCellArray{1,ii+1} = sprintf('%4.2f', controlsCentralTendency);
+        headacheCellArray{2,ii+1} = sprintf('%4.2f', mwaCentralTendency);
+        headacheCellArray{3,ii+1} = sprintf('%4.2f', mwoaCentralTendency);
         
     else
         if strcmp(centralTendencyMetric, 'mean')
@@ -47,17 +48,17 @@ for ii = 1:length(headacheColumns)
             mwaError = nanstd(resultsStruct.mwa);
             mwoaError = nanstd(resultsStruct.mwoa);
             
-            headacheCellArray{2,ii+1} = sprintf('%4.2f (%4.2f)', controlsCentralTendency, controlsError);
-            headacheCellArray{3,ii+1} = sprintf('%4.2f (%4.2f)', mwaCentralTendency, mwaError);
-            headacheCellArray{4,ii+1} = sprintf('%4.2f (%4.2f)', mwoaCentralTendency, mwoaError);
+            headacheCellArray{1,ii+1} = sprintf('%4.2f (%4.2f)', controlsCentralTendency, controlsError);
+            headacheCellArray{2,ii+1} = sprintf('%4.2f (%4.2f)', mwaCentralTendency, mwaError);
+            headacheCellArray{3,ii+1} = sprintf('%4.2f (%4.2f)', mwoaCentralTendency, mwoaError);
         elseif strcmp(errorMetric, 'iqr')
             controlsError = [num2str(prctile(resultsStruct.controls, 25)), ' - ', num2str(prctile(resultsStruct.controls, 75))];
             mwaError = [num2str(prctile(resultsStruct.mwa, 25)), ' - ', num2str(prctile(resultsStruct.mwa, 75))];
             mwoaError = [num2str(prctile(resultsStruct.mwoa, 25)), ' - ', num2str(prctile(resultsStruct.mwoa, 75))];
             
-            headacheCellArray{2,ii+1} = sprintf('%4.2f (%4.2f)', controlsCentralTendency, controlsError);
-            headacheCellArray{3,ii+1} = sprintf('%4.2f (%4.2f)', mwaCentralTendency, mwaError);
-            headacheCellArray{4,ii+1} = sprintf('%4.2f (%4.2f)', mwoaCentralTendency, mwoaError);
+            headacheCellArray{1,ii+1} = sprintf('%4.2f (%4.2f)', controlsCentralTendency, controlsError);
+            headacheCellArray{2,ii+1} = sprintf('%4.2f (%4.2f)', mwaCentralTendency, mwaError);
+            headacheCellArray{3,ii+1} = sprintf('%4.2f (%4.2f)', mwoaCentralTendency, mwoaError);
         end
         
         
@@ -66,21 +67,25 @@ for ii = 1:length(headacheColumns)
     
     
 end
+headacheTable = array2table(headacheCellArray);
+headacheTable.Properties.VariableNames = ['Group', headacheColumns];
+writetable(headacheTable, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'subjectInfo', ['headacheTable.csv']))
 
-ipRGCColumns = {'VDS', 'PAQ-Photophobia', 'PAQ-Photophilia', 'Seasonal Sensitivity', 'Morningness-Eveningness', 'Photic Sneeze Reflex'}; % need to add meds when available
+%% Make ipRGC function table
+ipRGCColumns = {'VDS', 'PAQPhotophobia', 'PAQPhotophilia', 'SeasonalSensitivity', 'MorningnessEveningness', 'PhoticSneezeReflex'}; % need to add meds when available
 spreadsheetLabels = {'Conlon_1999_VDS', 'PAQ_phobia', 'PAQ_philia', 'Rosenthal_1984_SPAQ_GSS', 'Horne_1976_MEQ', 'Photic_sneeze'};
 countVariable = {false, false, false, false, false, true};
 
-%% Make ipRGC function table
-ipRGCCellArray{1,1} = 'Group';
-ipRGCCellArray{2,1} = 'Controls';
-ipRGCCellArray{3,1} = 'MwA';
-ipRGCCellArray{4,1} = 'MwoA';
+%ipRGCCellArray{1,1} = 'Group';
+ipRGCCellArray{1,1} = 'Controls';
+ipRGCCellArray{2,1} = 'MwA';
+ipRGCCellArray{3,1} = 'MwoA';
 for ii = 1:length(ipRGCColumns)
-    headacheCellrray{1,ii+1} = ipRGCColumns{ii};
+    %headacheCellrray{1,ii} = ipRGCColumns{ii};
     
     [ resultsStruct ] = runANOVAOnDemographics(spreadsheetLabels{ii});
-    ipRGCCellArray{1,ii+1} = ipRGCColumns{ii};
+    close all;
+    %ipRGCCellArray{1,ii} = ipRGCColumns{ii};
     
     if countVariable{ii}
         
@@ -88,9 +93,9 @@ for ii = 1:length(ipRGCColumns)
         mwaCentralTendency = nansum(resultsStruct.mwa);
         mwoaCentralTendency = nansum(resultsStruct.mwoa);
         
-        ipRGCCellArray{2,ii+1} = sprintf('%4.2f', controlsCentralTendency);
-        ipRGCCellArray{3,ii+1} = sprintf('%4.2f', mwaCentralTendency);
-        ipRGCCellArray{4,ii+1} = sprintf('%4.2f', mwoaCentralTendency);
+        ipRGCCellArray{1,ii+1} = sprintf('%4.2f', controlsCentralTendency);
+        ipRGCCellArray{2,ii+1} = sprintf('%4.2f', mwaCentralTendency);
+        ipRGCCellArray{3,ii+1} = sprintf('%4.2f', mwoaCentralTendency);
         
     else
         if strcmp(centralTendencyMetric, 'mean')
@@ -108,17 +113,17 @@ for ii = 1:length(ipRGCColumns)
             mwaError = nanstd(resultsStruct.mwa);
             mwoaError = nanstd(resultsStruct.mwoa);
             
-            ipRGCCellArray{2,ii+1} = sprintf('%4.2f (%4.2f)', controlsCentralTendency, controlsError);
-            ipRGCCellArray{3,ii+1} = sprintf('%4.2f (%4.2f)', mwaCentralTendency, mwaError);
-            ipRGCCellArray{4,ii+1} = sprintf('%4.2f (%4.2f)', mwoaCentralTendency, mwoaError);
+            ipRGCCellArray{1,ii+1} = sprintf('%4.2f (%4.2f)', controlsCentralTendency, controlsError);
+            ipRGCCellArray{2,ii+1} = sprintf('%4.2f (%4.2f)', mwaCentralTendency, mwaError);
+            ipRGCCellArray{3,ii+1} = sprintf('%4.2f (%4.2f)', mwoaCentralTendency, mwoaError);
         elseif strcmp(errorMetric, 'iqr')
             controlsError = [num2str(prctile(resultsStruct.controls, 25)), ' - ', num2str(prctile(resultsStruct.controls, 75))];
             mwaError = [num2str(prctile(resultsStruct.mwa, 25)), ' - ', num2str(prctile(resultsStruct.mwa, 75))];
             mwoaError = [num2str(prctile(resultsStruct.mwoa, 25)), ' - ', num2str(prctile(resultsStruct.mwoa, 75))];
             
-            ipRGCCellArray{2,ii+1} = sprintf('%4.2f (%4.2f)', controlsCentralTendency, controlsError);
-            ipRGCCellArray{3,ii+1} = sprintf('%4.2f (%4.2f)', mwaCentralTendency, mwaError);
-            ipRGCCellArray{4,ii+1} = sprintf('%4.2f (%4.2f)', mwoaCentralTendency, mwoaError);
+            ipRGCCellArray{1,ii+1} = sprintf('%4.2f (%4.2f)', controlsCentralTendency, controlsError);
+            ipRGCCellArray{2,ii+1} = sprintf('%4.2f (%4.2f)', mwaCentralTendency, mwaError);
+            ipRGCCellArray{3,ii+1} = sprintf('%4.2f (%4.2f)', mwoaCentralTendency, mwoaError);
         end
         
         
@@ -127,7 +132,9 @@ for ii = 1:length(ipRGCColumns)
     
     
 end
-
+ipRGCTable = array2table(ipRGCCellArray);
+ipRGCTable.Properties.VariableNames = ['Group', ipRGCColumns];
+writetable(ipRGCTable, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'subjectInfo', ['ipRGCTable.csv']))
 
 
 end
