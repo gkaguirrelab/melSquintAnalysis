@@ -1,4 +1,4 @@
-function runANOVAOnDemographics(resultType)
+function [resultsStruct] = runANOVAOnDemographics(resultType)
 
 dataBasePath = getpref('melSquintAnalysis','melaDataPath');
 load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', 'subjectListStruct.mat'));
@@ -33,9 +33,9 @@ for ss = 1:length(subjectIDs)
     %result = (cell2mat(surveyTable{subjectRow,resultColumn}));
     
     if strcmp(result, 'Male')
-        result = 1;
-    elseif strcmp(result, 'Female')
         result = 0;
+    elseif strcmp(result, 'Female')
+        result = 1;
     elseif isstr(result)
         result = str2num(result);
     end
@@ -74,4 +74,10 @@ fprintf('<strong>Post-hoc testing results:</strong>\n')
 % one can get the standard error of the specific comparison from the second
 % column of the MEANS output and the estimate of the difference from the
 % fourth column of the comparisons column.
+
+resultsStruct.mwa = mwaResults;
+resultsStruct.mwoa = mwoaResults;
+resultsStruct.controls = controlResults;
+
+
 end
