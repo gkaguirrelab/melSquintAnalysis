@@ -70,11 +70,22 @@ sexColumn = find(contains(columnNames, 'Sex'));
 % First column: all dependent variables:
 stimuli = {'Melanopsin', 'LightFlux', 'LMS'};
 groups = {'controls', 'mwa', 'mwoa'};
+maleResponses = [];
+femaleResponses = [];
+
+for group = 1:length(groups)
+    male.(groups{group}) = [];
+    female.(groups{group}) = [];
+end
+
 subjectStructFieldNames = {'controlSubjects', 'mwaSubjects', 'mwoaSubjects'};
 for group = 1:length(groups)
     for ss = 1:20
-        subjectID = subjectIDsStruct.(subjectStructFieldNames{group}){(ss-1)*9+1}
+        subjectID = subjectIDsStruct.(subjectStructFieldNames{group}){(ss-1)*9+1};
         for stimulus = 1:length(stimuli)
+            
+             dependentVariable = result.(groups{group}).(stimuli{stimulus})(ss);
+
             
             if strcmp(groups{group}, 'controls')
                 rowAdjuster = 1;
@@ -84,7 +95,6 @@ for group = 1:length(groups)
                 rowAdjuster = 3;
             end
             
-            dependentVariable = result.(groups{group}).(stimuli{stimulus})(ss);
             
             % first column is dependent variable
             designMatrix(((ss-1)*3+rowAdjuster+(stimulus-1)*60), 1) = dependentVariable;
@@ -94,8 +104,13 @@ for group = 1:length(groups)
             sex = (cell2mat(surveyTable{subjectRow,sexColumn}));
             if strcmp(sex, 'Male')
                 sex = 1;
+                maleResponses = [maleResponses, dependentVariable];
+                male.(groups{group}) = [male.(groups{group}), dependentVariable];
             elseif strcmp(sex, 'Female')
                 sex = 2;
+                femaleResponses = [femaleResponses, dependentVariable];
+                female.(groups{group}) = [female.(groups{group}), dependentVariable];
+
             end
             
             designMatrix(((ss-1)*3+rowAdjuster+(stimulus-1)*60), 2) = sex;
@@ -120,7 +135,7 @@ rowCounter = 1;
 for group = 1:length(groups)
     for ss = 1:20
         
-        subjectID = subjectIDsStruct.(subjectStructFieldNames{group}){(ss-1)*9+1}
+        subjectID = subjectIDsStruct.(subjectStructFieldNames{group}){(ss-1)*9+1};
         
         subjectRow = find(contains(surveyTable{:,1}, subjectID));
         sex = (cell2mat(surveyTable{subjectRow,sexColumn}));
