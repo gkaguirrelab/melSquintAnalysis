@@ -7,9 +7,9 @@ errorMetric = 'std';
 
 
 %% Make headache characteritics table
-headacheColumns = {'NumberFemales', 'MIDAS', 'HIT6', 'HeadacheDaysPer3Months'}; % need to add meds when available
-spreadsheetLabels = {'Sex', 'MIDAS', 'HIT6', 'HAdaysPer3Months'};
-countVariable = {true, false, false, false};
+headacheColumns = {'NumberFemales', 'Age_years','HeadacheDaysPer3Months',  'MIDAS', 'HIT6'}; % need to add meds when available
+spreadsheetLabels = {'Sex', 'Age', 'HAdaysPer3Months', 'MIDAS', 'HIT6' };
+countVariable = {true, false, false, false, false};
 
 %headacheCellArray{1,1} = 'Group';
 headacheCellArray{1,1} = 'Controls';

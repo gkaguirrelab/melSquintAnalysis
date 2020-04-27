@@ -379,7 +379,7 @@ for stimulus = 1:length(stimuli)
     xValues = [0.8 1.2 1.8 2.2 2.8 3.2];
     categoryColors = {'b', [1 0.4 0.6]};
     
-    plotSpread(data', 'categoryIdx', categoryIdx(:), 'categoryMarkers', {'o', 'o'}, 'xValues', xValues, 'categoryColors', categoryColors, 'showMM', 3)
+    plotSpread(data', 'categoryIdx', categoryIdx(:), 'categoryMarkers', {'o', 'o'}, 'xValues', xValues, 'categoryColors', categoryColors, 'showMM', 1)
     
     xticks([1:3])
     xticklabels({'100%', '200%', '400%'})
