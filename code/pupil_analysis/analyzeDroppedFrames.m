@@ -1,10 +1,10 @@
-function [droppedFramesTrialStruct, droppedFramesMeanStruct] = analyzeDroppedFrames(varargin)
+function [droppedFramesMeanStruct] = analyzeDroppedFrames(varargin)
 
 % Function used to analyze frames in which subject is not receiving the
 % intended light stimulus (AKA dropped frames)
 
 % Syntax:
-%   [droppedFramesTrialStruct, droppedFramesMeanStruct] = analyzeDroppedFrames
+%   [ droppedFramesMeanStruct ] = analyzeDroppedFrames
 %
 % Description:
 %   Looking at group average pupil responses to each stimulus condition,
@@ -19,15 +19,27 @@ function [droppedFramesTrialStruct, droppedFramesMeanStruct] = analyzeDroppedFra
 %   This routine currently only works with Squint subjects, but should be
 %   modified in the future to also analyze Deuteranopes.
 %
+% Output:
+%   - droppedFramesMeanStruct   - a struct, with first level subfield that
+%                                 displays group, second level subfield that
+%                                 describes stimulus direction, and third
+%                                 level subfield that describes contrast
+%                                 level. At the innermost level, the mean
+%                                 number of dropped frames for a given
+%                                 subject for trials of that type with good
+%                                 pupillometry, are presented.
+%
 % Key-value pairs:
 %   - range:                    - a string which defines the time window
 %                                 over which to analyze the number of
 %                                 dropped frames. The default behavior,
-%                                 'pulse', looks at dropped frames during
-%                                 only the 4-s window during which the
-%                                 pulse was presented to the subject. Any
-%                                 other input here is interpreted as
-%                                 defining the window as the entire trial.
+%                                 'shiftedPulse', looks at dropped frames
+%                                 during only the 4-s window during which
+%                                 the pulse was presented to the subject,
+%                                 shifted later in time by 1-s. Other
+%                                 inputs here include defining the window
+%                                 as the entire trial, or defining the
+%                                 actual pulse window.
 %   - whichBadFrames            - a string which defines which types of bad
 %                                 frames to include as "dropped frames".
 %                                 The default option is 'blinks', which
@@ -120,9 +132,6 @@ for ss = 1:length(subjectIDs)
                     droppedFrames = unique(droppedFrames);
                 end
                 
-                % save out results per trial
-                droppedFramesTrialStruct.(groupLabel).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(tt) = length(droppedFrames);
-                
                 droppedFramesForStimulusType = [length(droppedFrames), droppedFramesForStimulusType];
                 
             end
@@ -134,6 +143,9 @@ for ss = 1:length(subjectIDs)
         end
     end
 end
+
+% save out results
+save(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'droppedFramesAnalysis', 'droppedFramesResults.mat'), 'droppedFramesMeanStruct');
 
 %% Do some summary plotting
 if p.Results.makePlots
