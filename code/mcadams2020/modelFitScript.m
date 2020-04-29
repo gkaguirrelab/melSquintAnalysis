@@ -62,3 +62,26 @@ fprintf('\nFitting the EMG data, all parameters free...\n\n');
 % Save figures
 print(figHandle1, '~/Desktop/emg_fit.pdf', '-dpdf', '-fillpage')
 print(figHandle2, '~/Desktop/emg_params.pdf', '-dpdf', '-fillpage')
+
+
+%% Blink
+
+% Announce
+fprintf('\nFitting the blink data, all parameters free...\n\n');
+
+% Fit the blink data
+[figHandle1, figHandle2] = fitTwoStageModel('modality','blinks', 'rngSeed',1000);
+% Save figures
+print(figHandle1, '~/Desktop/blinks_fit.pdf', '-dpdf', '-fillpage')
+print(figHandle2, '~/Desktop/blinks_params.pdf', '-dpdf', '-fillpage')
+
+% Re-fit, constraining the first two params
+x0 = [0.2933, 1.3333, 5, 20];
+lb = [0.2933, 1.3333, 0, 0];
+ub = [0.2933, 1.3333, Inf, Inf];
+figHandle1 = fitTwoStageModel('modality','blinks','x0',x0,'lb',lb,'ub',ub,'rngSeed',1000);
+% Save figure 1
+print(figHandle1, '~/Desktop/blinks_fit.pdf', '-dpdf', '-fillpage')
+
+
+
