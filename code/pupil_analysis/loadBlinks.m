@@ -50,8 +50,7 @@ else
     % otherwise, just load in previously-run analysis
     load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'droppedFramesAnalysis', 'droppedFramesResults.mat'));
     blinksStruct = droppedFramesMeanStruct;
-
-    
+ 
 end
 
 

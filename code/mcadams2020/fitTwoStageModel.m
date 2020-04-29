@@ -213,6 +213,44 @@ switch modality
         xticklabelsFig1 = {'0.25','0.5','1','2','4','8'};
         yLimFig1 = [-0.3 3];
         yLimFig2 = {[0 1],[0 100],[0 0.2],[0 0.5]};
+
+    case 'blinks'
+        
+        % Load the data
+        resultsStruct = loadBlinks();
+
+        % Assemble the melanopsin and cone contrasts for each stimulus
+        % type. We treat light flux stimuli as having equal contrast on the
+        % mel and LMS photoreceptor pools.
+        MelContrastByStimulus = [100 200 400 0 0 0 100 200 400];
+        LMSContrastByStimulus = [0 0 0 100 200 400 100 200 400];
+        
+        % Bounds for the parameters
+        if isempty(p.Results.x0)
+            x0 = [0.5 1 5 20];
+        else
+            x0 = p.Results.x0;
+        end
+        if isempty(p.Results.lb)
+            lb = [0.1 1 0 0];
+        else
+            lb = p.Results.lb;
+        end
+        if isempty(p.Results.ub)
+            ub = [1 2 Inf Inf];
+        else
+            ub = p.Results.ub;
+        end
+        
+        % Define the parameter names
+        yLabels = {'alpha_{mel}','beta','slope','offset'};
+
+        % Define plotting behavior
+        xLimFig1 = [log10(10) log10(1000)];
+        xticksFig1 = [log10(25) log10(50) log10(100) log10(200) log10(400) log10(800)];
+        xticklabelsFig1 = {'0.25','0.5','1','2','4','8'};
+        yLimFig1 = [0 100];
+        yLimFig2 = {[0 1],[0 5],[0 20],[0 50]};
         
 end
 
