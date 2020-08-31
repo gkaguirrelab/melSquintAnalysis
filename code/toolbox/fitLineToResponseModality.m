@@ -6,6 +6,7 @@ p.addParameter('fitType','withIntercept',@ischar);
 p.addParameter('makePlots',true,@islogical);
 p.addParameter('makeCSV',true,@islogical);
 p.addParameter('responseMetric',@ischar);
+p.addParameter('logSpacedContrast', [log10(100), log10(200), log10(400)], @isnumeric);
 
 
 % Parse and check the parameters
@@ -40,14 +41,15 @@ elseif strcmp(responseModality, 'pupil')
     
     
     subjectIDsStruct = resultsStruct.subjects;
-elseif strcmp(responseModality, 'droppedFrames')
+elseif strcmp(responseModality, 'droppedFrames') || strcmp(responseModality, 'blinks')
+    responseModality = 'droppedFrames';
     
-    [~, resultsStruct] = analyzeDroppedFrames;
+    [resultsStruct] = loadBlinks;
     mwaResult = resultsStruct.mwa;
     mwoaResult = resultsStruct.mwoa;
     controlResult = resultsStruct.controls;
     
-    [ ~, subjectIDsStruct ] = loadDiscomfortRatings;
+    [ ~, subjectIDsStruct ] = loadEMG;
     
     
 end
@@ -78,7 +80,8 @@ slopeCellArrayHeader = {'Stimulus', 'Group', 'Slope'};
 interceptCellArrayHeader = {'Stimulus', 'Group', 'Intercept'};
 
 % define x as log-spaced contrast
-x = [log10(100), log10(200), log10(400)];
+x = p.Results.logSpacedContrast; 
+
 
 % loop around group, subject number, and stimulus type
 groups = {'controls', 'mwa', 'mwoa'};
@@ -180,7 +183,7 @@ for group = 1:length(groups)
         end
         
         if p.Results.makePlots
-            subjectPlotSavePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, 'subjectFits');
+            subjectPlotSavePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, p.Results.responseMetric, 'subjectFits');
             if ~exist(subjectPlotSavePath, 'dir')
                 mkdir(subjectPlotSavePath);
             end
@@ -267,7 +270,7 @@ if p.Results.makePlots
         
         
     end
-    export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, [p.Results.responseMetric, '_discomfortFitLines.png']));
+    export_fig(plotFig, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, p.Results.responseMetric, [p.Results.responseMetric, '_fitLines.png']));
     
     % summarize model params across subjects
     slopes = [];
@@ -290,8 +293,10 @@ if p.Results.makePlots
         if strcmp(p.Results.responseMetric, 'AUC')
             yLims = [-150 400];
         end
+    elseif strcmp(responseModality, 'droppedFrames')
+        yLims = [-50 85];
     end
-    plotSpreadResults(slopes, 'contrasts', {400}, 'yLims', yLims, 'yLabel', [responseModality,' Slopes'], 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, [p.Results.responseMetric, 'groupAverage_slopes.pdf']))
+    plotSpreadResults(slopes, 'contrasts', {400}, 'yLims', yLims, 'yLabel', [responseModality,' Slopes'], 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, p.Results.responseMetric, [p.Results.responseMetric, 'groupAverage_slopes.pdf']))
     
     
     intercepts = [];
@@ -314,10 +319,13 @@ if p.Results.makePlots
         if strcmp(p.Results.responseMetric, 'AUC')
             yLims = [-800 400];
         end
+    elseif strcmp(responseModality, 'droppedFrames')
+        yLims = [-10 110];
+    
     end
 
     
-    plotSpreadResults(intercepts, 'contrasts', {400}, 'yLims', yLims, 'yLabel', [responseModality, p.Results.responseMetric, ' Intercepts'], 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, [p.Results.responseMetric, 'groupAverage_intercepts.pdf']))
+    plotSpreadResults(intercepts, 'contrasts', {400}, 'yLims', yLims, 'yLabel', [responseModality, p.Results.responseMetric, ' Intercepts'], 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, p.Results.responseMetric, [p.Results.responseMetric, 'groupAverage_intercepts.pdf']))
     
     meanRatings = [];
     for stimulus = 1:length(stimuli)
@@ -339,9 +347,13 @@ if p.Results.makePlots
         if strcmp(p.Results.responseMetric, 'AUC')
             yLims = [0 400];
         end
+    elseif strcmp(responseModality, 'droppedFrames')
+        yLims = [0 100];
+   
+        
     end
     
-    plotSpreadResults(meanRatings, 'contrasts', {400}, 'yLims', yLims, 'yLabel', ['Mean ', responseModality], 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, [p.Results.responseMetric, 'groupAverage_meanRating.pdf']))
+    plotSpreadResults(meanRatings, 'contrasts', {400}, 'yLims', yLims, 'yLabel', ['Mean ', responseModality], 'saveName', fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, p.Results.responseMetric, [p.Results.responseMetric, 'groupAverage_meanRating.pdf']))
     
     
 end
@@ -352,9 +364,9 @@ if p.Results.makeCSV
     interceptCellArray = vertcat({'SubjectID', 'Stimulus', 'Group', 'Intercept'}, interceptCellArray);
     meanRatingCellArray = vertcat({'SubjectID', 'Stimulus', 'Group', 'MeanRating'}, meanRatingCellArray);
     
-    cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, [p.Results.responseMetric, 'slopes.csv']), slopeCellArray);
-    cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, [p.Results.responseMetric, 'intercepts.csv']), interceptCellArray);
-    cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, [p.Results.responseMetric, 'meanRating.csv']), meanRatingCellArray);
+    cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, p.Results.responseMetric, [p.Results.responseMetric, 'slopes.csv']), slopeCellArray);
+    cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, p.Results.responseMetric, [p.Results.responseMetric, 'intercepts.csv']), interceptCellArray);
+    cell2csv(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, p.Results.responseMetric, [p.Results.responseMetric, 'meanRating.csv']), meanRatingCellArray);
     
 end
 
