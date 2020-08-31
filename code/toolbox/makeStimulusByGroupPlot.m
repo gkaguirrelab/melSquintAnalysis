@@ -28,7 +28,7 @@ elseif strcmp(responseModality, 'pupil')
     yTickLabels = {'0' '25%' '50%'};
     yLabel = 'Pupil Constriction';
 elseif strcmp(responseModality, 'droppedFrames')
-    [ ~, resultsStruct ] = analyzeDroppedFrames;
+    [ resultsStruct ] = loadBlinks;
     yLims = [0 80];
     yTicks = [0 40 80];
     yTickLabels = yTicks;
