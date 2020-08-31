@@ -49,13 +49,67 @@ end
 set(gcf, 'Position', [440 86 987 712]);
 export_fig(gcf, fullfile(resultsDir, 'EMG_responseOverTime_byGroup.pdf'));
 
+%% Second plot: response over time by group, collapsing across stimuli
+close all;
+
+% define some experimental conditions
+stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
+contrasts = {100, 200, 400};
+groups = {'controls', 'mwoa', 'mwa'};
+colorToPlot = {'k', 'r', 'b'};
+
+% basic plotting parameters
+
+timebase = 0:0.1:17.5;
+
+
+% do the plotting
+%for stimulus = 1:length(stimuli)
+    for contrast = 1:length(contrasts)
+        subplot(1,3,contrast); hold on;
+        for group = 1:length(groups)
+            title(['Contrast ', num2str(contrasts{contrast}), '%']);
+            
+            meanAcrossStimuli.(groups{group}).(['Contrast', num2str(contrasts{contrast})]) = (EMGStruct.responseOverTime.(groups{group}).LMS.(['Contrast', num2str(contrasts{contrast})]) + EMGStruct.responseOverTime.(groups{group}).Melanopsin.(['Contrast', num2str(contrasts{contrast})]) + EMGStruct.responseOverTime.(groups{group}).LightFlux.(['Contrast', num2str(contrasts{contrast})]))./3;
+            
+            
+            groupMean = nanmean(meanAcrossStimuli.(groups{group}).(['Contrast', num2str(contrasts{contrast})]));
+            groupSEM = nanstd(meanAcrossStimuli.(groups{group}).(['Contrast', num2str(contrasts{contrast})]))/sqrt(20);
+            %ax.(['ax', num2str(group)]) = plot(timebase, groupMean, 'Color', colorToPlot{group});
+            lineProps.col = [];
+            lineProps.col{1} = colorToPlot{group};
+            ax.(['ax', num2str(group)]) = mseb(timebase, groupMean, groupSEM, lineProps, 1);
+        end
+        ylim([0 1]);
+        yticks([0 0.5 1]);
+        yticklabels({'0%', '50%', '100%'});
+        ylabel('Squint (% Change from Baseline)');
+        xlim([0 17]);
+        xticks([0 5 10 15])
+        xticklabels([0 5 10 15])
+        xlabel('Time (s)');
+        
+        if contrast == 3
+            legend('Controls', 'MwoA', 'MwA', 'Location', 'NorthEast');
+            legend('boxoff');
+        end
+        
+    end
+%end
+
+set(gcf, 'Position', [52 529 1375 269]);
+%export_fig(gcf, fullfile(resultsDir, 'EMG_responseOverTime_byGroup_collapsedAcrossStimuli.pdf'));
+print(gcf, '-dpdf', '/Users/harrisonmcadams/Desktop/EMG_responseOverTime_byGroup_collapsedAcrossStimuli.pdf', '-bestfit'); 
 
 %% Second plot: EMG AUC during the pulse by stimulus condition by group
 close all;
 
 makeStimulusByGroupPlot('emg', 'normalizedPulseAUC');
 
-export_fig(gcf, fullfile(resultsDir, 'EMG_AUC_contrastXgroup_pulse.pdf'));
+export_fig(gcf, fullfile(resultsDir, 'EMG_normalizedPulseAUC_contrastXgroup_pulse.pdf'));
+% note here the axes are going to be a bit different than what eric shared
+% recently in the chart -- they're the same plot, but in order to see all
+% subjects need to widen yLims up to 300%
 
 %% Dropped frames by stimulus condition by group
 close all
