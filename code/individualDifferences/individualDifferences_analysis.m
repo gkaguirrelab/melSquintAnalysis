@@ -2,8 +2,154 @@
 loadStatus= true;
 pooledSessionStruct = planTestRetest('load', loadStatus);
 
+%% Downshift pooledSessionStruct
+downshiftedPooledSessionStruct = pooledSessionStruct; 
+shiftStart = 1000;
+
+% loop through subjects
+for subject = 1:50
+    % contrast 100
+    downshift = nanmean(pooledSessionStruct.day1.Melanopsin.Contrast100(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day1.Melanopsin.Contrast100(subject,i) ...
+            = pooledSessionStruct.day1.Melanopsin.Contrast100(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day2.Melanopsin.Contrast100(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day2.Melanopsin.Contrast100(subject,i) ...
+            = pooledSessionStruct.day2.Melanopsin.Contrast100(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.combinedMean.Melanopsin.Contrast100(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.combinedMean.Melanopsin.Contrast100(subject,i) ...
+            = pooledSessionStruct.combinedMean.Melanopsin.Contrast100(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day1.LightFlux.Contrast100(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day1.LightFlux.Contrast100(subject,i) ...
+            = pooledSessionStruct.day1.LightFlux.Contrast100(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day2.LightFlux.Contrast100(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day2.LightFlux.Contrast100(subject,i) ...
+            = pooledSessionStruct.day2.LightFlux.Contrast100(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.combinedMean.LightFlux.Contrast100(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.combinedMean.LightFlux.Contrast100(subject,i) ...
+            = pooledSessionStruct.combinedMean.LightFlux.Contrast100(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day1.LMS.Contrast100(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day1.LMS.Contrast100(subject,i) ...
+            = pooledSessionStruct.day1.LMS.Contrast100(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day2.LMS.Contrast100(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day2.LMS.Contrast100(subject,i) ...
+            = pooledSessionStruct.day2.LMS.Contrast100(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.combinedMean.LMS.Contrast100(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.combinedMean.LMS.Contrast100(subject,i) ...
+            = pooledSessionStruct.combinedMean.LMS.Contrast100(subject,i) - downshift;
+    end
+    % contrast 200
+    downshift = nanmean(pooledSessionStruct.day1.Melanopsin.Contrast200(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day1.Melanopsin.Contrast200(subject,i) ...
+            = pooledSessionStruct.day1.Melanopsin.Contrast200(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day2.Melanopsin.Contrast200(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day2.Melanopsin.Contrast200(subject,i) ...
+            = pooledSessionStruct.day2.Melanopsin.Contrast200(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.combinedMean.Melanopsin.Contrast200(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.combinedMean.Melanopsin.Contrast200(subject,i) ...
+            = pooledSessionStruct.combinedMean.Melanopsin.Contrast200(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day1.LightFlux.Contrast200(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day1.LightFlux.Contrast200(subject,i) ...
+            = pooledSessionStruct.day1.LightFlux.Contrast200(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day2.LightFlux.Contrast200(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day2.LightFlux.Contrast200(subject,i) ...
+            = pooledSessionStruct.day2.LightFlux.Contrast200(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.combinedMean.LightFlux.Contrast200(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.combinedMean.LightFlux.Contrast200(subject,i) ...
+            = pooledSessionStruct.combinedMean.LightFlux.Contrast200(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day1.LMS.Contrast200(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day1.LMS.Contrast200(subject,i) ...
+            = pooledSessionStruct.day1.LMS.Contrast200(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day2.LMS.Contrast200(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day2.LMS.Contrast200(subject,i) ...
+            = pooledSessionStruct.day2.LMS.Contrast200(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.combinedMean.LMS.Contrast200(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.combinedMean.LMS.Contrast200(subject,i) ...
+            = pooledSessionStruct.combinedMean.LMS.Contrast200(subject,i) - downshift;
+    end
+    % contrast 400
+    downshift = nanmean(pooledSessionStruct.day1.Melanopsin.Contrast400(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day1.Melanopsin.Contrast400(subject,i) ...
+            = pooledSessionStruct.day1.Melanopsin.Contrast400(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day2.Melanopsin.Contrast400(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day2.Melanopsin.Contrast400(subject,i) ...
+            = pooledSessionStruct.day2.Melanopsin.Contrast400(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.combinedMean.Melanopsin.Contrast400(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.combinedMean.Melanopsin.Contrast400(subject,i) ...
+            = pooledSessionStruct.combinedMean.Melanopsin.Contrast400(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day1.LightFlux.Contrast400(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day1.LightFlux.Contrast400(subject,i) ...
+            = pooledSessionStruct.day1.LightFlux.Contrast400(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day2.LightFlux.Contrast400(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day2.LightFlux.Contrast400(subject,i) ...
+            = pooledSessionStruct.day2.LightFlux.Contrast400(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.combinedMean.LightFlux.Contrast400(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.combinedMean.LightFlux.Contras400(subject,i) ...
+            = pooledSessionStruct.combinedMean.LightFlux.Contrast400(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day1.LMS.Contrast400(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day1.LMS.Contrast400(subject,i) ...
+            = pooledSessionStruct.day1.LMS.Contrast400(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.day2.LMS.Contrast400(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.day2.LMS.Contrast400(subject,i) ...
+            = pooledSessionStruct.day2.LMS.Contrast400(subject,i) - downshift;
+    end
+    downshift = nanmean(pooledSessionStruct.combinedMean.LMS.Contrast400(subject,shiftStart:1111));
+    for i = 1:1111
+        downshiftedPooledSessionStruct.combinedMean.LMS.Contrast400(subject,i) ...
+            = pooledSessionStruct.combinedMean.LMS.Contrast400(subject,i) - downshift;
+    end
+end
+
 %% Fit the TPUP
-summarizeTPUP_individualDifferences
+summarizeTPUP_individualDifferences(downshiftedPooledSessionStruct);
 
 %% Get the TPUP params
 percentPersistent = [];
@@ -17,7 +163,7 @@ stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
 for stimulus = 1:length(stimuli)
     for dd = 1:2
         
-        totalResponseAmplitude.(['day', num2str(dd)]).(stimuli{stimulus}) = zeros(size(pooledSessionStruct.day1.LMS.Contrast400,1),1);
+        totalResponseAmplitude.(['day', num2str(dd)]).(stimuli{stimulus}) = zeros(size(downshiftedPooledSessionStruct.day1.LMS.Contrast400,1),1);
         
         for tt = 1:length(TPUPComponentNames)
             
@@ -32,7 +178,7 @@ for stimulus = 1:length(stimuli)
     end
 end
 for stimulus = 1:length(stimuli)
-    totalResponseAmplitude.combinedMean.(stimuli{stimulus}) = zeros(size(pooledSessionStruct.day1.LMS.Contrast400,1),1);
+    totalResponseAmplitude.combinedMean.(stimuli{stimulus}) = zeros(size(downshiftedPooledSessionStruct.day1.LMS.Contrast400,1),1);
     
     for tt = 1:length(TPUPComponentNames)
         TPUPVector = getTPUPVector('combinedMean', stimuli{stimulus}, contrastLevel, [TPUPComponentNames{tt}, 'amplitude']);
@@ -84,7 +230,7 @@ end
 non400Contrasts = {100, 200};
 
 for dd = 1:2
-    overallResponsiveness.(['day', num2str(dd)]) = zeros(size(pooledSessionStruct.day1.LMS.Contrast400,1),1);
+    overallResponsiveness.(['day', num2str(dd)]) = zeros(size(downshiftedPooledSessionStruct.day1.LMS.Contrast400,1),1);
     
     for stimulus = 1:length(stimuli)
         for contrast = 1:length(non400Contrasts)
@@ -105,7 +251,7 @@ end
 
 % Validate overallResponsiveness vector correlates with magnitude of
 % response to indivdual stimuli at 400% contrast
-savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'individualDifferences', 'overallResponsiveness');
+savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'shiftedIndividualDifferences', 'overallResponsiveness');
 
 % day 1 x day 2
 xLims = [0 40];
@@ -148,7 +294,7 @@ plotIndividualDifferences(((totalResponseAmplitude.day1.Melanopsin - totalRespon
 
 
 %% Make some across stimulus comparisons, first at the combined level
-savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'individualDifferences', 'acrossStimulusComparisons');
+savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'shiftedIndividualDifferences', 'acrossStimulusComparisons');
 
 xLims = [0 10];
 yLims = xLims;
@@ -180,7 +326,7 @@ plotIndividualDifferences(abs(totalResponseAmplitude.combinedMean.LMS), abs(tota
 
 
 %% Plot test-retest reliability
-savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'individualDifferences', 'testRetest');
+savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'shiftedIndividualDifferences', 'testRetest');
 
 % melanospin response amplitude
 xLims = [0 10];
@@ -292,9 +438,9 @@ end
 for dd = 1:2
     for stimulus = 1:length(stimuli)
         for contrast = 1:length(contrasts)
-            for ss = 1:size(pooledSessionStruct.day1.LMS.Contrast100,1)
+            for ss = 1:size(downshiftedPooledSessionStruct.day1.LMS.Contrast100,1)
                 
-                AUC.(['day', num2str(dd)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = abs(trapz(pooledSessionStruct.(['day', num2str(dd)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss,beginningNumberOfIndicesToExclude:end-endingNumberOfIndicesToExclude)))/nIndices;
+                AUC.(['day', num2str(dd)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = abs(trapz(downshiftedPooledSessionStruct.(['day', num2str(dd)]).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss,beginningNumberOfIndicesToExclude:end-endingNumberOfIndicesToExclude)))/nIndices;
 
                 
             end
@@ -304,9 +450,9 @@ end
 
     for stimulus = 1:length(stimuli)
         for contrast = 1:length(contrasts)
-            for ss = 1:size(pooledSessionStruct.day1.LMS.Contrast100,1)
+            for ss = 1:size(downshiftedPooledSessionStruct.day1.LMS.Contrast100,1)
                 
-                AUC.combinedMean.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = abs(trapz(pooledSessionStruct.combinedMean.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss,beginningNumberOfIndicesToExclude:end-endingNumberOfIndicesToExclude)))/nIndices;
+                AUC.combinedMean.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = abs(trapz(downshiftedPooledSessionStruct.combinedMean.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss,beginningNumberOfIndicesToExclude:end-endingNumberOfIndicesToExclude)))/nIndices;
 
                 
             end
@@ -316,7 +462,7 @@ end
     non400Contrasts = {100, 200};
 
 for dd = 1:2
-    overallResponsivenessAUC.(['day', num2str(dd)]) = zeros(size(pooledSessionStruct.day1.LMS.Contrast400,1),1);
+    overallResponsivenessAUC.(['day', num2str(dd)]) = zeros(size(downshiftedPooledSessionStruct.day1.LMS.Contrast400,1),1);
     
     for stimulus = 1:length(stimuli)
         for contrast = 1:length(non400Contrasts)
@@ -335,7 +481,7 @@ for dd = 1:2
 end
 
 %% Make some across stimulus comparisons, first at the combined level
-savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'individualDifferences', 'acrossStimulusComparisons');
+savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'shiftedIndividualDifferences', 'acrossStimulusComparisons');
 
 xLims = [0 0.4];
 yLims = xLims;
@@ -367,7 +513,7 @@ plotIndividualDifferences(abs(AUC.combinedMean.LMS.Contrast400), abs(AUC.combine
 
 
 %% Plot test-retest reliability
-savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'individualDifferences', 'testRetest');
+savePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'shiftedIndividualDifferences', 'testRetest');
 
 % melanospin response amplitude
 xLims = [0 0.4];
