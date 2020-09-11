@@ -14,7 +14,7 @@ calculateResponseOverTime = p.Results.calculateResponseOverTime;
 
 if strcmp(p.Results.protocol, 'SquintToPulse')
     % load subjectIDs
-    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', 'subjectListStruct.mat'));
+    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'experiments/olapproach_squint/squinttopulse/datafiles/', 'subjectListStruct.mat'));
     subjectIDs = fieldnames(subjectListStruct);
     %% Pool results
     controlRMS = [];

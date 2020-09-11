@@ -5,49 +5,49 @@ resultsDir = '~/Desktop';
 EMGStruct = loadEMG;
 
 %% First plot: response over time by stimulus condition group
-close all;
-
-% define some experimental conditions
-stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
-contrasts = {100, 200, 400};
-groups = {'controls', 'mwa', 'mwoa'};
-colorToPlot = {'k', 'b', 'r'};
-
-% basic plotting parameters
-
-timebase = 0:0.1:17.5;
-
-
-% do the plotting
-for stimulus = 1:length(stimuli)
-    for contrast = 1:length(contrasts)
-        cellNumber = ((stimulus-1)*3)+contrast;
-        subplot(3,3,cellNumber); hold on;
-        for group = 1:length(groups)
-            title([stimuli{stimulus}, ' Contrast ', num2str(contrasts{contrast}), '%']);
-            groupMean = nanmean(EMGStruct.responseOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
-            ax.(['ax', num2str(group)]) = plot(timebase, groupMean, 'Color', colorToPlot{group});
-            
-        end
-        ylim([0 1]);
-        yticks([0 0.5 1]);
-        yticklabels({'0%', '50%', '100%'});
-        ylabel('Squint (% Change from Baseline)');
-        xlim([0 17]);
-        xticks([0 5 10 15])
-        xticklabels([0 5 10 15])
-        xlabel('Time (s)');
-        
-        if cellNumber == 3
-            legend('Controls', 'MwA', 'MwoA', 'Location', 'SouthEast');
-            legend('boxoff');
-        end
-        
-    end
-end
-
-set(gcf, 'Position', [440 86 987 712]);
-export_fig(gcf, fullfile(resultsDir, 'EMG_responseOverTime_byGroup.pdf'));
+% close all;
+% 
+% % define some experimental conditions
+% stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
+% contrasts = {100, 200, 400};
+% groups = {'controls', 'mwa', 'mwoa'};
+% colorToPlot = {'k', 'b', 'r'};
+% 
+% % basic plotting parameters
+% 
+% timebase = 0:0.1:17.5;
+% 
+% 
+% % do the plotting
+% for stimulus = 1:length(stimuli)
+%     for contrast = 1:length(contrasts)
+%         cellNumber = ((stimulus-1)*3)+contrast;
+%         subplot(3,3,cellNumber); hold on;
+%         for group = 1:length(groups)
+%             title([stimuli{stimulus}, ' Contrast ', num2str(contrasts{contrast}), '%']);
+%             groupMean = nanmean(EMGStruct.responseOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+%             ax.(['ax', num2str(group)]) = plot(timebase, groupMean, 'Color', colorToPlot{group});
+%             
+%         end
+%         ylim([0 1]);
+%         yticks([0 0.5 1]);
+%         yticklabels({'0%', '50%', '100%'});
+%         ylabel('Squint (% Change from Baseline)');
+%         xlim([0 17]);
+%         xticks([0 5 10 15])
+%         xticklabels([0 5 10 15])
+%         xlabel('Time (s)');
+%         
+%         if cellNumber == 3
+%             legend('Controls', 'MwA', 'MwoA', 'Location', 'SouthEast');
+%             legend('boxoff');
+%         end
+%         
+%     end
+% end
+% 
+% set(gcf, 'Position', [440 86 987 712]);
+% % export_fig(gcf, fullfile(resultsDir, 'EMG_responseOverTime_byGroup.pdf'));
 
 %% Second plot: response over time by group, collapsing across stimuli
 close all;
@@ -59,7 +59,7 @@ groups = {'controls', 'mwoa', 'mwa'};
 colorToPlot = {'k', 'r', 'b'};
 
 % basic plotting parameters
-
+fig = figure();
 timebase = 0:0.1:17.5;
 
 
@@ -97,9 +97,9 @@ timebase = 0:0.1:17.5;
     end
 %end
 
-set(gcf, 'Position', [52 529 1375 269]);
-%export_fig(gcf, fullfile(resultsDir, 'EMG_responseOverTime_byGroup_collapsedAcrossStimuli.pdf'));
-print(gcf, '-dpdf', '/Users/harrisonmcadams/Desktop/EMG_responseOverTime_byGroup_collapsedAcrossStimuli.pdf', '-bestfit'); 
+set(gcf, 'Position', [52 529 1375 269], 'DefaultFigureRenderer', 'painters');
+export_fig(gcf, fullfile(resultsDir, 'EMG_responseOverTime_byGroup_collapsedAcrossStimuli.pdf'));
+print(gcf, '-dpdf', '/Users/brianahaggerty/Desktop/EMG_responseOverTime_byGroup_collapsedAcrossStimuli.pdf', '-bestfit'); 
 
 %% Second plot: EMG AUC during the pulse by stimulus condition by group
 close all;
