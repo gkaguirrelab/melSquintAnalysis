@@ -78,7 +78,10 @@ timebase = 0:0.1:17.5;
             %ax.(['ax', num2str(group)]) = plot(timebase, groupMean, 'Color', colorToPlot{group});
             lineProps.col = [];
             lineProps.col{1} = colorToPlot{group};
-            ax.(['ax', num2str(group)]) = mseb(timebase, groupMean, groupSEM, lineProps, 1);
+            plot(timebase,groupMean,'-','Color',colorToPlot{group})
+            hold on
+            plot(timebase,groupMean+groupSEM,'-','Color',colorToPlot{group})
+            plot(timebase,groupMean-groupSEM,'-','Color',colorToPlot{group})
         end
         ylim([0 1]);
         yticks([0 0.5 1]);

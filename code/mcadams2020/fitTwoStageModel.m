@@ -453,7 +453,7 @@ end
 
 % Add a title to the figure
 str = ['Model fit to the ' modality ' data'];
-suptitle(str);
+%suptitle(str);
 
 
 %% Report the central tendency of the parameters across all groups
