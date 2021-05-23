@@ -2,6 +2,8 @@ function [ emgRMSStruct, subjectIDsStruct, MelContrastByStimulus, LMSContrastByS
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('calculateRMS',false, @islogical);
+p.addParameter('windowOnset',1.8, @isnumeric);
+p.addParameter('windowOffset',5.2, @isnumeric);
 p.addParameter('calculateResponseOverTime',false, @islogical);
 p.addParameter('protocol','SquintToPulse', @ischar);
 
@@ -159,8 +161,8 @@ if strcmp(p.Results.protocol, 'SquintToPulse')
                 % timebase, which is hard-coded for what was used for these
                 % response over time calculations:
                 timebase = 0:0.1:17.5;
-                windowOnsetIndex = find(timebase == 2.5);
-                windowOffsetIndex = find(timebase == 4.5);
+                windowOnsetIndex = find(timebase == p.Results.windowOnset);
+                windowOffsetIndex = find(timebase == p.Results.windowOffset);
                 normalizedPulseAUC = sum(responseOverTime(windowOnsetIndex:windowOffsetIndex))/(windowOffsetIndex - windowOnsetIndex + 1);
                 
                 
@@ -308,8 +310,8 @@ elseif strcmp(p.Results.protocol, 'Deuteranopes')
                     % timebase, which is hard-coded for what was used for these
                     % response over time calculations:
                     timebase = 0:0.1:17.5;
-                    windowOnsetIndex = find(timebase == 2.5);
-                    windowOffsetIndex = find(timebase == 4.5);
+                    windowOnsetIndex = find(timebase == p.Results.windowOnset);
+                    windowOffsetIndex = find(timebase == p.Results.windowOffset);
                     normalizedPulseAUC = sum(responseOverTime(windowOnsetIndex:windowOffsetIndex))/(windowOffsetIndex - windowOnsetIndex + 1);
                     
                     

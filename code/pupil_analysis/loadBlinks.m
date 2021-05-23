@@ -35,6 +35,8 @@ function [ blinksStruct ] = loadBlinks(varargin)
 p = inputParser; p.KeepUnmatched = true;
 
 p.addParameter('runAnalyzeDroppedFrames',false,@islogical);
+p.addParameter('range','shiftedPulse');
+
 
 % Parse and check the parameters
 p.parse(varargin{:});
@@ -43,7 +45,7 @@ p.parse(varargin{:});
 if p.Results.runAnalyzeDroppedFrames
     
     % compute dropped frames
-    [blinksStruct] = analyzeDroppedFrames;
+    [blinksStruct] = analyzeDroppedFrames('range', p.Results.range);
     
 else
     

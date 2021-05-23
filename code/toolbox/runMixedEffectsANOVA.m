@@ -33,7 +33,9 @@ else
         end
     elseif strcmp(responseModality, 'droppedFrames')
         responseMetric = '';
-        resultStruct = loadBlinks;
+        %resultStruct = loadBlinks;
+        resultStruct = loadBlinks('runAnalyzeDroppedFrames', true, 'range', [1.8 5.2]);
+
         
         for stimulus = 1:length(stimuli)
             for group = 1:length(groups)
@@ -131,8 +133,12 @@ withinSubjectspValue = table2array(ranovatbl(1,5));
 interactionFValue = table2array(ranovatbl(2,4));
 interactionpValue = table2array(ranovatbl(2,5));
 
-tableSavePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, responseMetric);
+%tableSavePath = fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, responseMetric);
+tableSavePath = fullfile('/Users/harrisonmcadams/Desktop/');
+
+
 %fprintf('\n<strong>From Matlab functions: </strong>\n');
+
 %fprintf('The effect of stimulus: F-value of %4.3f, p-value of %4.5f\n', withinSubjectsFValue, withinSubjectspValue);
 %fprintf('The effect of interaction: F-value of %4.3f, p-value of %4.5f\n', interactionFValue, interactionpValue);
 % to find the between subject effects:
@@ -204,7 +210,8 @@ end
 
 stimulusByGroupTable = array2table(stimulusByGroupTable);
 stimulusByGroupTable.Properties.VariableNames = {'Group', 'Comparison', 'Difference', 't_Statistic', 'p_Value', 'CI_95'};
-writetable(stimulusByGroupTable, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, responseMetric, ['stimulusByGroup_', linearMetric, '_postHoc.csv']))
+%writetable(stimulusByGroupTable, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, responseMetric, ['stimulusByGroup_', linearMetric, '_postHoc.csv']))
+writetable(stimulusByGroupTable, fullfile('~/Desktop/', ['stimulusByGroup_', linearMetric, '_postHoc.csv']))
 
 
 % group by stimulus
@@ -264,7 +271,8 @@ end
 
 groupByStimulusTable = array2table(groupByStimulusTable);
 groupByStimulusTable.Properties.VariableNames = {'Stimulus', 'Comparison', 'Difference', 't_Statistic', 'p_Value', 'CI_95'};
-writetable(groupByStimulusTable, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, responseMetric, ['groupBystimulus_', linearMetric, '_postHoc.csv']))
+%writetable(groupByStimulusTable, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, responseMetric, ['groupBystimulus_', linearMetric, '_postHoc.csv']))
+writetable(groupByStimulusTable, fullfile('~/Desktop', ['groupBystimulus_', linearMetric, '_postHoc.csv']))
 
 
 %% Summary table, collapsing across stimuli
@@ -311,6 +319,7 @@ groupTable{3,5} = sprintf('%4.3f - %4.3f', table2array(postHocTable(6,6)), table
 
 groupTable = array2table(groupTable);
 groupTable.Properties.VariableNames = {'Comparison', 'Difference', 't_Statistic', 'p_Value', 'CI_95'};
-writetable(groupTable, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, responseMetric, ['group_', linearMetric, '_postHoc.csv']))
+%writetable(groupTable, fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', responseModality, responseMetric, ['group_', linearMetric, '_postHoc.csv']))
+writetable(groupTable, fullfile('~/Desktop', ['group_', linearMetric, '_postHoc.csv']))
 
 end

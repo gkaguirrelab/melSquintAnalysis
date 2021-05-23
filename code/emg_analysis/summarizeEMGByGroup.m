@@ -99,7 +99,7 @@ timebase = 0:0.1:17.5;
 
 set(gcf, 'Position', [52 529 1375 269], 'DefaultFigureRenderer', 'painters');
 export_fig(gcf, fullfile(resultsDir, 'EMG_responseOverTime_byGroup_collapsedAcrossStimuli.pdf'));
-print(gcf, '-dpdf', '/Users/brianahaggerty/Desktop/EMG_responseOverTime_byGroup_collapsedAcrossStimuli.pdf', '-bestfit'); 
+print(gcf, '-dpdf', '~/Desktop/EMG_responseOverTime_byGroup_collapsedAcrossStimuli.pdf', '-bestfit'); 
 
 %% Second plot: EMG AUC during the pulse by stimulus condition by group
 close all;

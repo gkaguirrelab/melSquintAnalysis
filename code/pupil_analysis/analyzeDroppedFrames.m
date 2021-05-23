@@ -1,4 +1,4 @@
-function [droppedFramesMeanStruct] = analyzeDroppedFrames(varargin)
+function [droppedFramesMeanStruct, blinksOverTime] = analyzeDroppedFrames(varargin)
 
 % Function used to analyze frames in which subject is not receiving the
 % intended light stimulus (AKA dropped frames)
@@ -53,17 +53,30 @@ function [droppedFramesMeanStruct] = analyzeDroppedFrames(varargin)
 %% collect some inputs
 p = inputParser; p.KeepUnmatched = true;
 
-p.addParameter('range','shiftedPulse',@ischar);
+p.addParameter('range','shiftedPulse');
+p.addParameter('subjectIDs',[],@ischar);
+p.addParameter('sessions',[],@iscell);
 p.addParameter('whichBadFrames','blinks',@ischar);
 p.addParameter('makePlots',false, @islogical);
+p.addParameter('saveOutput',false, @islogical);
+p.addParameter('runResponseOverTime',true, @islogical);
+p.addParameter('saveName','droppedFramesAnalysis', @ischar);
+
 
 % Parse and check the parameters
 p.parse(varargin{:});
 
 
 %% Get subject list
-load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', 'subjectListStruct.mat'));
-subjectIDs = fieldnames(subjectListStruct);
+if isempty(p.Results.subjectIDs)
+    load(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'Experiments/OLApproach_Squint/SquintToPulse/DataFiles/', 'subjectListStruct.mat'));
+    subjectIDs = fieldnames(subjectListStruct);
+else
+    subjectIDs = {p.Results.subjectIDs};
+end
+
+
+
 
 %% Set up some basic variables about the stimuli and subjects
 stimuli = {'LightFlux', 'Melanopsin', 'LMS'};
@@ -77,7 +90,9 @@ for group = 1:length(groups)
         for contrast = 1:length(contrasts)
             droppedFramesTrialStruct.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
             droppedFramesMeanStruct.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
-            
+            blinksOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            groupSmoothedMeanBlinksOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            smoothedMeanBlinksOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
         end
     end
 end
@@ -104,49 +119,73 @@ for ss = 1:length(subjectIDs)
             nTrials = length(trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
             
             droppedFramesForStimulusType = [];
+            %blinksOverTime.(groupLabel).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = [];
+            blinksVectorAcrossTrials = [];
             for tt = 1:nTrials
+                
+                if isempty(p.Results.sessions)
+                    sessions = subjectListStruct.(subjectIDs{ss});
+                    
+                else
+                    sessions = p.Results.sessions;
+                end
                 
                 % figure out index range over which we're looking for
                 % dropped pulses
-                if strcmp(p.Results.range, 'pulse')
-                    rangeIndices = [trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.pulseOnsetIndex, trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.pulseOffsetIndex];
-                elseif strcmp(p.Results.range, 'shiftedPulse')
-                    [~, beginningIndex ] = min(abs(2.5-trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase));
-                    [~, endingIndex ] = min(abs(6.5-trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase));
-                    rangeIndices = [beginningIndex, endingIndex];
-                elseif strcmp(p.Results.range, 'wholeTrial')
-                    rangeIndices = [1 length(trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase)];
+                if sum(contains(sessions, trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.session)) > 0
+                    if strcmp(p.Results.range, 'pulse')
+                        rangeIndices = [trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.pulseOnsetIndex, trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.pulseOffsetIndex];
+                    elseif strcmp(p.Results.range, 'shiftedPulse')
+                        [~, beginningIndex ] = min(abs(2.5-trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase));
+                        [~, endingIndex ] = min(abs(6.5-trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase));
+                        rangeIndices = [beginningIndex, endingIndex];
+                    elseif strcmp(p.Results.range, 'wholeTrial')
+                        rangeIndices = [1 length(trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase)];
+                    else
+                        [~, beginningIndex ] = min(abs(p.Results.range(1)-trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase));
+                        [~, endingIndex ] = min(abs(p.Results.range(2)-trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase));
+                        rangeIndices = [beginningIndex, endingIndex];
+                    end
+                    
+                    % count the number of dropped frames, depending on the
+                    % definition of dropped frames
+                    if strcmp(p.Results.whichBadFrames, 'blinks')
+                        blinkFrames = find((trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.blinkIndices>=rangeIndices(1)) & (trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.blinkIndices<=rangeIndices(2)));
+                        droppedFrames = blinkFrames;
+                    else
+                        blinkFrames = find((trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.blinkIndices>=rangeIndices(1)) & (trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.blinkIndices<=rangeIndices(2)));
+                        duplicateFrames = find((trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.duplicateFrameIndices>=rangeIndices(1)) & (trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.duplicateFrameIndices<=rangeIndices(2)));
+                        poorFitFrames = find((trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.poorFitFrameIndices>=rangeIndices(1)) & (trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.poorFitFrameIndices<=rangeIndices(2)));
+                        initialNaNFrames = find((trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.initialNaNFrames>=rangeIndices(1)) & (trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.initialNaNFrames<=rangeIndices(2)));
+                        droppedFrames = [blinkFrames, duplicateFrames', poorFitFrames', initialNaNFrames'];
+                        droppedFrames = unique(droppedFrames);
+                    end
+                    
+                    droppedFramesForStimulusType = [100*length(droppedFrames)/(rangeIndices(2) - rangeIndices(1)), droppedFramesForStimulusType];
+                    
+                    % make blinks over time binary vector
+                    newTimebase = 0:1/60:20;
+                    
+                    blinkVector = zeros(1, length(trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase))';
+                    blinkVector(trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.blinkIndices) = 1;
+                    blinksVectorAcrossTrials(end+1,:) = interp1(trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.originalTimebase,blinkVector,newTimebase,'linear');
                 end
-                
-                % count the number of dropped frames, depending on the
-                % definition of dropped frames
-                if strcmp(p.Results.whichBadFrames, 'blinks')
-                    blinkFrames = find((trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.blinkIndices>=rangeIndices(1)) & (trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.blinkIndices<=rangeIndices(2)));
-                    droppedFrames = blinkFrames;
-                else
-                    blinkFrames = find((trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.blinkIndices>=rangeIndices(1)) & (trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.blinkIndices<=rangeIndices(2)));
-                    duplicateFrames = find((trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.duplicateFrameIndices>=rangeIndices(1)) & (trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.duplicateFrameIndices<=rangeIndices(2)));
-                    poorFitFrames = find((trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.poorFitFrameIndices>=rangeIndices(1)) & (trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.poorFitFrameIndices<=rangeIndices(2)));
-                    initialNaNFrames = find((trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.initialNaNFrames>=rangeIndices(1)) & (trialInfoStruct.(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){tt}.initialNaNFrames<=rangeIndices(2)));
-                    droppedFrames = [blinkFrames, duplicateFrames', poorFitFrames', initialNaNFrames'];
-                    droppedFrames = unique(droppedFrames);
-                end
-                
-                droppedFramesForStimulusType = [length(droppedFrames), droppedFramesForStimulusType];
-                
             end
             
             % save out average results for all trials of the same stimulus
             % type
             droppedFramesMeanStruct.(groupLabel).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(end+1) = nanmean(droppedFramesForStimulusType);
             
+            blinksOverTime.(groupLabel).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){end+1} = blinksVectorAcrossTrials;
+            
         end
     end
 end
 
 % save out results
-save(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', 'droppedFramesAnalysis', 'droppedFramesResults.mat'), 'droppedFramesMeanStruct');
-
+if p.Results.saveOutput
+    save(fullfile(getpref('melSquintAnalysis', 'melaAnalysisPath'), 'melSquintAnalysis', 'pupil', p.Results.saveName, 'droppedFramesResults.mat'), 'droppedFramesMeanStruct');
+end
 %% Do some summary plotting
 if p.Results.makePlots
     close all;
@@ -257,6 +296,102 @@ if p.Results.makePlots
         
     end
     
+    
+    
+    
 end
+
+%% working on thi spart
+% response over time analysis
+if p.Results.runResponseOverTime
+    for group = 1:length(groups)
+        for stimulus = 1:length(stimuli)
+            for contrast = 1:length(contrasts)
+                
+                nSubjects = length(blinksOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                
+                for ss = 1:nSubjects
+                    
+                    subjectMeanResponse = nanmean(blinksOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){ss});
+                    meanBlinksOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]){ss} = subjectMeanResponse;
+                    
+                    smoothedTimebase = 0:0.1:17.5;
+                    STDWindowSizeInMSecs = 500;
+                    STDWindowSizeInIndices = 60 * STDWindowSizeInMSecs/1000;
+                    
+                    smoothedSubjectMeanResponse = [];
+                    for timepoint = smoothedTimebase
+                        
+                        [~, timepointIndex ]  = min(abs(newTimebase-timepoint));
+                        if timepointIndex - floor(STDWindowSizeInIndices/2) < 1 || timepointIndex + floor(STDWindowSizeInIndices/2) > length(newTimebase)
+                            smoothedSubjectMeanResponse(end+1) = NaN;
+                            
+                        else
+                            smoothedSubjectMeanResponse(end+1) = nanmean(subjectMeanResponse((timepointIndex-floor(STDWindowSizeInIndices/2)):(timepointIndex+floor(STDWindowSizeInIndices/2))));
+                            
+                        end
+                        
+                        
+                    end
+                    
+                    smoothedMeanBlinksOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])(ss,:) = smoothedSubjectMeanResponse;
+                end
+            end
+        end
+    end
+    
+    for group = 1:length(groups)
+        for stimulus = 1:length(stimuli)
+            for contrast = 1:length(contrasts)
+                
+                groupSmoothedMeanBlinksOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]) = nanmean(            smoothedMeanBlinksOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})]));
+                %smoothedMeanBlinksOverTime.(groups{group}).(stimuli{stimulus}).(['Contrast', num2str(contrasts{contrast})])
+                
+            end
+        end
+    end
+end
+
+if p.Results.makePlots
+    plotFig = figure;
+    groups = {'controls', 'mwa', 'mwoa'};
+    colorToPlot = {'k', 'b', 'r'};
+    for contrast = 1:length(contrasts)
+        subplot(1,3,contrast); hold on;
+        for group = 1:length(groups)
+            title(['Contrast ', num2str(contrasts{contrast}), '%']);
+            meanAcrossStimuli.(groups{group}).(['Contrast', num2str(contrasts{contrast})]) = (smoothedMeanBlinksOverTime.(groups{group}).LightFlux.(['Contrast', num2str(contrasts{contrast})])+smoothedMeanBlinksOverTime.(groups{group}).LMS.(['Contrast', num2str(contrasts{contrast})])+smoothedMeanBlinksOverTime.(groups{group}).Melanopsin.(['Contrast', num2str(contrasts{contrast})]))./3;
+            
+            groupMean = nanmean(meanAcrossStimuli.(groups{group}).(['Contrast', num2str(contrasts{contrast})]),1);
+            groupSEM = nanstd(meanAcrossStimuli.(groups{group}).(['Contrast', num2str(contrasts{contrast})]))/sqrt(20);
+            %ax.(['ax', num2str(group)]) = plot(timebase, groupMean, 'Color', colorToPlot{group});
+            lineProps.col = [];
+            lineProps.col{1} = colorToPlot{group};
+            ax.(['ax', num2str(group)]) = mseb(smoothedTimebase, groupMean, groupSEM, lineProps, 1);
+        end
+        ylim([0 0.5]);
+        yticks([0 0.25 0.5]);
+        yticklabels({'0%', '25%', '50%'});
+        ylabel('% Trials with Blink');
+        xlim([0 17]);
+        xticks([0 5 10 15])
+        xticklabels([0 5 10 15])
+        xlabel('Time (s)');
+        
+        if contrast == 3
+            legend('Controls', 'MwA', 'MwoA', 'Location', 'NorthEast');
+            legend('boxoff');
+        end
+        
+    end
+    
+    set(gcf, 'Position', [52 529 1375 269], 'DefaultFigureRenderer', 'painters');
+    export_fig(gcf, fullfile('~/Desktop', 'blinksOverTime_collapsedAcrossStimuli.pdf'));
+    set(gcf, 'Renderer', 'painters');
+    print(gcf, '-dpdf', '~/Desktop/blinks_responseOverTime_byGroup_collapsedAcrossStimuli.pdf', '-bestfit');
+    
+end
+
+
 
 end
