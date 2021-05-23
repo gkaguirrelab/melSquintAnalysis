@@ -124,6 +124,33 @@ for session = 1:size(sessionCellArray,1)
 end
 
 %%
+
+
+%% Look for correlation with blink data
+
+BlinkByMigraineRecency.mwa = [];
+BlinkByMigraineRecency.mwoa = [];
+
+counter = 1;
+for session = 1:size(sessionCellArray,1)
+    droppedFramesStruct = analyzeDroppedFrames('subjectIDs', sessionCellArray{session,1}, 'sessions', sessionCellArray{session,2}, 'saveOutput', false, 'runResponseOverTime', false);
+    groupID = linkMELAIDToGroup(sessionCellArray{session,1});
+    
+    if strcmp(groupID, 'c')
+        groupID = 'controls';
+    end
+    meanBlinkResponse = mean([droppedFramesStruct.(groupID).Melanopsin.Contrast400, droppedFramesStruct.(groupID).LightFlux.Contrast400, droppedFramesStruct.(groupID).LMS.Contrast400]);
+    
+    if ~isnan(sessionCellArray{session,3}) && ~isnan(meanBlinkResponse)
+        BlinkByMigraineRecency.(groupID)(end+1,:) = [sessionCellArray{session,3}, meanBlinkResponse];
+        %BlinkByMigraineRecency.(groupID)(counter,2) = meanBlinkResponse;
+            counter = counter + 1;
+
+    end
+    
+end
+
+%% Do some plotting
 figure; subplot(1,2,1); hold on;
 
 % coeffs = polyfit(EMGByMigraineRecency.mwa(:,1), EMGByMigraineRecency.mwa(:,2), 1);
@@ -153,31 +180,6 @@ xlabel('Days Since Last Headache');
 ylabel('OO-EMG Activity (%Delta)');
 legend([ax1 ax2], ['MwA, rho = ', num2str(mwaRho)], ['MwoA, rho = ', num2str(mwoaRho)]);
 
-%% Look for correlation with blink data
-
-BlinkByMigraineRecency.mwa = [];
-BlinkByMigraineRecency.mwoa = [];
-
-counter = 1;
-for session = 1:size(sessionCellArray,1)
-    droppedFramesStruct = analyzeDroppedFrames('subjectIDs', sessionCellArray{session,1}, 'sessions', sessionCellArray{session,2}, 'saveOutput', false, 'runResponseOverTime', false);
-    groupID = linkMELAIDToGroup(sessionCellArray{session,1});
-    
-    if strcmp(groupID, 'c')
-        groupID = 'controls';
-    end
-    meanBlinkResponse = mean([droppedFramesStruct.(groupID).Melanopsin.Contrast400, droppedFramesStruct.(groupID).LightFlux.Contrast400, droppedFramesStruct.(groupID).LMS.Contrast400]);
-    
-    if ~isnan(sessionCellArray{session,3}) && ~isnan(meanBlinkResponse)
-        BlinkByMigraineRecency.(groupID)(end+1,:) = [sessionCellArray{session,3}, meanBlinkResponse];
-        %BlinkByMigraineRecency.(groupID)(counter,2) = meanBlinkResponse;
-            counter = counter + 1;
-
-    end
-    
-end
-
-%%
 subplot(1,2,2); hold on;
 
 % coeffs = polyfit(BlinkByMigraineRecency.mwa(:,1), BlinkByMigraineRecency.mwa(:,2), 1);
@@ -212,3 +214,71 @@ suptitle( sprintf('HA recency: MwA %4.2f (%4.2f), MwoA %4.2f (%4.2f)', mean(Blin
 
 set(gcf, 'Position', [52 489 913 309], 'DefaultFigureRenderer', 'painters');
 export_fig(gcf, fullfile('~/Desktop', 'headacheRecency.pdf'));
+
+%% Plot just MwA
+figure; subplot(1,2,1); hold on;
+
+% coeffs = polyfit(EMGByMigraineRecency.mwa(:,1), EMGByMigraineRecency.mwa(:,2), 1);
+% fittedX = linspace(min(EMGByMigraineRecency.mwa(:,1)), max(EMGByMigraineRecency.mwa(:,1)), 200);
+% fittedY = polyval(coeffs, fittedX);
+
+fittedX = linspace(min(EMGByMigraineRecency.mwa(:,1)), max(EMGByMigraineRecency.mwa(:,1)), 200);
+[r p] = robustfit(EMGByMigraineRecency.mwa(:,1), EMGByMigraineRecency.mwa(:,2));
+fittedY = fittedX*r(2) + r(1);
+plot(fittedX, fittedY, 'LineWidth', 2, 'Color', 'b')
+ax1 = plot(EMGByMigraineRecency.mwa(:,1), EMGByMigraineRecency.mwa(:,2), 'o', 'Color', 'b');
+[mwaRho, mwaP] = corr(EMGByMigraineRecency.mwa(:,1), EMGByMigraineRecency.mwa(:,2), 'Type', 'Spearman');
+
+% coeffs = polyfit(EMGByMigraineRecency.mwoa(:,1), EMGByMigraineRecency.mwoa(:,2), 1);
+% fittedX = linspace(min(EMGByMigraineRecency.mwoa(:,1)), max(EMGByMigraineRecency.mwoa(:,1)), 200);
+% fittedY = polyval(coeffs, fittedX);
+% 
+% fittedX = linspace(min(EMGByMigraineRecency.mwoa(:,1)), max(EMGByMigraineRecency.mwoa(:,1)), 200);
+% [r p] = robustfit(EMGByMigraineRecency.mwoa(:,1), EMGByMigraineRecency.mwoa(:,2));
+% fittedY = fittedX*r(2) + r(1);
+% plot(fittedX, fittedY, 'LineWidth', 2, 'Color', 'r')
+% ax2 = plot(EMGByMigraineRecency.mwoa(:,1), EMGByMigraineRecency.mwoa(:,2), 'o', 'Color', 'r');
+% mwoaRho = corr(EMGByMigraineRecency.mwoa(:,1), EMGByMigraineRecency.mwoa(:,2), 'Type', 'Spearman');
+
+
+xlabel('Days Since Last Headache');
+ylabel('OO-EMG Activity (%Delta)');
+title(sprintf('rho = %4.3f, p = %4.3f', mwaRho, mwaP));
+
+%legend([ax1 ax2], ['MwA, rho = ', num2str(mwaRho)], ['MwoA, rho = ', num2str(mwoaRho)]);
+
+
+subplot(1,2,2); hold on;
+
+% coeffs = polyfit(BlinkByMigraineRecency.mwa(:,1), BlinkByMigraineRecency.mwa(:,2), 1);
+% fittedX = linspace(min(BlinkByMigraineRecency.mwa(:,1)), max(BlinkByMigraineRecency.mwa(:,1)), 200);
+% fittedY = polyval(coeffs, fittedX);
+
+fittedX = linspace(min(BlinkByMigraineRecency.mwa(:,1)), max(BlinkByMigraineRecency.mwa(:,1)), 200);
+[r p] = robustfit(BlinkByMigraineRecency.mwa(:,1), BlinkByMigraineRecency.mwa(:,2));
+fittedY = fittedX*r(2) + r(1);
+plot(fittedX, fittedY, 'LineWidth', 2, 'Color', 'b')
+ax1 = plot(BlinkByMigraineRecency.mwa(:,1), BlinkByMigraineRecency.mwa(:,2), 'o', 'Color', 'b');
+[mwaRho, mwaP] = corr(BlinkByMigraineRecency.mwa(:,1), BlinkByMigraineRecency.mwa(:,2), 'Type', 'Spearman');
+
+
+% coeffs = polyfit(BlinkByMigraineRecency.mwoa(:,1), BlinkByMigraineRecency.mwoa(:,2), 1);
+% fittedX = linspace(min(BlinkByMigraineRecency.mwoa(:,1)), max(BlinkByMigraineRecency.mwoa(:,1)), 200);
+% fittedY = polyval(coeffs, fittedX);
+% fittedX = linspace(min(BlinkByMigraineRecency.mwoa(:,1)), max(BlinkByMigraineRecency.mwoa(:,1)), 200);
+% [r p] = robustfit(BlinkByMigraineRecency.mwoa(:,1), BlinkByMigraineRecency.mwoa(:,2));
+% fittedY = fittedX*r(2) + r(1);
+% plot(fittedX, fittedY, 'LineWidth', 2, 'Color', 'r')
+% ax2 = plot(BlinkByMigraineRecency.mwoa(:,1), BlinkByMigraineRecency.mwoa(:,2), 'o', 'Color', 'r');
+% mwoaRho = corr(BlinkByMigraineRecency.mwoa(:,1), BlinkByMigraineRecency.mwoa(:,2), 'Type', 'Spearman');
+title(sprintf('rho = %4.3f, p = %4.3f', mwaRho, mwaP));
+
+xlabel('Days Since Last Headache');
+ylabel('Blinks (%)');
+
+%legend([ax1 ax2], ['MwA, rho = ', num2str(mwaRho)], ['MwoA, rho = ', num2str(mwoaRho)]);
+
+suptitle( sprintf('HA recency: MwA %4.2f (%4.2f)', mean(BlinkByMigraineRecency.mwa(:,1)), std(BlinkByMigraineRecency.mwa(:,1))));
+
+set(gcf, 'Position', [52 489 913 309], 'DefaultFigureRenderer', 'painters');
+saveas(gca,'~/Desktop/headacheRecencyAnalysis_mwaOnly.png')
